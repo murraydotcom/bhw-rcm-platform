@@ -1,13 +1,13 @@
-// Netlify Function: notion-claims.js
+Netlify Function: notion-claims.js
 // Reads and writes to the Charges & Claims Notion database
 // Supports date-range filtering: week, month, quarter, year, all
 // Environment variables needed in Netlify:
 //   NOTION_TOKEN = your Notion integration token
 //   NOTION_CLAIMS_DB = a99946bdaca141e8acf9b15603babd4f
-
+ 
 const NOTION_VERSION = "2022-06-28";
 const DB_ID = process.env.NOTION_CLAIMS_DB || "a99946bdaca141e8acf9b15603babd4f";
-
+ 
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -15,11 +15,11 @@ exports.handler = async (event) => {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Content-Type": "application/json",
   };
-
+ 
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
-
+ 
   const token = process.env.NOTION_TOKEN;
   if (!token) {
     return {
@@ -28,13 +28,13 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: "NOTION_TOKEN not set in environment variables" }),
     };
   }
-
+ 
   try {
     if (event.httpMethod === "GET") {
       // Read range param: week | month | quarter | year | all (default: all)
       const params = event.queryStringParameters || {};
       const range = params.range || "all";
-
+ 
       const response = await fetch(
         `https://api.notion.com/v1/databases/${DB_ID}/query`,
         {
@@ -50,9 +50,9 @@ exports.handler = async (event) => {
           }),
         }
       );
-
+ 
       const data = await response.json();
-
+ 
       if (!response.ok) {
         return {
           statusCode: response.status,
@@ -60,9 +60,9 @@ exports.handler = async (event) => {
           body: JSON.stringify({ error: data.message || "Notion API error" }),
         };
       }
-
+ 
       const debugColumns = data.results[0] ? Object.keys(data.results[0].properties) : [];
-
+ 
       let claims = data.results.map((page) => {
         const props = page.properties;
         return {
@@ -91,7 +91,7 @@ exports.handler = async (event) => {
           createdAt: page.created_time,
         };
       });
-
+ 
       // Apply date range filter based on Date of Service, falling back to createdAt
       const { start, end, label } = getDateRange(range);
       if (range !== "all") {
@@ -102,11 +102,11 @@ exports.handler = async (event) => {
           return d >= start && d <= end;
         });
       }
-
+ 
       // Summary totals for the filtered range
       const totalBilled = claims.reduce((s, c) => s + (c.billed || 0), 0);
       const totalPaid = claims.reduce((s, c) => s + (c.paid || 0), 0);
-
+ 
       return {
         statusCode: 200,
         headers,
@@ -119,10 +119,10 @@ exports.handler = async (event) => {
         }),
       };
     }
-
+ 
     if (event.httpMethod === "POST") {
       const claim = JSON.parse(event.body);
-
+ 
       const response = await fetch("https://api.notion.com/v1/pages", {
         method: "POST",
         headers: {
@@ -140,12 +140,13 @@ exports.handler = async (event) => {
             "Payer Name": { rich_text: [{ text: { content: claim.payer || "" } }] },
             "Charge": claim.billed ? { number: parseFloat(claim.billed) } : undefined,
             "Status": { select: { name: claim.status || "Submitted" } },
+            "Date of Service": claim.dos ? { date: { start: claim.dos } } : undefined,
           },
         }),
       });
-
+ 
       const data = await response.json();
-
+ 
       if (!response.ok) {
         return {
           statusCode: response.status,
@@ -153,14 +154,14 @@ exports.handler = async (event) => {
           body: JSON.stringify({ error: data.message || "Failed to create claim" }),
         };
       }
-
+ 
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({ success: true, id: data.id }),
       };
     }
-
+ 
     return {
       statusCode: 405,
       headers,
@@ -174,13 +175,13 @@ exports.handler = async (event) => {
     };
   }
 };
-
+ 
 // Calculate date range boundaries. Fiscal year = calendar year (Jan-Dec).
 // Billing week = Tuesday through Monday.
 function getDateRange(range) {
   const now = new Date();
   let start, end, label;
-
+ 
   if (range === "week") {
     const day = now.getDay(); // 0=Sun...6=Sat
     const diff = day >= 2 ? day - 2 : day + 5; // days since last Tuesday
@@ -209,10 +210,10 @@ function getDateRange(range) {
     end = null;
     label = "All time";
   }
-
+ 
   return { start, end, label };
 }
-
+ 
 function getAny(props, names) {
   for (const name of names) {
     const prop = props[name];
@@ -222,7 +223,7 @@ function getAny(props, names) {
   }
   return "";
 }
-
+ 
 function getAnyDate(props, names) {
   for (const name of names) {
     const prop = props[name];
@@ -230,7 +231,7 @@ function getAnyDate(props, names) {
   }
   return null;
 }
-
+ 
 function getAnyNumber(props, names) {
   for (const name of names) {
     const prop = props[name];
@@ -238,7 +239,7 @@ function getAnyNumber(props, names) {
   }
   return null;
 }
-
+ 
 function getAnySelect(props, names) {
   for (const name of names) {
     const prop = props[name];
@@ -247,3 +248,4 @@ function getAnySelect(props, names) {
   }
   return null;
 }
+ 
