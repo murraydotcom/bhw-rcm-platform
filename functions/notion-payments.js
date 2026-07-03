@@ -1,5 +1,6 @@
 // Netlify Function: notion-payments.js
 // Reads the Payments Notion database
+// Supports date-range filtering: week, month, quarter, year, all
 // Environment variables needed in Netlify:
 //   NOTION_TOKEN = your Notion integration token
 //   NOTION_PAYMENTS_DB = 73cb304d2fef478989871374c4e2bf8f
@@ -30,6 +31,9 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === "GET") {
+      const params = event.queryStringParameters || {};
+      const range = params.range || "all";
+
       const response = await fetch(
         `https://api.notion.com/v1/databases/${DB_ID}/query`,
         {
@@ -56,31 +60,42 @@ exports.handler = async (event) => {
         };
       }
 
-      const payments = data.results.map((page) => {
+      const debugColumns = data.results[0] ? Object.keys(data.results[0].properties) : [];
+
+      let payments = data.results.map((page) => {
         const props = page.properties;
         return {
           id: page.id,
-          eraNumber: getText(props["ERA/EOB Number"]),
-          payer: getText(props["Payer"]),
-          datePaid: getDate(props["Date Paid"]),
-          amountBilled: getNumber(props["Amount Billed"]),
-          amountAllowed: getNumber(props["Amount Allowed"]),
-          amountPaid: getNumber(props["Amount Paid"]),
-          adjustmentCode: getText(props["Adjustment Code"]),
-          patientBalance: getNumber(props["Patient Balance"]),
-          status: getSelect(props["Status"]),
-          notes: getText(props["Notes"]),
+          eraNumber: getAny(props, ["ERA/EOB Number", "Claim #", "Patient Ctrl No."]),
+          patient: getAny(props, ["Patient Name"]),
+          payer: getAny(props, ["Payer Name", "Payer"]),
+          datePaid: getAnyDate(props, ["Date Paid", "Payment Date"]),
+          amountBilled: getAnyNumber(props, ["Amount Billed", "Charge", "Charged"]),
+          amountAllowed: getAnyNumber(props, ["Amount Allowed"]),
+          amountPaid: getAnyNumber(props, ["Amount Paid", "Payment Amount", "Payment Amt", "Claim Payment"]),
+          adjustmentCode: getAny(props, ["Adjustment Code"]),
+          patientBalance: getAnyNumber(props, ["Patient Balance", "Patient Resp"]),
+          status: getAnySelect(props, ["Status"]),
+          notes: getAny(props, ["Notes"]),
           createdAt: page.created_time,
         };
       });
 
-      // Calculate payment summary
+      const { start, end, label } = getDateRange(range);
+      if (range !== "all") {
+        payments = payments.filter((p) => {
+          const dateStr = p.datePaid || p.createdAt;
+          if (!dateStr) return false;
+          const d = new Date(dateStr);
+          return d >= start && d <= end;
+        });
+      }
+
       const totalBilled = payments.reduce((s, p) => s + (p.amountBilled || 0), 0);
       const totalPaid = payments.reduce((s, p) => s + (p.amountPaid || 0), 0);
       const totalBalance = payments.reduce((s, p) => s + (p.patientBalance || 0), 0);
       const variance = totalBilled - totalPaid - totalBalance;
 
-      // Group by payer
       const byPayer = {};
       payments.forEach((p) => {
         const payer = p.payer || "Unknown";
@@ -95,13 +110,14 @@ exports.handler = async (event) => {
         headers,
         body: JSON.stringify({
           payments,
+          range: { key: range, label, start: start?.toISOString(), end: end?.toISOString() },
           summary: { totalBilled, totalPaid, totalBalance, variance },
           byPayer,
+          debugColumns,
         }),
       };
     }
 
-    // POST - log a new payment/ERA
     if (event.httpMethod === "POST") {
       const payment = JSON.parse(event.body);
 
@@ -116,15 +132,11 @@ exports.handler = async (event) => {
           parent: { database_id: DB_ID },
           properties: {
             "ERA/EOB Number": { title: [{ text: { content: payment.eraNumber || "" } }] },
-            "Payer": { rich_text: [{ text: { content: payment.payer || "" } }] },
+            "Payer Name": { rich_text: [{ text: { content: payment.payer || "" } }] },
             "Date Paid": payment.datePaid ? { date: { start: payment.datePaid } } : undefined,
             "Amount Billed": payment.amountBilled ? { number: parseFloat(payment.amountBilled) } : undefined,
-            "Amount Allowed": payment.amountAllowed ? { number: parseFloat(payment.amountAllowed) } : undefined,
             "Amount Paid": payment.amountPaid ? { number: parseFloat(payment.amountPaid) } : undefined,
-            "Adjustment Code": payment.adjustmentCode ? { rich_text: [{ text: { content: payment.adjustmentCode } }] } : undefined,
-            "Patient Balance": payment.patientBalance ? { number: parseFloat(payment.patientBalance) } : undefined,
             "Status": { select: { name: payment.status || "Posted" } },
-            "Notes": payment.notes ? { rich_text: [{ text: { content: payment.notes } }] } : undefined,
           },
         }),
       });
@@ -160,24 +172,73 @@ exports.handler = async (event) => {
   }
 };
 
-function getText(prop) {
-  if (!prop) return "";
-  if (prop.type === "title") return prop.title?.map((t) => t.plain_text).join("") || "";
-  if (prop.type === "rich_text") return prop.rich_text?.map((t) => t.plain_text).join("") || "";
+function getDateRange(range) {
+  const now = new Date();
+  let start, end, label;
+
+  if (range === "week") {
+    const day = now.getDay();
+    const diff = day >= 2 ? day - 2 : day + 5;
+    start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(now.getDate() - diff);
+    end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    label = `Week of ${start.toDateString()}`;
+  } else if (range === "month") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    label = start.toLocaleString("default", { month: "long", year: "numeric" });
+  } else if (range === "quarter") {
+    const q = Math.floor(now.getMonth() / 3);
+    start = new Date(now.getFullYear(), q * 3, 1);
+    end = new Date(now.getFullYear(), q * 3 + 3, 0, 23, 59, 59, 999);
+    label = `Q${q + 1} ${now.getFullYear()}`;
+  } else if (range === "year") {
+    start = new Date(now.getFullYear(), 0, 1);
+    end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    label = `${now.getFullYear()}`;
+  } else {
+    start = null;
+    end = null;
+    label = "All time";
+  }
+
+  return { start, end, label };
+}
+
+function getAny(props, names) {
+  for (const name of names) {
+    const prop = props[name];
+    if (!prop) continue;
+    if (prop.type === "title" && prop.title?.length) return prop.title.map((t) => t.plain_text).join("");
+    if (prop.type === "rich_text" && prop.rich_text?.length) return prop.rich_text.map((t) => t.plain_text).join("");
+  }
   return "";
 }
 
-function getDate(prop) {
-  if (!prop || prop.type !== "date") return null;
-  return prop.date?.start || null;
+function getAnyDate(props, names) {
+  for (const name of names) {
+    const prop = props[name];
+    if (prop?.type === "date" && prop.date?.start) return prop.date.start;
+  }
+  return null;
 }
 
-function getNumber(prop) {
-  if (!prop || prop.type !== "number") return null;
-  return prop.number || null;
+function getAnyNumber(props, names) {
+  for (const name of names) {
+    const prop = props[name];
+    if (prop?.type === "number" && prop.number !== null && prop.number !== undefined) return prop.number;
+  }
+  return null;
 }
 
-function getSelect(prop) {
-  if (!prop || prop.type !== "select") return null;
-  return prop.select?.name || null;
+function getAnySelect(props, names) {
+  for (const name of names) {
+    const prop = props[name];
+    if (prop?.type === "select" && prop.select?.name) return prop.select.name;
+    if (prop?.type === "status" && prop.status?.name) return prop.status.name;
+  }
+  return null;
 }
