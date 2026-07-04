@@ -200,11 +200,11 @@ body.light .wn2{color:#b07000}
   <!-- DASHBOARD -->
   <div class="sec on" id="s-dashboard">
     <div class="kpis">
-      <div class="kpi"><div class="kpi-l">Charges MTD</div><div class="kpi-v">$94,210</div><div class="kpi-d up">&#8593; 12% vs last month</div></div>
-      <div class="kpi"><div class="kpi-l">Payments MTD</div><div class="kpi-v">$61,430</div><div class="kpi-d up">&#8593; 8% vs last month</div></div>
-      <div class="kpi"><div class="kpi-l">Denial Rate</div><div class="kpi-v">7.4%</div><div class="kpi-d wn2">&#8593; 1.2% review</div></div>
+      <div class="kpi"><div class="kpi-l">Charges MTD</div><div class="kpi-v" id="kpi-charges">$94,210</div><div class="kpi-d up" id="kpi-charges-d">&#8593; 12% vs last month</div></div>
+      <div class="kpi"><div class="kpi-l">Payments MTD</div><div class="kpi-v" id="kpi-payments">$61,430</div><div class="kpi-d up" id="kpi-payments-d">&#8593; 8% vs last month</div></div>
+      <div class="kpi"><div class="kpi-l">Denial Rate</div><div class="kpi-v" id="kpi-denial-rate">7.4%</div><div class="kpi-d wn2" id="kpi-denial-rate-d">&#8593; 1.2% review</div></div>
       <div class="kpi"><div class="kpi-l">A/R Days</div><div class="kpi-v">28.6</div><div class="kpi-d up">&#8595; 4.1 days better</div></div>
-      <div class="kpi"><div class="kpi-l">Collection Rate</div><div class="kpi-v">93.2%</div><div class="kpi-d up">&#8593; vs 88% benchmark</div></div>
+      <div class="kpi"><div class="kpi-l">Collection Rate</div><div class="kpi-v" id="kpi-collection-rate">93.2%</div><div class="kpi-d up" id="kpi-collection-rate-d">&#8593; vs 88% benchmark</div></div>
       <div class="kpi"><div class="kpi-l">Clean Claim Rate</div><div class="kpi-v">89.1%</div><div class="kpi-d wn2">Target: 95%</div></div>
     </div>
     <div class="g2">
@@ -244,7 +244,7 @@ body.light .wn2{color:#b07000}
     <div class="tabs"><div class="tab on" onclick="stab(this)">All Claims</div><div class="tab" onclick="stab(this)">Pending</div><div class="tab" onclick="stab(this)">Denied</div><div class="tab" onclick="stab(this)">In Appeal</div></div>
     <div class="card"><div style="overflow-x:auto"><table>
       <thead><tr><th>Claim ID</th><th>Patient</th><th>DOS</th><th>CPT</th><th>Provider</th><th>Payer</th><th>Billed</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody>
+      <tbody id="rcm-claims-tbody">
         <tr><td class="code">CLM-1047</td><td>T. Johnson</td><td>06/28</td><td>99214</td><td>Murray</td><td>BCBS</td><td>$180</td><td>$142</td><td><span class="pill pg">Paid</span></td><td><span class="ta" onclick="AI('CLM-1047 99214 BCBS Maryland - was reimbursement correct and can I appeal the difference?')">Analyze</span></td></tr>
         <tr><td class="code">CLM-1048</td><td>R. Brown</td><td>06/28</td><td>99215, G2211</td><td>Murray</td><td>Medicaid</td><td>$254</td><td>-</td><td><span class="pill py">Pending</span></td><td><span class="ta" onclick="AI('Maryland Medicaid expected reimbursement for 99215 plus G2211 — when do I follow up?')">Track</span></td></tr>
         <tr><td class="code">CLM-1049</td><td>D. Williams</td><td>06/27</td><td>99484</td><td>Murray</td><td>MCO</td><td>$99</td><td>$0</td><td><span class="pill pr2">CO-50 Denied</span></td><td><span class="ta" onclick="AI('99484 BHI denial CO-50 from MCO — full Maryland Medicaid appeal strategy')">Appeal</span></td></tr>
@@ -261,16 +261,16 @@ body.light .wn2{color:#b07000}
   <!-- PAYMENTS -->
   <div class="sec" id="s-payments">
     <div class="kpis">
-      <div class="kpi"><div class="kpi-l">Expected</div><div class="kpi-v">$68,400</div></div>
-      <div class="kpi"><div class="kpi-l">Received</div><div class="kpi-v">$61,430</div></div>
-      <div class="kpi"><div class="kpi-l">Variance</div><div class="kpi-v dn2">$6,970</div></div>
+      <div class="kpi"><div class="kpi-l">Expected</div><div class="kpi-v" id="kpi-expected">$68,400</div></div>
+      <div class="kpi"><div class="kpi-l">Received</div><div class="kpi-v" id="kpi-received">$61,430</div></div>
+      <div class="kpi"><div class="kpi-l">Variance</div><div class="kpi-v dn2" id="kpi-variance">$6,970</div></div>
       <div class="kpi"><div class="kpi-l">Patient Balance</div><div class="kpi-v">$9,210</div></div>
     </div>
     <div class="card">
       <div class="ch"><span class="ct">EOB / ERA log</span></div>
       <div style="overflow-x:auto"><table>
         <thead><tr><th>Date</th><th>Payer</th><th>ERA/EOB</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Adj</th><th>Action</th></tr></thead>
-        <tbody>
+        <tbody id="rcm-payments-tbody">
           <tr><td>06/28</td><td>BCBS</td><td>ERA-8841</td><td>$3,420</td><td>$2,890</td><td>$2,104</td><td>CO-45</td><td><span class="ta" onclick="AI('CO-45 adjustment on BCBS ERA — contractual adjustment vs actual payment and how I reconcile this')">Explain</span></td></tr>
           <tr><td>06/27</td><td>Medicare</td><td>ERA-8837</td><td>$1,980</td><td>$1,760</td><td>$1,408</td><td>CO-45, PR-2</td><td><span class="ta" onclick="AI('Medicare ERA CO-45 and PR-2 — is PR-2 correct for deductible and how do I bill the patient?')">Explain</span></td></tr>
           <tr><td>06/26</td><td>Medicaid MCO</td><td>EOB-439</td><td>$2,100</td><td>$0</td><td>$0</td><td>EOB-439/323</td><td><span class="ta" onclick="AI('EOB 439/323 denial from Maryland Medicaid MCO for BHI 99484 — full appeal strategy')">Appeal</span></td></tr>
@@ -294,7 +294,7 @@ body.light .wn2{color:#b07000}
   <!-- DENIALS -->
   <div class="sec" id="s-denials">
     <div class="kpis">
-      <div class="kpi"><div class="kpi-l">Total Denied MTD</div><div class="kpi-v">$6,980</div></div>
+      <div class="kpi"><div class="kpi-l">Total Denied MTD</div><div class="kpi-v" id="kpi-denied-mtd">$6,980</div></div>
       <div class="kpi"><div class="kpi-l">Appeals Won</div><div class="kpi-v">$2,410</div><div class="kpi-d up">68% win rate</div></div>
       <div class="kpi"><div class="kpi-l">Pending Appeal</div><div class="kpi-v">$3,120</div></div>
       <div class="kpi"><div class="kpi-l">Write-offs</div><div class="kpi-v">$1,450</div></div>
@@ -315,7 +315,7 @@ body.light .wn2{color:#b07000}
       <div class="card">
         <div class="ch"><span class="ct">Appeals tracker</span></div>
         <table><thead><tr><th>Claim</th><th>Code</th><th>Amount</th><th>Status</th></tr></thead>
-        <tbody>
+        <tbody id="rcm-denials-tbody">
           <tr><td>CLM-1049</td><td>CO-50</td><td>$99</td><td><span class="pill py">Submitted</span></td></tr>
           <tr><td>CLM-1039</td><td>CO-97</td><td>$215</td><td><span class="pill pb">Level 2</span></td></tr>
           <tr><td>CLM-1031</td><td>CO-4</td><td>$180</td><td><span class="pill pg">Won</span></td></tr>
@@ -538,6 +538,125 @@ function toggleMode(){
     if(btn)btn.innerHTML='&#9728;';
   }
 })();
+</script>
+
+
+<script>
+// ===== LIVE DATA LOADER for RCM Dashboard =====
+async function loadRCMLiveData(){
+  await Promise.all([
+    loadDashboardKPIs(),
+    loadClaimsTable(),
+    loadPaymentsSection(),
+    loadDenialsSection()
+  ]);
+}
+
+function fmtMoney(n){
+  if(n===null||n===undefined||isNaN(n)) return '$0';
+  return '$'+Math.round(n).toLocaleString();
+}
+
+async function loadDashboardKPIs(){
+  try{
+    const [claimsRes, paymentsRes, denialsRes] = await Promise.all([
+      fetch('/.netlify/functions/notion-claims?range=month'),
+      fetch('/.netlify/functions/notion-payments?range=month'),
+      fetch('/.netlify/functions/notion-denials?range=month')
+    ]);
+    const claims = await claimsRes.json();
+    const payments = await paymentsRes.json();
+    const denials = await denialsRes.json();
+
+    const totalBilled = claims.summary ? claims.summary.totalBilled : 0;
+    const totalPaid = (payments.summary ? payments.summary.totalPaid : 0) || (claims.summary ? claims.summary.totalPaid : 0);
+    const totalDenied = denials.totalDenied || 0;
+    const claimCount = claims.total || 0;
+    const denialRate = claimCount > 0 ? ((denials.denials ? denials.denials.length : 0) / claimCount * 100) : 0;
+    const collectionRate = totalBilled > 0 ? (totalPaid / totalBilled * 100) : 0;
+
+    const elCharges=document.getElementById('kpi-charges');
+    const elPayments=document.getElementById('kpi-payments');
+    const elDenialRate=document.getElementById('kpi-denial-rate');
+    const elCollRate=document.getElementById('kpi-collection-rate');
+    const elDeniedMtd=document.getElementById('kpi-denied-mtd');
+    const elExpected=document.getElementById('kpi-expected');
+    const elReceived=document.getElementById('kpi-received');
+    const elVariance=document.getElementById('kpi-variance');
+
+    if(elCharges) elCharges.textContent = fmtMoney(totalBilled);
+    if(elPayments) elPayments.textContent = fmtMoney(totalPaid);
+    if(elDenialRate) elDenialRate.textContent = denialRate.toFixed(1)+'%';
+    if(elCollRate) elCollRate.textContent = collectionRate.toFixed(1)+'%';
+    if(elDeniedMtd) elDeniedMtd.textContent = fmtMoney(totalDenied);
+    if(elExpected) elExpected.textContent = fmtMoney(totalBilled);
+    if(elReceived) elReceived.textContent = fmtMoney(totalPaid);
+    if(elVariance) elVariance.textContent = fmtMoney(totalBilled - totalPaid);
+
+    const badge=document.querySelector('.live');
+    if(badge) badge.innerHTML='&#9679; LIVE (Notion)';
+  }catch(e){
+    console.warn('Dashboard KPI live load failed, showing sample data', e);
+    const badge=document.querySelector('.live');
+    if(badge) badge.innerHTML='&#9679; SAMPLE DATA';
+  }
+}
+
+async function loadClaimsTable(){
+  try{
+    const res=await fetch('/.netlify/functions/notion-claims?range=all');
+    const json=await res.json();
+    const tbody=document.getElementById('rcm-claims-tbody');
+    if(!tbody || !json.claims || !json.claims.length) return;
+    tbody.innerHTML='';
+    json.claims.slice(0,30).forEach(c=>{
+      const statusPill = c.status==='Paid' ? '<span class="pill pg">Paid</span>'
+        : c.denialReason ? '<span class="pill pr2">Denied</span>'
+        : '<span class="pill py">Pending</span>';
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td class="code">'+(c.claimId||'-')+'</td><td>'+(c.patient||'-')+'</td><td>'+(c.dos?new Date(c.dos).toLocaleDateString():'-')+'</td><td>'+(c.cpt||'-')+'</td><td>'+(c.provider||'-')+'</td><td>'+(c.payer||'-')+'</td><td>'+(c.billed?'$'+c.billed.toFixed(2):'-')+'</td><td>'+(c.paid?'$'+c.paid.toFixed(2):'-')+'</td><td>'+statusPill+'</td><td><span class="ta" onclick="AI(\'Analyze claim '+(c.claimId||'')+' for '+(c.patient||'')+'\')">Analyze</span></td>';
+      tbody.appendChild(tr);
+    });
+  }catch(e){console.warn('Claims table live load failed',e);}
+}
+
+async function loadPaymentsSection(){
+  try{
+    const res=await fetch('/.netlify/functions/notion-payments?range=all');
+    const json=await res.json();
+    const tbody=document.getElementById('rcm-payments-tbody');
+    if(!tbody || !json.payments || !json.payments.length) return;
+    tbody.innerHTML='';
+    json.payments.slice(0,30).forEach(p=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+(p.datePaid?new Date(p.datePaid).toLocaleDateString():'-')+'</td><td>'+(p.payer||'-')+'</td><td>'+(p.eraNumber||'-')+'</td><td>'+(p.amountBilled?'$'+p.amountBilled.toFixed(2):'-')+'</td><td>'+(p.amountAllowed?'$'+p.amountAllowed.toFixed(2):'-')+'</td><td>'+(p.amountPaid?'$'+p.amountPaid.toFixed(2):'-')+'</td><td>'+(p.status||'-')+'</td><td><span class="ta" onclick="AI(\'Explain this payment record for '+(p.payer||'')+'\')">Explain</span></td>';
+      tbody.appendChild(tr);
+    });
+  }catch(e){console.warn('Payments table live load failed',e);}
+}
+
+async function loadDenialsSection(){
+  try{
+    const res=await fetch('/.netlify/functions/notion-denials?range=all');
+    const json=await res.json();
+    const tbody=document.getElementById('rcm-denials-tbody');
+    if(!tbody || !json.denials || !json.denials.length) return;
+    tbody.innerHTML='';
+    json.denials.slice(0,20).forEach(d=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+(d.denialId||'-')+'</td><td>'+(d.denialReason||'CO-4')+'</td><td>'+(d.deniedAmount?'$'+d.deniedAmount.toFixed(2):'-')+'</td><td><span class="pill py">'+(d.status||'New')+'</span></td>';
+      tbody.appendChild(tr);
+    });
+
+    // Update denial breakdown KPIs if elements exist
+    const totalDeniedEl=document.getElementById('kpi-denied-mtd');
+    if(totalDeniedEl && json.totalDenied) totalDeniedEl.textContent=fmtMoney(json.totalDenied);
+  }catch(e){console.warn('Denials table live load failed',e);}
+}
+
+window.addEventListener('load', function(){
+  setTimeout(loadRCMLiveData, 300);
+});
 </script>
 
 </body>
