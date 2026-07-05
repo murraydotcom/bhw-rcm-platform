@@ -199,6 +199,10 @@ body.light .wn2{color:#b07000}
 
   <!-- DASHBOARD -->
   <div class="sec on" id="s-dashboard">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-sm" id="rcm-range-month" onclick="setRCMRange('month')" style="border-color:var(--sg)">This Month</button>
+      <button class="btn btn-sm" id="rcm-range-last30" onclick="setRCMRange('last30')">Last 30 Days</button>
+    </div>
     <div class="kpis">
       <div class="kpi"><div class="kpi-l">Charges MTD</div><div class="kpi-v" id="kpi-charges">$94,210</div><div class="kpi-d up" id="kpi-charges-d">&#8593; 12% vs last month</div></div>
       <div class="kpi"><div class="kpi-l">Payments MTD</div><div class="kpi-v" id="kpi-payments">$61,430</div><div class="kpi-d up" id="kpi-payments-d">&#8593; 8% vs last month</div></div>
@@ -543,6 +547,17 @@ function toggleMode(){
 
 <script>
 // ===== LIVE DATA LOADER for RCM Dashboard =====
+let RCM_RANGE = 'month';
+
+function setRCMRange(range){
+  RCM_RANGE = range;
+  const monthBtn=document.getElementById('rcm-range-month');
+  const last30Btn=document.getElementById('rcm-range-last30');
+  if(monthBtn) monthBtn.style.borderColor = range==='month' ? 'var(--sg)' : '';
+  if(last30Btn) last30Btn.style.borderColor = range==='last30' ? 'var(--sg)' : '';
+  loadDashboardKPIs();
+}
+
 async function loadRCMLiveData(){
   await Promise.all([
     loadDashboardKPIs(),
@@ -560,9 +575,9 @@ function fmtMoney(n){
 async function loadDashboardKPIs(){
   try{
     const [claimsRes, paymentsRes, denialsRes] = await Promise.all([
-      fetch('/.netlify/functions/notion-claims?range=month'),
-      fetch('/.netlify/functions/notion-payments?range=month'),
-      fetch('/.netlify/functions/notion-denials?range=month')
+      fetch('/.netlify/functions/notion-claims?range='+RCM_RANGE),
+      fetch('/.netlify/functions/notion-payments?range='+RCM_RANGE),
+      fetch('/.netlify/functions/notion-denials?range='+RCM_RANGE)
     ]);
     const claims = await claimsRes.json();
     const payments = await paymentsRes.json();
