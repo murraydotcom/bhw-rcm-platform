@@ -264,7 +264,7 @@ body.light .wn2{color:#b07000}
   <div class="sec" id="s-charges">
     <div class="tabs"><div class="tab on" onclick="stab(this)">All Claims</div><div class="tab" onclick="stab(this)">Pending</div><div class="tab" onclick="stab(this)">Denied</div><div class="tab" onclick="stab(this)">In Appeal</div></div>
     <div class="card"><div style="overflow-x:auto"><table>
-      <thead><tr><th>Claim ID</th><th>Patient</th><th>DOS</th><th>CPT</th><th>Provider</th><th>Payer</th><th>Billed</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>Claim ID</th><th>Patient</th><th>DOS</th><th>CPT</th><th>Program</th><th>Payer</th><th>Billed</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="rcm-claims-tbody">
         <tr><td class="code">CLM-1047</td><td>T. Johnson</td><td>06/28</td><td>99214</td><td>Murray</td><td>BCBS</td><td>$180</td><td>$142</td><td><span class="pill pg">Paid</span></td><td><span class="ta" onclick="AI('CLM-1047 99214 BCBS Maryland - was reimbursement correct and can I appeal the difference?')">Analyze</span></td></tr>
         <tr><td class="code">CLM-1048</td><td>R. Brown</td><td>06/28</td><td>99215, G2211</td><td>Murray</td><td>Medicaid</td><td>$254</td><td>-</td><td><span class="pill py">Pending</span></td><td><span class="ta" onclick="AI('Maryland Medicaid expected reimbursement for 99215 plus G2211 — when do I follow up?')">Track</span></td></tr>
@@ -641,15 +641,33 @@ async function loadClaimsTable(){
     const tbody=document.getElementById('rcm-claims-tbody');
     if(!tbody || !json.claims || !json.claims.length) return;
     tbody.innerHTML='';
+    const PROGRAMS=['','BHW Primary Care','Flow: Vascular Stabilization Center','BHW Mind & Mood Recovery','CharmEd Minds','Chronic Care','New PCP Lane (Yahaira)'];
     json.claims.slice(0,30).forEach(c=>{
       const statusPill = c.status==='Paid' ? '<span class="pill pg">Paid</span>'
         : c.denialReason ? '<span class="pill pr2">Denied</span>'
         : '<span class="pill py">Pending</span>';
+      const progOptions = PROGRAMS.map(p=>'<option value="'+p+'"'+(c.program===p?' selected':'')+'>'+(p||'- Select -')+'</option>').join('');
       const tr=document.createElement('tr');
-      tr.innerHTML='<td class="code">'+(c.claimId||'-')+'</td><td>'+(c.patient||'-')+'</td><td>'+(c.dos?new Date(c.dos).toLocaleDateString():'-')+'</td><td>'+(c.cpt||'-')+'</td><td>'+(c.provider||'-')+'</td><td>'+(c.payer||'-')+'</td><td>'+(c.billed?'$'+c.billed.toFixed(2):'-')+'</td><td>'+(c.paid?'$'+c.paid.toFixed(2):'-')+'</td><td>'+statusPill+'</td><td><span class="ta" onclick="AI(\'Analyze claim '+(c.claimId||'')+' for '+(c.patient||'')+'\')">Analyze</span></td>';
+      tr.innerHTML='<td class="code">'+(c.claimId||'-')+'</td><td>'+(c.patient||'-')+'</td><td>'+(c.dos?new Date(c.dos).toLocaleDateString():'-')+'</td><td>'+(c.cpt||'-')+'</td><td><select class="fi" style="font-size:10px;padding:4px 6px" onchange="updateClaimProgram(\''+c.id+'\',this.value)">'+progOptions+'</select></td><td>'+(c.payer||'-')+'</td><td>'+(c.billed?'$'+c.billed.toFixed(2):'-')+'</td><td>'+(c.paid?'$'+c.paid.toFixed(2):'-')+'</td><td>'+statusPill+'</td><td><span class="ta" onclick="AI(\'Analyze claim '+(c.claimId||'')+' for '+(c.patient||'')+'\')">Analyze</span></td>';
       tbody.appendChild(tr);
     });
   }catch(e){console.warn('Claims table live load failed',e);}
+}
+
+async function updateClaimProgram(id, program){
+  try{
+    const res=await fetch('/.netlify/functions/notion-claims',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:id, program:program})
+    });
+    if(!res.ok){
+      const json=await res.json();
+      alert('Failed to update program: '+(json.error||'Unknown error'));
+    }
+  }catch(e){
+    alert('Failed to update program: '+e.message);
+  }
 }
 
 async function loadPaymentsSection(){
