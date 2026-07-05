@@ -1,4 +1,4 @@
-         // Netlify Function: stedi-eligibility.js
+// Netlify Function: stedi-eligibility.js
 // Hits Stedi 270/271 API for real-time insurance eligibility verification
 // Environment variables needed in Netlify:
 //   STEDI_API_KEY = your Stedi API key
@@ -36,29 +36,34 @@ exports.handler = async (event) => {
   try {
     // POST - run eligibility check
     if (event.httpMethod === "POST") {
-      const { patient, dob, memberId, payer, tradingPartnerId } = JSON.parse(event.body);
+      const { patient, dob, memberId, payer, tradingPartnerId, billingEntity } = JSON.parse(event.body);
+
+      const BILLING_ENTITIES = {
+        bhw: { organizationName: "BALTIMORE HEALTHCARE AND WELLNESS LLC", npi: "1306511597", taxId: "872107587" },
+        amaris: { organizationName: "AMARIS P MURRAY", npi: "1841844222", taxId: "853802386" },
+        addiction: { organizationName: "BHW ADDICTION MANAGEMENT", npi: "1114626363", taxId: "932227140" },
+      };
+      const providerInfo = BILLING_ENTITIES[billingEntity] || BILLING_ENTITIES.bhw;
 
       // Build Stedi 270 eligibility request
       const stediPayload = {
         controlNumber: Math.floor(Math.random() * 999999999).toString().padStart(9, "0"),
         tradingPartnerServiceId: tradingPartnerId || payer,
         provider: {
-          organizationName: "BHW Medical Group",
-          npi: "1841844222",
-          taxId: process.env.BHW_TAX_ID || "",
+          organizationName: providerInfo.organizationName,
+          npi: providerInfo.npi,
+          taxId: providerInfo.taxId,
         },
         subscriber: {
-          firstName: patient.split(" ")[0] || "",
-          lastName: patient.split(" ").slice(1).join(" ") || "",
+          firstName: parseFirstName(patient),
+          lastName: parseLastName(patient),
           dateOfBirth: dob ? dob.replace(/-/g, "") : "",
           memberId: memberId || "",
           groupNumber: "",
         },
         encounter: {
           serviceTypeCodes: ["30"],
-          dateRange: {
-            start: new Date().toISOString().split("T")[0].replace(/-/g, ""),
-          },
+          dateOfService: new Date().toISOString().split("T")[0].replace(/-/g, ""),
         },
       };
 
@@ -201,6 +206,26 @@ exports.handler = async (event) => {
     };
   }
 };
+
+// BHW's convention is "Last, First" (e.g. "STOKES, RUBY") throughout Notion and paper records.
+// Also handle plain "First Last" as a fallback in case someone types it that way.
+function parseLastName(patient) {
+  if (!patient) return "";
+  if (patient.includes(",")) {
+    return patient.split(",")[0].trim();
+  }
+  const parts = patient.trim().split(" ");
+  return parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
+}
+
+function parseFirstName(patient) {
+  if (!patient) return "";
+  if (patient.includes(",")) {
+    return patient.split(",").slice(1).join(",").trim();
+  }
+  const parts = patient.trim().split(" ");
+  return parts[0];
+}
 
 function extractBenefit(data, type) {
   try {
