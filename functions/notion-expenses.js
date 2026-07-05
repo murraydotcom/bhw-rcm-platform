@@ -14,7 +14,7 @@ exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
     "Content-Type": "application/json",
   };
 
@@ -164,6 +164,55 @@ exports.handler = async (event) => {
         headers,
         body: JSON.stringify({ success: true, id: data.id }),
       };
+    }
+
+    // PATCH - update Program and/or Category on an existing expense (inline dropdown edit)
+    if (event.httpMethod === "PATCH") {
+      const { id, program, category } = JSON.parse(event.body);
+      if (!id) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing expense id" }) };
+      }
+
+      const properties = {};
+      if (program !== undefined) {
+        properties["Program"] = { rich_text: [{ text: { content: program || "" } }] };
+      }
+      if (category !== undefined) {
+        properties["Category"] = { select: { name: category || "Other" } };
+      }
+
+      let patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ properties }),
+      });
+
+      let patchData = await patchResponse.json();
+
+      // If Category is actually a rich_text field in this database, select will fail - retry as text
+      if (!patchResponse.ok && category !== undefined) {
+        properties["Category"] = { rich_text: [{ text: { content: category || "" } }] };
+        patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ properties }),
+        });
+        patchData = await patchResponse.json();
+      }
+
+      if (!patchResponse.ok) {
+        return { statusCode: patchResponse.status, headers, body: JSON.stringify({ error: patchData.message || "Failed to update expense" }) };
+      }
+
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, id: patchData.id }) };
     }
 
     return {
