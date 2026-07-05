@@ -152,6 +152,20 @@ body.light .up{color:#1a7a1a}
 body.light .dn2{color:#c0392b}
 body.light .wn2{color:#b07000}
 
+
+.ai-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center}
+.ai-modal-overlay.on{display:flex}
+.ai-modal{background:var(--s1,#162433);border:0.5px solid var(--bd,rgba(255,255,255,0.1));border-radius:14px;padding:22px;max-width:560px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.ai-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ai-modal-title{font-size:13px;font-weight:600;color:var(--sg,#5FA9A6);display:flex;align-items:center;gap:8px}
+.ai-modal-close{cursor:pointer;color:var(--t3,#6B7A8A);font-size:18px;line-height:1;background:none;border:none;padding:4px}
+.ai-modal-close:hover{color:var(--t1,#DCE3EA)}
+.ai-modal-prompt{font-size:11px;color:var(--t3,#6B7A8A);font-style:italic;margin-bottom:14px;padding-bottom:12px;border-bottom:0.5px solid var(--bd,rgba(255,255,255,0.08))}
+.ai-modal-body{font-size:13px;color:var(--t1,#DCE3EA);line-height:1.65;white-space:pre-wrap}
+.ai-modal-loading{display:flex;align-items:center;gap:10px;color:var(--t2,#A8B5C2);font-size:12px}
+.ai-spinner{width:16px;height:16px;border:2px solid var(--bd,rgba(255,255,255,0.15));border-top-color:var(--sg,#5FA9A6);border-radius:50%;animation:ai-spin 0.8s linear infinite}
+@keyframes ai-spin{to{transform:rotate(360deg)}}
+
 </style>
 </head>
 <body>
@@ -202,6 +216,9 @@ body.light .wn2{color:#b07000}
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button class="btn btn-sm" id="rcm-range-month" onclick="setRCMRange('month')" style="border-color:var(--sg)">This Month</button>
       <button class="btn btn-sm" id="rcm-range-last30" onclick="setRCMRange('last30')">Last 30 Days</button>
+      <button class="btn btn-sm" id="rcm-range-quarter" onclick="setRCMRange('quarter')">This Quarter</button>
+      <button class="btn btn-sm" id="rcm-range-year" onclick="setRCMRange('year')">This Year</button>
+      <button class="btn btn-sm" id="rcm-range-all" onclick="setRCMRange('all')">All Time</button>
     </div>
     <div class="kpis">
       <div class="kpi"><div class="kpi-l">Charges MTD</div><div class="kpi-v" id="kpi-charges">$94,210</div><div class="kpi-d up" id="kpi-charges-d">&#8593; 12% vs last month</div></div>
@@ -509,7 +526,7 @@ function go(id,el){
   document.getElementById('pg-title').textContent=PAGES[id]||id;
 }
 function stab(el){el.closest('.tabs').querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});el.classList.add('on');}
-function AI(p){if(typeof sendPrompt==='function')sendPrompt(p);else alert('AI: '+p);}
+function AI(p){if(typeof sendPrompt==='function')sendPrompt(p);else askClaudeAPI(p);}
 window.addEventListener('load',function(){
   new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['Paid','Pending','Denied','Billed'],datasets:[{data:[61,22,7,10],backgroundColor:['#0ca30c','#fab219','#d03b3b','#73726c'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'70%'}});
   new Chart(document.getElementById('c2'),{type:'bar',data:{labels:['BCBS','Medicare','Medicaid','Aetna','United','Other'],datasets:[{label:'Collected',data:[18400,14200,9800,11300,5200,2530],backgroundColor:'#5FA9A6',borderRadius:4,borderWidth:0},{label:'Billed',data:[24000,18000,15000,16000,8000,4000],backgroundColor:'rgba(95,169,166,0.18)',borderRadius:4,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.07)'},ticks:{font:{size:9},color:'#888',callback:function(v){return '$'+Math.round(v/1000)+'k'}}}}}});
@@ -551,10 +568,10 @@ let RCM_RANGE = 'month';
 
 function setRCMRange(range){
   RCM_RANGE = range;
-  const monthBtn=document.getElementById('rcm-range-month');
-  const last30Btn=document.getElementById('rcm-range-last30');
-  if(monthBtn) monthBtn.style.borderColor = range==='month' ? 'var(--sg)' : '';
-  if(last30Btn) last30Btn.style.borderColor = range==='last30' ? 'var(--sg)' : '';
+  ['month','last30','quarter','year','all'].forEach(function(r){
+    const btn=document.getElementById('rcm-range-'+r);
+    if(btn) btn.style.borderColor = (r===range) ? 'var(--sg)' : '';
+  });
   loadDashboardKPIs();
 }
 
@@ -674,5 +691,52 @@ window.addEventListener('load', function(){
 });
 </script>
 
+
+<div class="ai-modal-overlay" id="ai-modal-overlay" onclick="if(event.target===this)closeAIModal()">
+  <div class="ai-modal">
+    <div class="ai-modal-header">
+      <div class="ai-modal-title"><i class="ti ti-sparkles"></i> AI Analysis</div>
+      <button class="ai-modal-close" onclick="closeAIModal()">&times;</button>
+    </div>
+    <div class="ai-modal-prompt" id="ai-modal-prompt"></div>
+    <div class="ai-modal-body" id="ai-modal-body"></div>
+  </div>
+</div>
+
+<script>
+function openAIModal(prompt){
+  const overlay=document.getElementById('ai-modal-overlay');
+  const promptEl=document.getElementById('ai-modal-prompt');
+  const bodyEl=document.getElementById('ai-modal-body');
+  if(!overlay) return;
+  promptEl.textContent = prompt;
+  bodyEl.innerHTML = '<div class="ai-modal-loading"><div class="ai-spinner"></div>Thinking...</div>';
+  overlay.classList.add('on');
+}
+function closeAIModal(){
+  const overlay=document.getElementById('ai-modal-overlay');
+  if(overlay) overlay.classList.remove('on');
+}
+async function askClaudeAPI(prompt){
+  openAIModal(prompt);
+  try{
+    const res=await fetch('/.netlify/functions/ask-claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:prompt})
+    });
+    const json=await res.json();
+    const bodyEl=document.getElementById('ai-modal-body');
+    if(!res.ok){
+      bodyEl.innerHTML='<span style="color:#d03b3b">Error: '+(json.error||'Something went wrong')+'</span>';
+      return;
+    }
+    bodyEl.textContent = json.response || 'No response received.';
+  }catch(e){
+    const bodyEl=document.getElementById('ai-modal-body');
+    bodyEl.innerHTML='<span style="color:#d03b3b">Connection error: '+e.message+'</span>';
+  }
+}
+</script>
 </body>
 </html>
