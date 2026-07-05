@@ -1,3 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHW Medical Group — RCM Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ob:#0F141A;--nv:#162433;--br:#8C5A3C;--sg:#5FA9A6;--op:#DCE3EA;
+  --pr:#80abbd;--ea:#b07a55;--sa:#a8b59a;--tp:#6B665E;
+  --dn:#d03b3b;--wn:#fab219;--ok:#0ca30c;
+  --s0:#0F141A;--s1:#162433;--s2:#1e2e40;--s3:#243448;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);
+  --t1:#DCE3EA;--t2:#A8B5C2;--t3:#6B7A8A;
+}
+body{font-family:'Montserrat',sans-serif;background:var(--s0);color:var(--t1);font-size:13px;line-height:1.5}
+.app{display:flex;min-height:100vh}
+.side{width:220px;background:var(--ob);border-right:0.5px solid var(--bd);flex-shrink:0;position:fixed;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.logo{padding:18px 14px 12px;border-bottom:0.5px solid var(--bd)}
+.logo-n{font-size:12px;font-weight:700;color:var(--op);letter-spacing:0.5px}
+.logo-s{font-size:9px;color:var(--tp);text-transform:uppercase;letter-spacing:1.2px;margin-top:3px}
+.ns{padding:6px 0}
+.nl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--tp);padding:8px 14px 3px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;color:rgba(168,181,194,0.6);font-size:11px;border-left:2px solid transparent;transition:all 0.12s}
+.ni:hover{color:var(--op);background:rgba(255,255,255,0.03)}
+.ni.on{color:var(--sg);background:rgba(95,169,166,0.08);border-left-color:var(--sg);font-weight:500}
+.ni i{font-size:15px;flex-shrink:0}
+.notif{width:6px;height:6px;border-radius:50%;background:var(--dn);margin-left:auto;flex-shrink:0}
+.sfoot{margin-top:auto;padding:12px 14px;border-top:0.5px solid var(--bd)}
+.link-btn{display:flex;align-items:center;gap:7px;background:rgba(95,169,166,0.1);border:0.5px solid rgba(95,169,166,0.2);border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--sg);font-size:11px;font-weight:500;font-family:'Montserrat',sans-serif;width:100%;margin-bottom:8px}
+.link-btn:hover{background:rgba(95,169,166,0.18)}
+.main{flex:1;margin-left:220px;display:flex;flex-direction:column}
+.topbar{background:var(--s1);border-bottom:0.5px solid var(--bd);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.pg-title{font-size:15px;font-weight:500;color:var(--op)}
+.tb-r{display:flex;align-items:center;gap:8px}
+.live{background:rgba(95,169,166,0.12);border:0.5px solid rgba(95,169,166,0.25);color:var(--sg);border-radius:4px;font-size:9px;font-weight:600;padding:3px 8px;letter-spacing:0.8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--bd2);background:var(--s2);color:var(--t1);font-family:'Montserrat',sans-serif;transition:all 0.12s}
+.btn:hover{background:var(--s3)}.btnt{background:var(--sg);color:var(--ob);border-color:var(--sg);font-weight:600}.btnt:hover{opacity:0.88}.btn-sm{padding:5px 10px;font-size:10px}
+.body{padding:20px 22px}
+.sec{display:none}.sec.on{display:block}
+.card{background:var(--s1);border:0.5px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.ct{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--s1);border:0.5px solid var(--bd);border-radius:10px;padding:13px}
+.kpi-l{font-size:9px;text-transform:uppercase;letter-spacing:0.9px;color:var(--t3);margin-bottom:5px}
+.kpi-v{font-size:21px;font-weight:600;color:var(--op)}.kpi-d{font-size:10px;margin-top:3px}
+.up{color:var(--ok)}.dn2{color:var(--dn)}.wn2{color:var(--wn)}
+.pill{display:inline-flex;align-items:center;border-radius:3px;font-size:9px;padding:2px 7px;font-weight:600}
+.pg{background:rgba(12,163,12,0.15);color:var(--ok)}.pr2{background:rgba(208,59,59,0.15);color:var(--dn)}
+.py{background:rgba(250,178,25,0.15);color:var(--wn)}.pt{background:rgba(95,169,166,0.15);color:var(--sg)}
+.pb{background:rgba(128,171,189,0.15);color:var(--pr)}
+table{width:100%;border-collapse:collapse}
+th{font-size:9px;text-transform:uppercase;letter-spacing:0.9px;color:var(--t3);text-align:left;padding:0 8px 8px 0;font-weight:500;border-bottom:0.5px solid var(--bd);white-space:nowrap}
+td{padding:8px 8px 8px 0;font-size:11px;color:var(--op);border-bottom:0.5px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.015)}
+.ta{color:var(--sg);cursor:pointer;font-size:10px;font-weight:500;white-space:nowrap}
+.code{font-family:'Courier New',monospace;font-size:11px;font-weight:600;color:var(--sg)}
+.drow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--bd)}
+.drow:last-child{border-bottom:none}
+.dc{font-size:10px;font-weight:600;background:rgba(208,59,59,0.15);color:var(--dn);border-radius:4px;padding:2px 7px;min-width:50px;text-align:center}
+.fix{font-size:9px;background:rgba(95,169,166,0.1);color:var(--sg);border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap}
+.ai{display:inline-flex;align-items:center;gap:5px;font-size:10px;background:rgba(95,169,166,0.1);color:var(--sg);border:0.5px solid rgba(95,169,166,0.2);border-radius:4px;padding:4px 9px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:500;margin-top:8px}
+.ai:hover{background:rgba(95,169,166,0.18)}
+.pbar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:4px}
+.pbf{height:100%;border-radius:2px}
+.rr{padding:10px 12px;border-radius:6px;margin-bottom:6px}
+.rr-m{background:rgba(12,163,12,0.05);border-left:2px solid var(--ok)}
+.rr-p{background:rgba(250,178,25,0.05);border-left:2px solid var(--wn)}
+.rr-g{background:rgba(208,59,59,0.05);border-left:2px solid var(--dn)}
+.ins-card{background:rgba(95,169,166,0.06);border:0.5px solid rgba(95,169,166,0.18);border-radius:10px;padding:12px;margin-bottom:10px}
+.tabs{display:flex;border-bottom:0.5px solid var(--bd);margin-bottom:14px}
+.tab{padding:8px 13px;font-size:11px;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent}
+.tab:hover{color:var(--t2)}.tab.on{color:var(--sg);border-bottom-color:var(--sg);font-weight:600}
+.divider{height:0.5px;background:var(--bd);margin:13px 0}
+.ss{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;background:var(--s2);border:0.5px solid var(--bd);border-radius:10px;padding:13px;margin-bottom:15px}
+.upload-z{border:1.5px dashed var(--bd2);border-radius:10px;padding:26px;text-align:center;cursor:pointer}
+.upload-z:hover{border-color:var(--sg)}
+.phase{margin-bottom:22px}
+.ph-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ph-line{flex:1;height:0.5px;background:var(--bd)}
+.step{display:flex;gap:12px;margin-bottom:9px}
+.step-ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-ico i{font-size:14px}
+.step-body{flex:1;background:var(--s2);border:0.5px solid var(--bd);border-radius:10px;padding:11px 13px}
+.step-t{font-size:12px;font-weight:500;margin-bottom:3px}
+.step-d{font-size:11px;color:var(--t2);line-height:1.55}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+body.light {
+  background:#F7F5F2 !important;
+  --s0:#F7F5F2;--s1:#FFFFFF;--s2:#EDE9E3;--s3:#E0DAD2;
+  --bd:rgba(0,0,0,0.09);--bd2:rgba(0,0,0,0.15);
+  --t1:#0F141A;--t2:#2A3038;--t3:#6B665E;--op:#2A3038;
+  --sg:#5FA9A6;--ok:#1a7a1a;--dn:#c0392b;--wn:#8B6914;
+}
+body.light .side{background:#F7F5F2 !important;border-right:0.5px solid rgba(0,0,0,0.1)}
+body.light .logo{border-bottom:0.5px solid rgba(0,0,0,0.1)} body.light .main{background:#F7F5F2 !important}
+body.light .logo-n{color:#0F141A}
+body.light .logo-s{color:#6B665E}
+body.light .ni{color:rgba(42,48,56,0.5)}
+body.light .ni:hover{color:#0F141A;background:rgba(0,0,0,0.03)}
+body.light .ni.on{color:#5FA9A6;background:rgba(95,169,166,0.1);border-left-color:#5FA9A6}
+body.light .sfoot{border-top:0.5px solid rgba(0,0,0,0.08)}
+body.light .topbar{background:#F7F5F2 !important;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+body.light .pg-title{color:#0F141A}
+body.light .btn{background:#FFFFFF;border-color:rgba(0,0,0,0.12);color:#0F141A}
+body.light .btn:hover{background:#EDE9E3}
+body.light .btnt{background:#5FA9A6;color:#2A3038;border-color:#5FA9A6}
+body.light .btnt:hover{opacity:0.88}
+body.light .card{background:#FFFFFF;border-color:rgba(0,0,0,0.08)}
+body.light .kpi{background:#FFFFFF;border-color:rgba(0,0,0,0.08)}
+body.light .kpi-v{color:#0F141A}
+body.light .kpi-l{color:#6B665E}
+body.light .ct{color:#2A3038}
+body.light table th{color:#6B665E;border-bottom-color:rgba(0,0,0,0.08)}
+body.light table td{color:#0F141A;border-bottom-color:rgba(0,0,0,0.06)}
+body.light table tr:hover td{background:rgba(0,0,0,0.02)}
+body.light .code{color:#5FA9A6}
+body.light .drow{border-bottom-color:rgba(0,0,0,0.06)}
+body.light .dc{background:rgba(208,59,59,0.1)}
+body.light .rr-m{background:rgba(12,163,12,0.04);border-left-color:var(--ok)}
+body.light .rr-p{background:rgba(176,112,0,0.06);border-left-color:var(--wn)}
+body.light .rr-g{background:rgba(208,59,59,0.05);border-left-color:var(--dn)}
+body.light .ins-card{background:rgba(95,169,166,0.06);border-color:rgba(95,169,166,0.2)}
+body.light .tabs{border-bottom-color:rgba(0,0,0,0.08)}
+body.light .tab{color:#6B665E}
+body.light .tab.on{color:#5FA9A6;border-bottom-color:#5FA9A6}
+body.light .ss{background:#EDE9E3;border-color:rgba(0,0,0,0.08)}
+body.light .upload-z{border-color:rgba(0,0,0,0.15)}
+body.light .upload-z:hover{border-color:#5FA9A6;background:rgba(95,169,166,0.04)}
+body.light .pbar{background:rgba(0,0,0,0.06)}
+body.light .step-body{background:#EDE9E3;border-color:rgba(0,0,0,0.08)}
+body.light .step-d{color:#2A3038}
+body.light .ph-line{background:rgba(0,0,0,0.1)}
+body.light .divider{background:rgba(0,0,0,0.08)}
+body.light .link-btn{background:rgba(95,169,166,0.1);border-color:rgba(95,169,166,0.25)}
+body.light .wk-chip{background:rgba(95,169,166,0.08);border-color:rgba(95,169,166,0.2)}
+body.light .live{background:rgba(95,169,166,0.1);border-color:rgba(95,169,166,0.25)}
+body.light input,.body.light select{background:#EDE9E3;border-color:rgba(0,0,0,0.12);color:#0F141A}
+body.light .ai{background:rgba(95,169,166,0.1);border-color:rgba(95,169,166,0.2);color:#3d8a87}
+body.light .ai:hover{background:rgba(95,169,166,0.18)}
+body.light .fix{background:rgba(95,169,166,0.1);color:#3d8a87}
+body.light .ta{color:#3d8a87}
+body.light .up{color:#1a7a1a}
+body.light .dn2{color:#c0392b}
+body.light .wn2{color:#b07000}
+
+
+.ai-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center}
+.ai-modal-overlay.on{display:flex}
+.ai-modal{background:var(--s1,#162433);border:0.5px solid var(--bd,rgba(255,255,255,0.1));border-radius:14px;padding:22px;max-width:560px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.ai-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ai-modal-title{font-size:13px;font-weight:600;color:var(--sg,#5FA9A6);display:flex;align-items:center;gap:8px}
+.ai-modal-close{cursor:pointer;color:var(--t3,#6B7A8A);font-size:18px;line-height:1;background:none;border:none;padding:4px}
+.ai-modal-close:hover{color:var(--t1,#DCE3EA)}
+.ai-modal-prompt{font-size:11px;color:var(--t3,#6B7A8A);font-style:italic;margin-bottom:14px;padding-bottom:12px;border-bottom:0.5px solid var(--bd,rgba(255,255,255,0.08))}
+.ai-modal-body{font-size:13px;color:var(--t1,#DCE3EA);line-height:1.65;white-space:pre-wrap}
+.ai-modal-loading{display:flex;align-items:center;gap:10px;color:var(--t2,#A8B5C2);font-size:12px}
+.ai-spinner{width:16px;height:16px;border:2px solid var(--bd,rgba(255,255,255,0.15));border-top-color:var(--sg,#5FA9A6);border-radius:50%;animation:ai-spin 0.8s linear infinite}
+@keyframes ai-spin{to{transform:rotate(360deg)}}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="side">
+  <div class="logo">
+    <div class="logo-n">BHW Medical Group</div>
+    <div class="logo-s">RCM Dashboard</div>
+  </div>
+  <div class="ns">
+    <div class="nl">Revenue Cycle</div>
+    <div class="ni on" onclick="go('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+    <div class="ni" onclick="go('charges',this)"><i class="ti ti-file-invoice"></i>Charges & Claims</div>
+    <div class="ni" onclick="go('payments',this)"><i class="ti ti-credit-card"></i>Payments</div>
+    <div class="ni" onclick="go('denials',this)"><i class="ti ti-alert-circle"></i>Denials<span class="notif"></span></div>
+    <div class="ni" onclick="go('recon',this)"><i class="ti ti-arrows-exchange"></i>Reconciliation</div>
+  </div>
+  <div class="ns">
+    <div class="nl">Tools</div>
+    <div class="ni" onclick="go('chargemaster',this)"><i class="ti ti-table"></i>Charge Master</div>
+    <div class="ni" onclick="go('verify',this)"><i class="ti ti-shield-check"></i>Insurance Verify</div>
+    <div class="ni" onclick="go('contracts',this)"><i class="ti ti-file-text"></i>Contracts</div>
+    <div class="ni" onclick="go('recovery',this)"><i class="ti ti-clock"></i>Payment Recovery</div>
+    <div class="ni" onclick="go('insights',this)"><i class="ti ti-bulb"></i>AI Insights</div>
+    <div class="ni" onclick="go('weekly',this)"><i class="ti ti-report"></i>Weekly Summary</div>
+  </div>
+  <div class="sfoot">
+    <button class="link-btn" onclick="window.location.href='bhw_billing_tracker.html'"><i class="ti ti-arrows-exchange"></i>Open Billing Tracker</button>
+    <div style="font-size:9px;color:var(--t3);margin-top:6px">BHW Revenue Cycle Platform v1.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="pg-title" id="pg-title">Dashboard</div>
+    <div class="tb-r">
+      <span class="live">&#9679; LIVE</span>
+      <button class="btn" onclick="AI('Full RCM performance analysis for BHW Medical Group — where am I leaving money on the table and what should I focus on this week?')">Ask AI</button>
+      <button class="btn btnt" onclick="AI('Generate this weeks RCM summary for BHW Medical Group — total billed by program, denial breakdown, payment reconciliation, and next week action plan')"><i class="ti ti-report"></i>Week Report</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+  <!-- DASHBOARD -->
+  <div class="sec on" id="s-dashboard">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-sm" id="rcm-range-month" onclick="setRCMRange('month')" style="border-color:var(--sg)">This Month</button>
+      <button class="btn btn-sm" id="rcm-range-last30" onclick="setRCMRange('last30')">Last 30 Days</button>
+      <button class="btn btn-sm" id="rcm-range-quarter" onclick="setRCMRange('quarter')">This Quarter</button>
+      <button class="btn btn-sm" id="rcm-range-year" onclick="setRCMRange('year')">This Year</button>
+      <button class="btn btn-sm" id="rcm-range-all" onclick="setRCMRange('all')">All Time</button>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-l">Charges MTD</div><div class="kpi-v" id="kpi-charges">$94,210</div><div class="kpi-d up" id="kpi-charges-d">&#8593; 12% vs last month</div></div>
+      <div class="kpi"><div class="kpi-l">Payments MTD</div><div class="kpi-v" id="kpi-payments">$61,430</div><div class="kpi-d up" id="kpi-payments-d">&#8593; 8% vs last month</div></div>
+      <div class="kpi"><div class="kpi-l">Denial Rate</div><div class="kpi-v" id="kpi-denial-rate">7.4%</div><div class="kpi-d wn2" id="kpi-denial-rate-d">&#8593; 1.2% review</div></div>
+      <div class="kpi"><div class="kpi-l">A/R Days</div><div class="kpi-v">28.6</div><div class="kpi-d up">&#8595; 4.1 days better</div></div>
+      <div class="kpi"><div class="kpi-l">Collection Rate</div><div class="kpi-v" id="kpi-collection-rate">93.2%</div><div class="kpi-d up" id="kpi-collection-rate-d">&#8593; vs 88% benchmark</div></div>
+      <div class="kpi"><div class="kpi-l">Clean Claim Rate</div><div class="kpi-v">89.1%</div><div class="kpi-d wn2">Target: 95%</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><span class="ct">Claims status MTD</span></div>
+        <div style="position:relative;height:140px"><canvas id="c1"></canvas></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <span style="font-size:10px;color:var(--t2);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;border-radius:2px;background:#0ca30c;display:inline-block"></span>Paid 61%</span>
+          <span style="font-size:10px;color:var(--t2);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;border-radius:2px;background:#fab219;display:inline-block"></span>Pending 22%</span>
+          <span style="font-size:10px;color:var(--t2);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;border-radius:2px;background:#d03b3b;display:inline-block"></span>Denied 7%</span>
+          <span style="font-size:10px;color:var(--t2);display:flex;align-items:center;gap:3px"><span style="width:7px;height:7px;border-radius:2px;background:#73726c;display:inline-block"></span>Billed 10%</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Top denial codes</span><button class="btn btn-sm" onclick="go('denials',document.querySelector('[onclick*=denials]'))">Manage</button></div>
+        <div class="drow"><span class="dc">CO-4</span><span style="flex:1;font-size:11px">Modifier inconsistency</span><span style="font-size:11px;font-weight:500;color:var(--t2)">34%</span><button class="fix" onclick="AI('How do I fix CO-4 modifier denials in primary care? Which modifiers and which payers are the problem?')">Fix</button></div>
+        <div class="drow"><span class="dc">CO-97</span><span style="flex:1;font-size:11px">Included in allowance</span><span style="font-size:11px;font-weight:500;color:var(--t2)">21%</span><button class="fix" onclick="AI('CO-97 bundling denials — what CPT pairs are bundled and when can I use modifier 59?')">Fix</button></div>
+        <div class="drow"><span class="dc">PR-204</span><span style="flex:1;font-size:11px">Not covered</span><span style="font-size:11px;font-weight:500;color:var(--t2)">18%</span><button class="fix" onclick="AI('PR-204 denials — how do I verify benefits before the visit and what is the ABN process?')">Fix</button></div>
+        <div class="drow"><span class="dc">CO-50</span><span style="flex:1;font-size:11px">Not medically necessary</span><span style="font-size:11px;font-weight:500;color:var(--t2)">15%</span><button class="fix" onclick="AI('CO-50 medical necessity denials — what documentation prevents these and how do I write the appeal?')">Fix</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Revenue by payer MTD</span></div>
+      <div style="position:relative;height:160px"><canvas id="c2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">AI revenue opportunities</span><button class="btn btn-sm" onclick="go('insights',document.querySelector('[onclick*=insights]'))">All insights</button></div>
+      <div class="g2" style="margin-bottom:0">
+        <div class="ins-card"><div style="font-size:11px;font-weight:500;margin-bottom:3px">Undercoding on 99213</div><div style="font-size:10px;color:var(--t2);line-height:1.5">14 visits may qualify for 99214 based on MDM. Potential uplift: +$420.</div><button class="ai" onclick="AI('Help me audit my 99213 visits to find which qualify for 99214')">Audit visits</button></div>
+        <div class="ins-card"><div style="font-size:11px;font-weight:500;margin-bottom:3px">AWV billing gap</div><div style="font-size:10px;color:var(--t2);line-height:1.5">8 Medicare patients AWV-eligible. Uncaptured revenue: ~$840.</div><button class="ai" onclick="AI('AWV workflow for BHW — eligible patients, what the visit must include, and all add-on codes I can stack')">Build workflow</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARGES -->
+  <div class="sec" id="s-charges">
+    <div class="tabs"><div class="tab on" onclick="stab(this)">All Claims</div><div class="tab" onclick="stab(this)">Pending</div><div class="tab" onclick="stab(this)">Denied</div><div class="tab" onclick="stab(this)">In Appeal</div></div>
+    <div class="card"><div style="overflow-x:auto"><table>
+      <thead><tr><th>Claim ID</th><th>Patient</th><th>DOS</th><th>CPT</th><th>Program</th><th>Payer</th><th>Billed</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="rcm-claims-tbody">
+        <tr><td class="code">CLM-1047</td><td>T. Johnson</td><td>06/28</td><td>99214</td><td>Murray</td><td>BCBS</td><td>$180</td><td>$142</td><td><span class="pill pg">Paid</span></td><td><span class="ta" onclick="AI('CLM-1047 99214 BCBS Maryland - was reimbursement correct and can I appeal the difference?')">Analyze</span></td></tr>
+        <tr><td class="code">CLM-1048</td><td>R. Brown</td><td>06/28</td><td>99215, G2211</td><td>Murray</td><td>Medicaid</td><td>$254</td><td>-</td><td><span class="pill py">Pending</span></td><td><span class="ta" onclick="AI('Maryland Medicaid expected reimbursement for 99215 plus G2211 — when do I follow up?')">Track</span></td></tr>
+        <tr><td class="code">CLM-1049</td><td>D. Williams</td><td>06/27</td><td>99484</td><td>Murray</td><td>MCO</td><td>$99</td><td>$0</td><td><span class="pill pr2">CO-50 Denied</span></td><td><span class="ta" onclick="AI('99484 BHI denial CO-50 from MCO — full Maryland Medicaid appeal strategy')">Appeal</span></td></tr>
+        <tr><td class="code">CLM-1058</td><td>M. Johnson</td><td>07/01</td><td>99214, G2211</td><td>Murray</td><td>Medicare</td><td>$164</td><td>-</td><td><span class="pill py">Submitted</span></td><td><span class="ta" onclick="AI('CLM-1058 99214 plus G2211 to Medicare. Was G2211 applied correctly?')">Check</span></td></tr>
+        <tr><td class="code">CLM-1059</td><td>T. Williams</td><td>07/01</td><td>99213</td><td>Matias</td><td>BCBS</td><td>$155</td><td>-</td><td><span class="pill py">Cred risk</span></td><td><span class="ta" onclick="AI('Yahaira submitted 99213 to BCBS — credentialing status and what happens if claim processes before it clears?')">Check</span></td></tr>
+        <tr><td class="code">CLM-1060</td><td>R. Davis</td><td>06/30</td><td>G0558</td><td>Murray</td><td>Medicare</td><td>$110</td><td>$88</td><td><span class="pill pg">Paid</span></td><td><span class="ta" onclick="AI('G0558 APCM paid — should I bill G0559 add-on for additional time?')">Optimize</span></td></tr>
+      </tbody>
+    </table></div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btnt" onclick="AI('Analyze my claims patterns — which CPT codes have the lowest reimbursement rates and how can I improve revenue per visit?')">Export and Analyze</button>
+    </div></div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div class="sec" id="s-payments">
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-l">Expected</div><div class="kpi-v" id="kpi-expected">$68,400</div></div>
+      <div class="kpi"><div class="kpi-l">Received</div><div class="kpi-v" id="kpi-received">$61,430</div></div>
+      <div class="kpi"><div class="kpi-l">Variance</div><div class="kpi-v dn2" id="kpi-variance">$6,970</div></div>
+      <div class="kpi"><div class="kpi-l">Patient Balance</div><div class="kpi-v">$9,210</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">EOB / ERA log</span></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Date</th><th>Payer</th><th>ERA/EOB</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Adj</th><th>Action</th></tr></thead>
+        <tbody id="rcm-payments-tbody">
+          <tr><td>06/28</td><td>BCBS</td><td>ERA-8841</td><td>$3,420</td><td>$2,890</td><td>$2,104</td><td>CO-45</td><td><span class="ta" onclick="AI('CO-45 adjustment on BCBS ERA — contractual adjustment vs actual payment and how I reconcile this')">Explain</span></td></tr>
+          <tr><td>06/27</td><td>Medicare</td><td>ERA-8837</td><td>$1,980</td><td>$1,760</td><td>$1,408</td><td>CO-45, PR-2</td><td><span class="ta" onclick="AI('Medicare ERA CO-45 and PR-2 — is PR-2 correct for deductible and how do I bill the patient?')">Explain</span></td></tr>
+          <tr><td>06/26</td><td>Medicaid MCO</td><td>EOB-439</td><td>$2,100</td><td>$0</td><td>$0</td><td>EOB-439/323</td><td><span class="ta" onclick="AI('EOB 439/323 denial from Maryland Medicaid MCO for BHI 99484 — full appeal strategy')">Appeal</span></td></tr>
+          <tr><td>06/25</td><td>Aetna</td><td>ERA-8819</td><td>$4,700</td><td>$3,950</td><td>$3,162</td><td>CO-45</td><td><span class="ta" onclick="AI('Aetna payment analysis — effective collection rate vs contracted rate')">Analyze</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Patient balance aging</span></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        <div><div style="font-size:9px;color:var(--t3);margin-bottom:3px">0-30 days</div><div style="font-size:14px;font-weight:600">$3,110</div><div class="pbar"><div class="pbf" style="width:34%;background:var(--sg)"></div></div></div>
+        <div><div style="font-size:9px;color:var(--t3);margin-bottom:3px">31-60 days</div><div style="font-size:14px;font-weight:600">$2,840</div><div class="pbar"><div class="pbf" style="width:31%;background:var(--wn)"></div></div></div>
+        <div><div style="font-size:9px;color:var(--t3);margin-bottom:3px">61-90 days</div><div style="font-size:14px;font-weight:600">$1,920</div><div class="pbar"><div class="pbf" style="width:21%;background:#ec835a"></div></div></div>
+        <div><div style="font-size:9px;color:var(--t3);margin-bottom:3px">91-120 days</div><div style="font-size:14px;font-weight:600">$840</div><div class="pbar"><div class="pbf" style="width:9%;background:var(--dn)"></div></div></div>
+        <div><div style="font-size:9px;color:var(--t3);margin-bottom:3px">120+ days</div><div style="font-size:14px;font-weight:600">$500</div><div class="pbar"><div class="pbf" style="width:5%;background:#791F1F"></div></div></div>
+      </div>
+      <button class="ai" onclick="AI('Patient collections strategy for BHW Medical — call scripts, payment plans, and when to escalate to collections')">Collections strategy</button>
+    </div>
+  </div>
+
+  <!-- DENIALS -->
+  <div class="sec" id="s-denials">
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-l">Total Denied MTD</div><div class="kpi-v" id="kpi-denied-mtd">$6,980</div></div>
+      <div class="kpi"><div class="kpi-l">Appeals Won</div><div class="kpi-v">$2,410</div><div class="kpi-d up">68% win rate</div></div>
+      <div class="kpi"><div class="kpi-l">Pending Appeal</div><div class="kpi-v">$3,120</div></div>
+      <div class="kpi"><div class="kpi-l">Write-offs</div><div class="kpi-v">$1,450</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><span class="ct">Denial breakdown</span></div>
+        <div class="drow"><span class="dc">CO-4</span><div style="flex:1"><div style="font-size:11px">Modifier inconsistent</div><div class="pbar" style="margin-top:4px"><div class="pbf" style="width:34%;background:var(--dn)"></div></div></div><span style="font-size:10px;font-weight:500;margin:0 8px;white-space:nowrap">34% $2,373</span><button class="fix" onclick="AI('Complete action plan to fix CO-4 modifier denials — which modifiers, which payers, staff training')">Fix</button></div>
+        <div class="drow"><span class="dc">CO-97</span><div style="flex:1"><div style="font-size:11px">Included in allowance</div><div class="pbar" style="margin-top:4px"><div class="pbf" style="width:21%;background:#ec835a"></div></div></div><span style="font-size:10px;font-weight:500;margin:0 8px;white-space:nowrap">21% $1,466</span><button class="fix" onclick="AI('CO-97 bundling denials — NCCI edit pairs and unbundling arguments for primary care')">Fix</button></div>
+        <div class="drow"><span class="dc">PR-204</span><div style="flex:1"><div style="font-size:11px">Not covered by payer</div><div class="pbar" style="margin-top:4px"><div class="pbf" style="width:18%;background:var(--wn)"></div></div></div><span style="font-size:10px;font-weight:500;margin:0 8px;white-space:nowrap">18% $1,256</span><button class="fix" onclick="AI('PR-204 denials — integrative primary care services most often not covered and how to prevent or appeal')">Fix</button></div>
+        <div class="drow"><span class="dc">CO-50</span><div style="flex:1"><div style="font-size:11px">Not medically necessary</div><div class="pbar" style="margin-top:4px"><div class="pbf" style="width:15%;background:var(--wn)"></div></div></div><span style="font-size:10px;font-weight:500;margin:0 8px;white-space:nowrap">15% $1,047</span><button class="fix" onclick="AI('CO-50 medical necessity — documentation in every note to prevent and how to write the appeal letter')">Fix</button></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--bd)">
+          <div style="font-size:10px;font-weight:500;color:var(--t2);margin-bottom:6px">Maryland-specific codes</div>
+          <div style="font-size:10px;color:var(--t3);line-height:1.8">EOB 439/323 — Medicaid BHI routing<br>EOB 539 — MCO misrouting<br>EOB 528 — Medicare-primary error</div>
+          <button class="ai" onclick="AI('Explain EOB 439, 323, 539, and 528 Maryland Medicaid denial codes — exact cause and fix for each')">Decode MD denials</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Appeals tracker</span></div>
+        <table><thead><tr><th>Claim</th><th>Code</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody id="rcm-denials-tbody">
+          <tr><td>CLM-1049</td><td>CO-50</td><td>$99</td><td><span class="pill py">Submitted</span></td></tr>
+          <tr><td>CLM-1039</td><td>CO-97</td><td>$215</td><td><span class="pill pb">Level 2</span></td></tr>
+          <tr><td>CLM-1031</td><td>CO-4</td><td>$180</td><td><span class="pill pg">Won</span></td></tr>
+          <tr><td>CLM-1028</td><td>PR-204</td><td>$99</td><td><span class="pill pr2">Lost</span></td></tr>
+        </tbody></table>
+        <button class="ai" onclick="AI('Write me an appeal letter template for CO-97 bundling denials for any payer in Maryland primary care')">Draft appeal letter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECONCILIATION -->
+  <div class="sec" id="s-recon">
+    <div class="ss">
+      <div><div style="font-size:16px;font-weight:700">$22,400</div><div style="font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:0.7px">Billed</div></div>
+      <div><div style="font-size:16px;font-weight:700;color:var(--ok)">$15,830</div><div style="font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:0.7px">Received</div></div>
+      <div><div style="font-size:16px;font-weight:700;color:var(--wn)">$1,240</div><div style="font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:0.7px">Unreconciled</div></div>
+      <div><div style="font-size:16px;font-weight:700">$5,330</div><div style="font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:0.7px">Contractual Adj</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Payment reconciliation by payer</span><button class="btn btnt btn-sm" onclick="AI('Generate detailed payment reconciliation for BHW Medical Group — what is owed, paid, and needs follow-up by payer?')">Run recon</button></div>
+      <div class="rr rr-m"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px;font-weight:500">BCBS Maryland</span><span style="font-size:12px;font-weight:600;color:var(--ok)">$5,240 reconciled</span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span style="font-size:10px;color:var(--t3)">Billed <span style="color:var(--t2)">$6,800</span></span><span style="font-size:10px;color:var(--t3)">Paid <span style="color:var(--t2)">$5,240</span></span><span class="pill pg" style="font-size:8px">Balanced</span></div></div>
+      <div class="rr rr-m" style="margin-top:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px;font-weight:500">Medicare Part B</span><span style="font-size:12px;font-weight:600;color:var(--ok)">$4,180 reconciled</span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span style="font-size:10px;color:var(--t3)">Billed <span style="color:var(--t2)">$5,400</span></span><span style="font-size:10px;color:var(--t3)">Paid <span style="color:var(--t2)">$4,180</span></span><span class="pill pg" style="font-size:8px">Balanced</span></div></div>
+      <div class="rr rr-p" style="margin-top:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px;font-weight:500">Maryland Medicaid MCO</span><span style="font-size:12px;font-weight:600;color:var(--wn)">$3,210 received</span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span style="font-size:10px;color:var(--t3)">Billed <span style="color:var(--t2)">$5,100</span></span><span style="font-size:10px;color:var(--t3)">Variance <span style="color:var(--dn)">-$1,240</span></span><span class="pill py" style="font-size:8px">Unreconciled</span></div><button class="ai" onclick="AI('Medicaid MCO reconciliation shows $1,240 unreconciled — most likely causes and how to investigate?')">Investigate</button></div>
+      <div class="rr rr-m" style="margin-top:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px;font-weight:500">Aetna</span><span style="font-size:12px;font-weight:600;color:var(--ok)">$3,200 reconciled</span></div><div style="display:flex;gap:12px;flex-wrap:wrap"><span style="font-size:10px;color:var(--t3)">Billed <span style="color:var(--t2)">$5,100</span></span><span style="font-size:10px;color:var(--t3)">Paid <span style="color:var(--t2)">$3,200</span></span><span class="pill pg" style="font-size:8px">Balanced</span></div></div>
+    </div>
+  </div>
+
+  <!-- CHARGE MASTER -->
+  <div class="sec" id="s-chargemaster">
+    <div class="card">
+      <div class="ch"><span class="ct">BHW charge master</span><button class="btn btn-sm" onclick="AI('Audit my charge master for BHW Medical Group — what CPT codes am I missing that would add revenue?')">Audit</button></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>CPT</th><th>Description</th><th>BHW Fee</th><th>Medicare</th><th>BCBS</th><th>Medicaid</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="code">99213</td><td>Est visit low MDM</td><td>$155</td><td>$78</td><td>$105</td><td>$67</td><td><span class="ta" onclick="AI('MDM criteria to distinguish 99213 from 99214 and how to document to support the higher level?')">Optimize</span></td></tr>
+          <tr><td class="code">99214</td><td>Est visit mod MDM</td><td>$215</td><td>$113</td><td>$152</td><td>$98</td><td><span class="ta" onclick="AI('99214 documentation requirements — exact MDM elements to avoid downcoding and audit risk')">Optimize</span></td></tr>
+          <tr><td class="code">99215</td><td>Est visit high MDM</td><td>$280</td><td>$148</td><td>$199</td><td>$128</td><td><span class="ta" onclick="AI('99215 billing — when does a primary care visit qualify and what documentation protects me?')">Optimize</span></td></tr>
+          <tr><td class="code">G2211</td><td>Complexity add-on</td><td>$50</td><td>$16</td><td>N/A</td><td>$14</td><td><span class="ta" onclick="AI('G2211 add-on — which payers accept it, how do I document complexity, can I bill with every E&M?')">Optimize</span></td></tr>
+          <tr><td class="code">99484</td><td>BHI care mgmt 20 min</td><td>$99</td><td>$49</td><td>$68</td><td>$42</td><td><span class="ta" onclick="AI('99484 BHI billing Maryland — documentation, who can bill it, how to reduce MCO denials')">Optimize</span></td></tr>
+          <tr><td class="code">G0558</td><td>APCM high complexity</td><td>$110</td><td>$110</td><td>N/A</td><td>N/A</td><td><span class="ta" onclick="AI('G0558 APCM high complexity — documentation requirements and correct patient tier assignment')">Optimize</span></td></tr>
+          <tr><td class="code">G0438</td><td>Initial AWV</td><td>$165</td><td>$145</td><td>$155</td><td>N/A</td><td><span class="ta" onclick="AI('G0438 AWV — what must be completed, what add-ons can I stack, who is eligible?')">Optimize</span></td></tr>
+          <tr><td class="code">93922</td><td>Peripheral arterial</td><td>$210</td><td>$194</td><td>$180</td><td>$160</td><td><span class="ta" onclick="AI('93922 peripheral arterial study — documentation requirements and payer prior auth rules')">Optimize</span></td></tr>
+        </tbody>
+      </table></div>
+      <div style="margin-top:12px;display:flex;justify-content:flex-end">
+        <button class="btn btnt" onclick="AI('What are the highest-value add-on codes to stack with E&M visits in integrative primary care? CCM, TCM, RPM, behavioral health, and preventive codes.')">Add-on codes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSURANCE VERIFY -->
+  <div class="sec" id="s-verify">
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><span class="ct">Eligibility check via Stedi 270/271</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">Billing entity</div><select id="verify-entity" style="background:var(--s2);border:0.5px solid var(--bd2);border-radius:6px;padding:8px 11px;color:var(--op);font-size:12px;font-family:'Montserrat',sans-serif;outline:none;width:100%;cursor:pointer">
+            <option value="bhw">Baltimore Healthcare and Wellness LLC</option>
+            <option value="amaris">Amaris P Murray, CRNP</option>
+            <option value="addiction">BHW Addiction Management Group</option>
+          </select></div>
+          <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">Patient name</div><input type="text" id="verify-name" style="background:var(--s2);border:0.5px solid var(--bd2);border-radius:6px;padding:8px 11px;color:var(--op);font-size:12px;font-family:'Montserrat',sans-serif;outline:none;width:100%" placeholder="Last, First (e.g. Stokes, Ruby)"></div>
+          <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">Date of birth</div><input type="date" id="verify-dob" style="background:var(--s2);border:0.5px solid var(--bd2);border-radius:6px;padding:8px 11px;color:var(--op);font-size:12px;font-family:'Montserrat',sans-serif;outline:none;width:100%"></div>
+          <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">Member ID</div><input type="text" id="verify-member" style="background:var(--s2);border:0.5px solid var(--bd2);border-radius:6px;padding:8px 11px;color:var(--op);font-size:12px;font-family:'Montserrat',sans-serif;outline:none;width:100%" placeholder="Insurance member ID"></div>
+          <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">Payer</div><select id="verify-payer" style="background:var(--s2);border:0.5px solid var(--bd2);border-radius:6px;padding:8px 11px;color:var(--op);font-size:12px;font-family:'Montserrat',sans-serif;outline:none;width:100%;cursor:pointer">
+            <optgroup label="Commercial">
+              <option value="00580">CareFirst BCBS Maryland</option>
+              <option value="60054">Aetna</option>
+              <option value="87726">UnitedHealthcare</option>
+              <option value="62308">Cigna</option>
+              <option value="CURTV">Curative</option>
+            </optgroup>
+            <optgroup label="Medicaid / MCO">
+              <option value="100198">Maryland Medicaid</option>
+              <option value="76498">Maryland Physicians Care</option>
+              <option value="45281">CareFirst Community Health Plan MD</option>
+              <option value="04567">UnitedHealthcare Community Plan</option>
+            </optgroup>
+            <optgroup label="Medicare / Medicare Advantage">
+              <option value="SMMD0">Medicare Maryland Part B</option>
+              <option value="45282">CareFirst BCBS Medicare Advantage</option>
+              <option value="61101">Humana</option>
+              <option value="87726">UnitedHealthcare Medicare Advantage</option>
+              <option value="62308">Cigna Medicare Advantage</option>
+              <option value="RP016">Alterwood Advantage (not Stedi-supported)</option>
+            </optgroup>
+          </select></div>
+          <button class="btn btnt" id="verify-btn" onclick="runEligibilityCheck()">Verify via Stedi</button>
+          <div id="verify-result" style="display:none;margin-top:6px;padding:12px;border-radius:8px;font-size:11px;line-height:1.6"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Insurance discovery — self-pay patients</span></div>
+        <div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:12px">Find active coverage for patients presenting as self-pay. Recovers revenue from unknown Medicaid, Medicare, or commercial plans via Stedi discovery API.</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--bd)"><div style="width:30px;height:30px;border-radius:50%;background:rgba(95,169,166,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sg);flex-shrink:0">KM</div><div style="flex:1"><div style="font-size:11px;font-weight:500">K. Mitchell</div><div style="font-size:10px;color:var(--t3)">Self-pay on file</div></div><span class="pill pg">Found: Medicaid</span></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--bd)"><div style="width:30px;height:30px;border-radius:50%;background:rgba(95,169,166,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sg);flex-shrink:0">JP</div><div style="flex:1"><div style="font-size:11px;font-weight:500">J. Patterson</div><div style="font-size:10px;color:var(--t3)">Self-pay on file</div></div><span class="pill pb">Found: Medicare</span></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0"><div style="width:30px;height:30px;border-radius:50%;background:rgba(95,169,166,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sg);flex-shrink:0">SR</div><div style="flex:1"><div style="font-size:11px;font-weight:500">S. Robinson</div><div style="font-size:10px;color:var(--t3)">Self-pay on file</div></div><span class="pill py">No match</span></div>
+        <button class="ai" onclick="AI('Best insurance discovery process using Stedi for a small primary care practice in Maryland — how do I set up automated batch discovery for self-pay patients?')">Set up Stedi discovery</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTRACTS -->
+  <div class="sec" id="s-contracts">
     <div class="g2">
       <div class="upload-z" onclick="AI('I want to upload a payer contract for AI analysis. What should I look for — reimbursement rates, carve-outs, termination clauses, and what leverage do I have as a small independent practice in Maryland?')">
         <i class="ti ti-upload" style="font-size:28px;color:var(--t3);display:block;margin-bottom:8px"></i>
@@ -118,6 +561,7 @@ async function runEligibilityCheck(){
   const dobEl=document.getElementById('verify-dob');
   const memberEl=document.getElementById('verify-member');
   const payerEl=document.getElementById('verify-payer');
+  const entityEl=document.getElementById('verify-entity');
   const btn=document.getElementById('verify-btn');
   const resultEl=document.getElementById('verify-result');
 
@@ -126,6 +570,7 @@ async function runEligibilityCheck(){
   const memberId=memberEl.value.trim();
   const payer=payerEl.options[payerEl.selectedIndex].text;
   const tradingPartnerId=payerEl.value;
+  const billingEntity=entityEl.value;
 
   if(tradingPartnerId==='RP016'){
     resultEl.style.display='block';
@@ -151,7 +596,7 @@ async function runEligibilityCheck(){
     const res=await fetch('/.netlify/functions/stedi-eligibility',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({patient, dob, memberId, payer, tradingPartnerId})
+      body:JSON.stringify({patient, dob, memberId, payer, tradingPartnerId, billingEntity})
     });
     const json=await res.json();
 
