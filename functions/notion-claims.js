@@ -168,7 +168,7 @@ exports.handler = async (event) => {
       if (!id) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing claim id" }) };
       }
-      const patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+      let patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -177,11 +177,30 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify({
           properties: {
-            "Program": { rich_text: [{ text: { content: program || "" } }] },
+            "Program": program ? { select: { name: program } } : { select: null },
           },
         }),
       });
-      const patchData = await patchResponse.json();
+      let patchData = await patchResponse.json();
+
+      // If Program is actually a text/rich_text field in this database, select will fail - retry as text
+      if (!patchResponse.ok) {
+        patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            properties: {
+              "Program": { rich_text: [{ text: { content: program || "" } }] },
+            },
+          }),
+        });
+        patchData = await patchResponse.json();
+      }
+
       if (!patchResponse.ok) {
         return { statusCode: patchResponse.status, headers, body: JSON.stringify({ error: patchData.message || "Failed to update program" }) };
       }
@@ -253,6 +272,9 @@ function getAny(props, names) {
     if (!prop) continue;
     if (prop.type === "title" && prop.title?.length) return prop.title.map((t) => t.plain_text).join("");
     if (prop.type === "rich_text" && prop.rich_text?.length) return prop.rich_text.map((t) => t.plain_text).join("");
+    if (prop.type === "select" && prop.select?.name) return prop.select.name;
+    if (prop.type === "multi_select" && prop.multi_select?.length) return prop.multi_select.map((s) => s.name).join(", ");
+    if (prop.type === "status" && prop.status?.name) return prop.status.name;
   }
   return "";
 }
