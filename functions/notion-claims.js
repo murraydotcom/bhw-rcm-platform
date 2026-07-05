@@ -12,7 +12,7 @@ exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
     "Content-Type": "application/json",
   };
 
@@ -160,6 +160,32 @@ exports.handler = async (event) => {
         headers,
         body: JSON.stringify({ success: true, id: data.id }),
       };
+    }
+
+    // PATCH - update Program field on an existing claim (inline dropdown edit)
+    if (event.httpMethod === "PATCH") {
+      const { id, program } = JSON.parse(event.body);
+      if (!id) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing claim id" }) };
+      }
+      const patchResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: {
+            "Program": { rich_text: [{ text: { content: program || "" } }] },
+          },
+        }),
+      });
+      const patchData = await patchResponse.json();
+      if (!patchResponse.ok) {
+        return { statusCode: patchResponse.status, headers, body: JSON.stringify({ error: patchData.message || "Failed to update program" }) };
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, id: patchData.id }) };
     }
 
     return {
