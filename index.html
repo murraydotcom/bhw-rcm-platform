@@ -963,6 +963,76 @@ async function askClaudeAPI(prompt){
     bodyEl.innerHTML='<span style="color:#d03b3b">Connection error: '+e.message+'</span>';
   }
 }
-</script>
+</script>// ===== BHW RCM — DYNAMIC DATE PATCH =====
+// Replaces all hardcoded dates with live calculated values
+// Drop this into index.html before the closing </body> tag
+
+(function(){
+  const now = new Date();
+
+  // Current week boundaries (Mon–Sun)
+  const day = now.getDay(); // 0=Sun
+  const diffToMon = (day === 0) ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const fmtShort = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const fmtRange = (a, b) => {
+    if (a.getMonth() === b.getMonth()) {
+      return a.toLocaleDateString('en-US', { month: 'long' }) + ' ' + a.getDate() + ' through ' + b.getDate() + ', ' + b.getFullYear();
+    }
+    return fmtShort(a) + ' through ' + fmt(b);
+  };
+
+  const weekLabel = 'Week of ' + fmtRange(monday, sunday);
+  const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Update weekly summary header
+  const weeklyHeader = document.querySelector('#s-weekly .pg-title, #s-weekly [style*="font-size:12px"]');
+  document.querySelectorAll('#s-weekly *').forEach(el => {
+    if (el.children.length === 0 && el.textContent.match(/Week of (June|July|August|September|October|November|December|January|February|March|April|May)\s+\d/)) {
+      el.textContent = weekLabel;
+    }
+    if (el.children.length === 0 && el.textContent.match(/Auto-generated RCM summary/)) {
+      // leave this one alone — it's the subtitle
+    }
+  });
+
+  // Update KPI labels that say "MTD" to current month
+  document.querySelectorAll('.kpi-l').forEach(el => {
+    if (el.textContent.includes('MTD')) {
+      el.textContent = el.textContent.replace('MTD', now.toLocaleDateString('en-US', { month: 'short' }));
+    }
+  });
+
+  // Update chart titles containing "MTD"
+  document.querySelectorAll('.ct').forEach(el => {
+    if (el.textContent.includes('MTD')) {
+      el.textContent = el.textContent.replace('MTD', now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+    }
+  });
+
+  // Update range button label to show current month name
+  const monthBtn = document.getElementById('rcm-range-month');
+  if (monthBtn) monthBtn.textContent = now.toLocaleDateString('en-US', { month: 'long' });
+
+  // Stamp last-updated time in weekly summary subtitle
+  document.querySelectorAll('#s-weekly *').forEach(el => {
+    if (el.children.length === 0 && el.textContent.match(/Auto-generated RCM summary/)) {
+      el.textContent = 'Auto-generated · ' + fmt(now) + ' · BHW Medical Group';
+    }
+  });
+
+  // Update weekly summary date display dynamically
+  const wkDate = document.querySelector('#s-weekly .nv div, #s-weekly [style*="nv"] div');
+  if (wkDate && wkDate.textContent.match(/Week of/)) {
+    wkDate.textContent = weekLabel;
+  }
+
+})();
+
 </body>
 </html>
