@@ -16,5 +16,20 @@
   to = "/.netlify/functions/stedi-claim-status"
   status = 200
 
+[[redirects]]
+  from = "/api/notion-claims"
+  to = "/.netlify/functions/notion-claims"
+  status = 200
+
+[[redirects]]
+  from = "/api/notion-payments"
+  to = "/.netlify/functions/notion-payments"
+  status = 200
+
+[[redirects]]
+  from = "/api/notion-denials"
+  to = "/.netlify/functions/notion-denials"
+  status = 200
+
 [functions]
   node_bundler = "esbuild"
