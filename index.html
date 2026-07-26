@@ -440,7 +440,25 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
       <!-- ==================== RCM: RECONCILIATION ==================== -->
       <section class="view" id="reconciliation">
-        <div class="page-head"><h2>Reconciliation</h2><p>Match posted payments to bank deposits and Notion ledgers. Flags variances for review.</p></div>
+        <div class="page-head"><h2>Reconciliation</h2><p>Two levels: <b>claim-by-claim</b> reconciliation (billed → allowed → paid → patient balance) and <b>payer deposit</b> matching. Every posted payment — electronic 835 or a manual EOB / patient payment — reconciles the claim automatically.</p></div>
+
+        <div class="grid g4" style="margin-bottom:16px">
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Open A/R</div><div class="k-val" id="reconAR">$0</div><div class="mini">payer still owes</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Payer Paid</div><div class="k-val" id="reconPosted">$0</div><div class="mini">posted / reconciled</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Underpayments</div><div class="k-val" id="reconUnder">0</div><div class="mini">paid &lt; allowed</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Patient Balances</div><div class="k-val" id="reconPtBal">$0</div><div class="mini">owed by patients</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head split">
+            <div><h3>Claim-Level Reconciliation</h3><div class="card-sub">Contractual adjustment = billed − allowed. Balance = what the payer still owes (an underpayment to appeal). Pt Resp splits out as a patient balance.</div></div>
+            <button class="btn btn-ai btn-sm" onclick="openAI('From the claim-level reconciliation, list the underpaid claims where the payer paid less than allowed, quantify each shortfall, and draft the appeal basis.','Underpayment appeals')">Find underpayments</button>
+          </div>
+          <div class="table-scroll"><table id="tblClaimRecon">
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th class="num">Adj</th><th class="num">Pt Resp</th><th class="num">Balance</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+
         <div class="grid g3" style="margin-bottom:16px">
           <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Matched</div><div class="k-val">96.3%</div><div class="mini">of posted $ this cycle</div></div>
           <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Open Variances</div><div class="k-val">$3,180</div><div class="mini">6 items</div></div>
@@ -497,11 +515,19 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
               </div>
               <div><label class="mini">Payer</label>
                 <select id="elPayer" style="width:100%">
-                  <option>BCBS Maryland</option><option>Medicare (Novitas)</option><option>Aetna</option><option>Maryland Medicaid MCO — Priority Partners</option>
+                  <option>Cigna</option><option>CareFirst BCBS Maryland</option><option>CareFirst BCBS Medicare Advantage</option><option>Medicare (CMS)</option><option>Medicaid Maryland</option><option>Maryland Physicians Care</option><option>UnitedHealthcare</option><option>Curative</option><option>Maryland Public Behavioral Health System (PBHS)</option><option>Kaiser Foundation Health Plan Mid-Atlantic</option><option>TRICARE for Life</option><option>Humana</option><option>Aetna</option><option>Carelon Behavioral Health</option>
                 </select>
               </div>
               <div><label class="mini">Service type</label>
                 <select id="elSvc" style="width:100%"><option>30 — Health benefit plan coverage</option><option>EA — Preventive services (AWV)</option><option>81 — Routine physical</option><option>98 — Professional (office) visit</option><option>MH — Behavioral health</option></select>
+              </div>
+              <div><label class="mini">Billing entity</label>
+                <select id="elBillingEntity" style="width:100%">
+                  <option value="">Auto (by payer)</option>
+                  <option value="bhw">BHW LLC · NPI 1306511597</option>
+                  <option value="amaris">Amaris Murray · NPI 1841844222</option>
+                  <option value="addiction">BHW Addiction Mgmt · NPI 1114626363</option>
+                </select>
               </div>
               <button class="btn btn-primary" onclick="runEligibility()">◈ Verify Now</button>
             </div>
@@ -1264,6 +1290,15 @@ const DATA = {
     ["Ruiz, M.","Medicare (Novitas)","Part B","20% coins.","$0","06/30","active"],
     ["Baldwin, K.","MD Medicaid MCO","Priority Partners","$0","None","06/30","active"]
   ],
+  // Claim-level reconciliation ledger. paid = payer paid; patientPaid = collected
+  // from patient against patientResp. Balance/adjustment/status are derived.
+  reconLedger: [
+    {claim:"CLM-24188", patient:"Ellison, J.",   payer:"BCBS MD",         billed:186, allowed:154, paid:124, patientResp:30, patientPaid:30, status:"paid"},
+    {claim:"CLM-24189", patient:"Nguyen, T.",    payer:"Aetna",           billed:212, allowed:175, paid:0,   patientResp:40, patientPaid:0,  status:"open"},
+    {claim:"CLM-24190", patient:"Ruiz, M.",      payer:"Medicare",        billed:64,  allowed:64,  paid:51,  patientResp:13, patientPaid:0,  status:"paid"},
+    {claim:"CLM-24191", patient:"Baldwin, K.",   payer:"MD Medicaid MCO", billed:128, allowed:0,   paid:0,   patientResp:0,  patientPaid:0,  status:"denied"},
+    {claim:"CLM-24195", patient:"Whitfield, A.", payer:"Aetna",           billed:244, allowed:198, paid:120, patientResp:48, patientPaid:0,  status:"partial"}
+  ],
   // Reconciliation: source, expected, received, variance(null=auto), status
   recon: [
     ["BCBS Maryland EFT",62410,62410,0,"matched"],
@@ -1322,14 +1357,20 @@ const DATA = {
 
   // ---- STEDI: Payers & enrollment.  y/p/n per transaction ----
   payersList: [
-    ["BCBS Maryland","00060","y","y","y","live"],
-    ["Medicare (Novitas MD)","12M56","y","y","y","live"],
-    ["Aetna","60054","y","y","y","live"],
-    ["MD Medicaid MCO — Priority Partners","MCDMD","y","y","p","pending"],
-    ["Cigna","62308","y","y","y","live"],
-    ["UnitedHealthcare","87726","y","y","p","pending"],
-    ["CareFirst BlueChoice","00580","y","y","y","live"],
-    ["Johns Hopkins US Family Health","JHHC","y","y","n","live"]
+    ["Cigna","HGJLR","y","y","y","live"],
+    ["CareFirst BCBS Maryland","GBPZQ","y","y","y","live"],
+    ["CareFirst BCBS Medicare Advantage","AOMEV","y","y","y","live"],
+    ["Medicare (CMS)","JDNSN","y","y","y","live"],
+    ["Medicaid Maryland","YSPCP","y","y","y","live"],
+    ["Maryland Physicians Care","ZIJHE","y","y","y","live"],
+    ["UnitedHealthcare","KMQTZ","y","y","y","live"],
+    ["Curative","ESEPO","y","y","y","live"],
+    ["Maryland Public Behavioral Health System (PBHS)","KLYNE","y","y","y","live"],
+    ["Kaiser Foundation Health Plan Mid-Atlantic","NOQOP","y","y","y","live"],
+    ["TRICARE for Life","EPIVM","y","y","y","live"],
+    ["Humana","UYORK","y","y","y","live"],
+    ["Aetna","HPQRS","y","p","p","pending"],
+    ["Carelon Behavioral Health","— (look up)","y","n","n","pending"]
   ],
 
   // ---- STEDI: Insurance Discovery (found coverage on self-pay pts) ----
@@ -1509,6 +1550,77 @@ function buildRecon(){
       <td class="num"${vStyle}>${vTxt}</td><td>${badge(r[4]==='matched'?'paid':r[4])}</td></tr>`;
   }).join('');
 }
+/* ---- Claim-level reconciliation ---- */
+function reconDerive(r){
+  const allowed = r.allowed || 0;
+  const expected = allowed > 0 ? allowed : (r.billed || 0);
+  const adj = (allowed > 0 && r.billed > allowed) ? r.billed - allowed : 0;
+  const outstanding = Math.max(0, expected - (r.paid || 0) - (r.patientResp || 0));
+  const ptBal = Math.max(0, (r.patientResp || 0) - (r.patientPaid || 0));
+  return { allowed, expected, adj, outstanding, ptBal };
+}
+function reconStatus(r){
+  if(r.status === 'denied' && (r.paid || 0) === 0) return 'denied';
+  if((r.paid || 0) === 0) return 'open';
+  return reconDerive(r).outstanding > 0.5 ? 'partial' : 'paid';
+}
+function buildClaimRecon(){
+  const tb = document.querySelector('#tblClaimRecon tbody'); if(!tb) return;
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  let ar = 0, posted = 0, under = 0, ptTotal = 0;
+  tb.innerHTML = DATA.reconLedger.map(r => {
+    const d = reconDerive(r);
+    posted += (r.paid || 0);
+    if(r.status === 'denied') ar += d.expected;             // full amount at risk
+    else if(r.status !== 'paid') ar += d.outstanding;       // open / partial
+    if(r.status === 'partial') under++;
+    ptTotal += d.ptBal;
+    const bal = d.outstanding > 0 ? `<span style="color:var(--denied)">${money(d.outstanding)}</span>` : '$0';
+    return `<tr>
+      <td><b>${r.claim}</b></td><td>${r.patient}</td><td>${r.payer}</td>
+      <td class="num">${money(r.billed)}</td><td class="num">${r.allowed ? money(r.allowed) : '—'}</td>
+      <td class="num">${money(r.paid)}</td><td class="num">${d.adj ? money(d.adj) : '—'}</td>
+      <td class="num">${money(r.patientResp)}</td><td class="num">${bal}</td>
+      <td>${badge(r.status)}</td></tr>`;
+  }).join('');
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  set('reconAR', money(Math.round(ar)));
+  set('reconPosted', money(Math.round(posted)));
+  set('reconUnder', under);
+  set('reconPtBal', money(Math.round(ptTotal)));
+}
+// Apply a posted payment/EOB to its claim: update paid/allowed/patient balance,
+// recompute status, and reflect it back in the claims ledger.
+function reconcileClaim(rec){
+  const key = String(rec.claim).trim().toLowerCase();
+  let r = DATA.reconLedger.find(x => String(x.claim).trim().toLowerCase() === key);
+  if(!r){
+    const c = DATA.claims.find(cl => String(cl[0]).trim().toLowerCase() === key);
+    r = { claim: rec.claim, patient: rec.patient || (c ? c[1] : ''), payer: rec.payer || (c ? c[5] : ''),
+          billed: rec.billed || (c ? parseFloat(String(c[4]).replace(/[^0-9.]/g, '')) : 0) || 0,
+          allowed: 0, paid: 0, patientResp: 0, patientPaid: 0, status: 'open' };
+    DATA.reconLedger.unshift(r);
+  }
+  if(rec.type === 'eob'){
+    if(rec.billed) r.billed = rec.billed;
+    if(rec.allowed) r.allowed = rec.allowed;
+    r.paid = (r.paid || 0) + (rec.paid || 0);
+    if(rec.patientResp) r.patientResp = rec.patientResp;
+    if((rec.paid || 0) === 0 && rec.reason && /deni|reject|eob\s*\d/i.test(rec.reason)) r.status = 'denied';
+    else r.status = reconStatus(r);
+  } else {                                   // patient payment reduces the patient balance
+    r.patientPaid = (r.patientPaid || 0) + (rec.paid || 0);
+    if(r.status !== 'denied') r.status = reconStatus(r);
+  }
+  const c = DATA.claims.find(cl => String(cl[0]).trim().toLowerCase() === key);
+  if(c){
+    c[7] = r.status;
+    fillTable('tblClaims', DATA.claims, 7);
+    fillTable('tblClaimsLog', DATA.claims.map(x => [x[6], x[0], x[1], x[2], x[3], x[4], x[5], x[7]]), 7);
+  }
+  buildClaimRecon();
+  return r.status;
+}
 function buildContracts(){
   const tb=document.querySelector('#tblContracts tbody'); if(!tb) return;
   tb.innerHTML = DATA.contracts.map(r=>
@@ -1643,6 +1755,7 @@ function buildTables(){
   if(tb) tb.innerHTML=q3rows.map(r=>'<tr>'+r.map((c,i)=>i===4?('<td>'+c+'</td>'):`<td class="${i>0&&i<4?'num':''}">${c}</td>`).join('')+'</tr>').join('');
   fillTable('tblVerify', DATA.verify, 6);
   buildRecon();
+  buildClaimRecon();
   buildContracts();
   buildExpenses();
   applyWeekly();
@@ -1761,6 +1874,8 @@ async function runEligibility(){
   const member= document.getElementById('elMember').value;
   const dob   = document.getElementById('elDob').value;
   const serviceType = document.getElementById('elSvc').value;
+  const beEl = document.getElementById('elBillingEntity');
+  const billingEntity = beEl ? beEl.value : '';   // '' = auto (server picks by payer)
   const out = document.getElementById('elResult');
   out.innerHTML = '<p class="mini">Checking eligibility via Stedi…</p>';
 
@@ -1768,7 +1883,7 @@ async function runEligibility(){
   try{
     const res = await fetch(CONFIG.fn.stedi,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({payer,first,last,member,dob,serviceType})
+      body: JSON.stringify({payer,first,last,member,dob,serviceType, ...(billingEntity?{billingEntity}:{})})
     });
     data = await res.json();
   }catch(e){
@@ -2008,15 +2123,18 @@ async function postPayment(btn){
   // optimistic: show it in the ledger immediately
   DATA.payments.unshift([pmFmtDate(date), rec.payer, ref||'—', '$'+paid.toLocaleString(), '1', mode==='eob'?'Paper EOB':method, 'paid']);
   fillTable('tblPayments', DATA.payments, 6);
-  msg.style.color='var(--ink-soft)'; msg.textContent='Posting…';
+  // claim-level reconciliation: link the payment to its claim
+  let reconNote='';
+  if(claim){ const st=reconcileClaim(rec); reconNote=' · reconciled '+claim+' → '+st; }
+  msg.style.color='var(--ink-soft)'; msg.textContent='Posting…'+reconNote;
   if(btn) btn.disabled=true;
   try{
     const r=await fetch(CONFIG.fn.paymentPost,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
     const j=await r.json();
-    msg.textContent = (j&&j.ok&&!j.sampleMode) ? '✓ Posted to Notion'
+    msg.textContent = ((j&&j.ok&&!j.sampleMode) ? '✓ Posted to Notion'
       : (j&&j.error) ? ('Saved to ledger — Notion: '+j.error)
-      : 'Added to the ledger (sample mode — set NOTION_PAYMENTS_DB to persist)';
-  }catch(e){ msg.textContent='Added to the ledger (offline — will persist to Notion once deployed)'; }
+      : 'Added to the ledger (sample mode — set NOTION_PAYMENTS_DB to persist)') + reconNote;
+  }catch(e){ msg.textContent='Added to the ledger (offline — will persist to Notion once deployed)'+reconNote; }
   if(btn) btn.disabled=false;
   ['pmPatient','pmRef','pmClaim','pmBilled','pmAllowed','pmPaid','pmPatResp','pmReason'].forEach(id=>document.getElementById(id).value='');
 }
