@@ -115,6 +115,17 @@ tbody tr:hover{background:#faf8f5}
 td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 .table-scroll{overflow-x:auto}
 
+/* Remittance drill-down */
+.era-row:hover{background:#faf8f5}
+.era-caret{color:var(--blue-d); font-weight:700; text-align:center}
+.era-detail > td{background:#faf9f7; border-bottom:1px solid var(--line)}
+.era-claim{padding:10px 4px}
+.svc-table{width:100%; font-size:12px; margin:2px 0 4px}
+.svc-table th{font-size:9.5px; padding:6px 8px}
+.svc-table td{padding:7px 8px}
+.era-comment{margin-top:8px}
+.era-comment textarea{width:100%; font-family:inherit; font-size:12px; padding:7px 10px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); resize:vertical}
+
 .badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; white-space:nowrap}
 .badge::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor}
 .b-paid{background:#e8f0e3; color:#5c7050}
@@ -266,6 +277,13 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
     <div class="topbar">
       <div class="crumb">BHW Medical Group &nbsp;/&nbsp; <b id="crumb">Dashboard</b></div>
       <div class="tools">
+        <select id="periodSel" onchange="setPeriod(this.value)" title="Time period shown on dated views" style="padding:6px 10px">
+          <option value="7">This week</option>
+          <option value="30" selected>This month</option>
+          <option value="90">This quarter</option>
+          <option value="365">Year to date</option>
+          <option value="0">All time</option>
+        </select>
         <span class="pill live" id="notionPill">● Notion: sample mode</span>
         <span class="pill live" id="stediPill">● Stedi: connected</span>
         <button class="btn btn-ghost btn-sm" onclick="openAI('Give me a plain-English executive summary of the current revenue cycle health across BHW Medical Group.','Executive summary')">✦ Ask AI</button>
@@ -919,10 +937,10 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <span class="pill live" id="eraMode">● Stedi · sample</span>
         </div>
         <div class="grid g4" style="margin-bottom:16px">
-          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">ERAs Received (7d)</div><div class="k-val">28</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">$ Posted (7d)</div><div class="k-val">$196,120</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Auto-Posted</div><div class="k-val">86%</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Exceptions</div><div class="k-val" style="color:var(--denied)">4</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">ERAs Received</div><div class="k-val" id="eraCount">6</div><div class="mini" id="eraPeriodLbl">this month</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">$ Posted</div><div class="k-val" id="eraPosted">$0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Auto-Posted</div><div class="k-val" id="eraAuto">—</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Exceptions</div><div class="k-val" id="eraExc" style="color:var(--denied)">0</div></div>
         </div>
 
         <!-- Signature feature: systematic downcoding detection -->
@@ -939,9 +957,9 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
 
         <div class="grid g3" style="margin-bottom:16px">
-          <div class="card" style="grid-column:span 2"><div class="card-head"><h3>Remittances (835)</h3><span class="tag">Stedi</span></div>
+          <div class="card" style="grid-column:span 2"><div class="card-head"><div><h3>Remittances (835)</h3><div class="card-sub">Click a remit to break it down to claim &amp; service line — with a note field per claim</div></div><span class="tag">Stedi</span></div>
             <div class="table-scroll"><table id="tblEra">
-              <thead><tr><th>Payer</th><th>ERA #</th><th>Check / EFT</th><th class="num">Amount</th><th class="num">Claims</th><th>Posting</th></tr></thead>
+              <thead><tr><th style="width:26px"></th><th>Payer</th><th>ERA #</th><th>Check / EFT</th><th>Date</th><th class="num">Amount</th><th class="num">Claims</th><th>Posting</th></tr></thead>
               <tbody></tbody>
             </table></div>
           </div>
@@ -1339,12 +1357,29 @@ const DATA = {
   csMix: { labels:["In process","Finalized paid","Finalized denied","Pending info"], values:[63,41,8,6] },
 
   // ---- STEDI: ERA / 835 ----
-  era: [
-    ["BCBS Maryland","ERA-88412","EFT-88412","$62,410","41","auto"],
-    ["Medicare (Novitas)","ERA-77203","EFT-77203","$48,905","36","auto"],
-    ["Aetna","ERA-44018","CHK-44018","$20,140","22","exception"],
-    ["MD Medicaid MCO","ERA-51190","EFT-51190","$17,330","19","auto"],
-    ["Cigna","ERA-33027","EFT-33027","$9,880","12","auto"]
+  // Full remittance detail — drill down to claim + service line, with comments.
+  // date derives from daysAgo so the period filter stays live. adjCode = CARC.
+  eraList: [
+    { eraNumber:"ERA-88412", payer:"CareFirst BCBS Maryland", check:"EFT-88412", daysAgo:1, posting:"auto", claims:[
+        { claim:"CLM-24188", patient:"Ellison, J.", billed:186, allowed:154, paid:124, patResp:30, status:"paid", comment:"", services:[
+            {cpt:"99214", desc:"Office visit, est. moderate", billed:186, allowed:154, paid:124, adjCode:"CO-45", adjDesc:"Exceeds fee schedule", patResp:30, prCode:"PR-3 copay"} ] },
+        { claim:"CLM-24205", patient:"Grant, T.", billed:250, allowed:210, paid:168, patResp:42, status:"paid", comment:"", services:[
+            {cpt:"99215", desc:"Office visit, est. high", billed:244, allowed:198, paid:158, adjCode:"CO-45", adjDesc:"Exceeds fee schedule", patResp:40, prCode:"PR-2 coins"},
+            {cpt:"36415", desc:"Venipuncture", billed:6, allowed:12, paid:10, adjCode:"", adjDesc:"", patResp:2, prCode:"PR-3 copay"} ] } ] },
+    { eraNumber:"ERA-77203", payer:"Medicare (CMS)", check:"EFT-77203", daysAgo:2, posting:"auto", claims:[
+        { claim:"CLM-24190", patient:"Ruiz, M.", billed:64, allowed:64, paid:51, patResp:13, status:"paid", comment:"", services:[
+            {cpt:"99490", desc:"Chronic care mgmt, 20 min", billed:64, allowed:64, paid:51, adjCode:"", adjDesc:"", patResp:13, prCode:"PR-2 coins 20%"} ] } ] },
+    { eraNumber:"ERA-44018", payer:"Aetna", check:"CHK-44018", daysAgo:3, posting:"exception", claims:[
+        { claim:"CLM-24170", patient:"Diaz, R.", billed:212, allowed:168, paid:118, patResp:0, status:"partial", comment:"Downcoded 99214→99213 — appeal filed 7/24.", commentSaved:"", services:[
+            {cpt:"99214", desc:"Office visit — PAID AS 99213", billed:212, allowed:168, paid:118, adjCode:"CO-59", adjDesc:"Procedure code changed (downcode)", patResp:0, prCode:""} ] },
+        { claim:"CLM-24191b", patient:"Cole, B.", billed:310, allowed:0, paid:0, patResp:0, status:"denied", comment:"", services:[
+            {cpt:"90837", desc:"Psychotherapy 60 min", billed:310, allowed:0, paid:0, adjCode:"CO-197", adjDesc:"Precert/authorization absent", patResp:0, prCode:""} ] } ] },
+    { eraNumber:"ERA-51190", payer:"Medicaid Maryland", check:"EFT-51190", daysAgo:9, posting:"auto", claims:[
+        { claim:"CLM-24162", patient:"Baldwin, K.", billed:128, allowed:96, paid:96, patResp:0, status:"paid", comment:"", services:[
+            {cpt:"99213", desc:"Office visit, est. low", billed:128, allowed:96, paid:96, adjCode:"CO-45", adjDesc:"Exceeds fee schedule", patResp:0, prCode:""} ] } ] },
+    { eraNumber:"ERA-33027", payer:"Cigna", check:"EFT-33027", daysAgo:22, posting:"auto", claims:[
+        { claim:"CLM-24101", patient:"Okafor, C.", billed:168, allowed:140, paid:112, patResp:28, status:"paid", comment:"", services:[
+            {cpt:"90834", desc:"Psychotherapy 45 min", billed:168, allowed:140, paid:112, adjCode:"CO-45", adjDesc:"Exceeds fee schedule", patResp:28, prCode:"PR-3 copay"} ] } ] }
   ],
   eraReason: { labels:["45 Fee schedule","197 No auth","96 Non-covered","B15 Bundled","59 Level adj (downcode)"], values:[38,14,9,7,11] },
   // Downcoding watch: billed vs paid-as, $ lost, payer pattern
@@ -1651,12 +1686,100 @@ function buildDowncode(){
     <td class="num" style="color:var(--denied)">-$${Number(r[5]).toLocaleString()}</td>
     <td>${r[6]}</td></tr>`).join('');
 }
+/* ---- Time period filter (global) ---- */
+let PERIOD_DAYS = 30, PERIOD_LABEL = 'this month';
+const PERIOD_LABELS = {7:'this week',30:'this month',90:'this quarter',365:'year to date',0:'all time'};
+function parseDateLoose(v){
+  if(v instanceof Date) return v;
+  if(!v) return null;
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if(m){ const y=m[3]?(m[3].length===2?'20'+m[3]:m[3]):String(new Date().getFullYear()); return new Date(+y,+m[1]-1,+m[2]); }
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+function inPeriod(v){
+  if(!PERIOD_DAYS) return true;                         // "All time"
+  const d=parseDateLoose(v); if(!d) return true;        // undated rows always show
+  const now=Date.now();
+  return d.getTime() >= now - PERIOD_DAYS*864e5 && d.getTime() <= now + 864e5;
+}
+function setPeriod(v){
+  PERIOD_DAYS = Number(v)||0;
+  PERIOD_LABEL = PERIOD_LABELS[PERIOD_DAYS] || 'all time';
+  buildEra(); buildPayments();
+}
+function buildPayments(){
+  fillTable('tblPayments', (DATA.payments||[]).filter(r=>inPeriod(r[0])), 6);
+}
+
+/* ---- Remittances (835) — drill down to claim + service, with comments ---- */
+const parseMoney = n => Number(String(n).replace(/[^0-9.]/g,''))||0;
+function eraDate(e){ return e.date ? new Date(e.date) : addDays(startOfToday(), -(e.daysAgo||0)); }
 function buildEra(){
   const tb=document.querySelector('#tblEra tbody'); if(!tb) return;
-  tb.innerHTML = DATA.era.map(r=>`<tr>
-    <td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td>
-    <td class="num">${r[3]}</td><td class="num">${r[4]}</td>
-    <td>${badge(r[5])}</td></tr>`).join('');
+  const money=n=>'$'+Number(n||0).toLocaleString();
+  const sumPaid=e=> (e.claims||[]).reduce((a,c)=>a+(c.paid||0),0);
+  const list=(DATA.eraList||[]).map((e,i)=>({e,i})).filter(({e})=>inPeriod(eraDate(e)));
+  let count=0, posted=0, auto=0, exc=0, html='';
+  list.forEach(({e,i})=>{
+    const hasDetail=(e.claims&&e.claims.length>0);
+    const paid=hasDetail?sumPaid(e):parseMoney(e.amount);
+    const nclaims=hasDetail?e.claims.length:(e.claimsCount||0);
+    posted+=paid; count++; if(e.posting==='exception') exc++; else auto++;
+    html+=`<tr class="era-row"${hasDetail?` onclick="toggleEra(${i})" style="cursor:pointer"`:''}>
+      <td class="era-caret" id="eraCaret${i}">${hasDetail?'▸':''}</td>
+      <td>${e.payer}</td><td>${e.eraNumber}</td><td>${e.check}</td>
+      <td>${md(eraDate(e))}</td><td class="num">${money(paid)}</td><td class="num">${nclaims}</td>
+      <td>${badge(e.posting==='exception'?'exception':'auto')}</td></tr>`;
+    if(hasDetail) html+=`<tr class="era-detail" id="eraDetail${i}" style="display:none"><td></td><td colspan="7">${eraDetailHtml(e,i)}</td></tr>`;
+  });
+  tb.innerHTML = html || '<tr><td colspan="8" class="mini" style="padding:14px">No remits in this period.</td></tr>';
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  set('eraCount',count); set('eraPosted',money(Math.round(posted)));
+  set('eraAuto', count?Math.round(auto/count*100)+'%':'—'); set('eraExc',exc);
+  set('eraPeriodLbl', PERIOD_LABEL);
+}
+function eraDetailHtml(e,ei){
+  const money=n=>'$'+Number(n||0).toLocaleString();
+  return (e.claims||[]).map((c,ci)=>{
+    const svc=(c.services||[]).map(s=>`<tr>
+      <td><b>${s.cpt}</b></td><td>${s.desc}</td>
+      <td class="num">${money(s.billed)}</td><td class="num">${money(s.allowed)}</td><td class="num">${money(s.paid)}</td>
+      <td>${s.adjCode?('<span class="badge b-denied">'+s.adjCode+'</span> <span class="mini">'+(s.adjDesc||'')+'</span>'):'—'}</td>
+      <td class="num">${s.patResp?money(s.patResp):'—'}${s.prCode?' <span class="mini">'+s.prCode+'</span>':''}</td></tr>`).join('');
+    return `<div class="era-claim">
+      <div class="split" style="margin-bottom:6px;flex-wrap:wrap;gap:6px">
+        <div><b>${c.claim}</b> · ${c.patient} ${badge(c.status)}</div>
+        <div class="mini">Billed ${money(c.billed)} · Allowed ${money(c.allowed)} · <b>Paid ${money(c.paid)}</b> · Pt resp ${money(c.patResp)}</div>
+      </div>
+      <div class="table-scroll"><table class="svc-table">
+        <thead><tr><th>CPT</th><th>Service</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th>Adjustment (CARC)</th><th class="num">Patient</th></tr></thead>
+        <tbody>${svc}</tbody></table></div>
+      <div class="era-comment">
+        <label class="mini">Notes / cycle comments</label>
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <textarea id="eraCmt_${ei}_${ci}" rows="1" placeholder="Add a note as the claim moves through the cycle…">${c.comment||''}</textarea>
+          <button class="btn btn-ghost btn-sm" onclick="saveEraComment(${ei},${ci})">Save note</button>
+        </div>
+        <div class="mini" id="eraCmtMsg_${ei}_${ci}" style="margin-top:3px">${c.commentSaved?('Saved '+c.commentSaved):''}</div>
+      </div>
+    </div>`;
+  }).join('<hr class="soft">');
+}
+function toggleEra(i){
+  const d=document.getElementById('eraDetail'+i), c=document.getElementById('eraCaret'+i);
+  if(!d) return;
+  const open=d.style.display==='none';
+  d.style.display=open?'':'none';
+  if(c) c.textContent=open?'▾':'▸';
+}
+function saveEraComment(ei,ci){
+  const ta=document.getElementById('eraCmt_'+ei+'_'+ci); if(!ta) return;
+  DATA.eraList[ei].claims[ci].comment=ta.value;
+  DATA.eraList[ei].claims[ci].commentSaved=new Date().toLocaleTimeString();
+  const m=document.getElementById('eraCmtMsg_'+ei+'_'+ci);
+  if(m) m.textContent='Saved '+DATA.eraList[ei].claims[ci].commentSaved+' · in-session (wire to Notion to persist)';
 }
 function buildPayers(){
   const tb=document.querySelector('#tblPayers tbody'); if(!tb) return;
@@ -1740,7 +1863,7 @@ function setComplexity(i, level){
 }
 function buildTables(){
   fillTable('tblClaims', DATA.claims, 7);
-  fillTable('tblPayments', DATA.payments, 6);
+  buildPayments();
   fillTable('tblDenials', DATA.denials.map(r=>[r[0],r[1],r[2],'EOB '+r[3],r[4],r[5],r[6]]), 6);
   buildCDM();
   fillTable('tblCpt', DATA.cpt, null);
@@ -2065,7 +2188,10 @@ function applyStediFeed(feed, rows){
     setPill('discMode','● Stedi · live');
   }
   if(feed==='era'){
-    DATA.era = rows.map(r=>[s(r.payer), s(r.eraNumber), s(r.check), s(r.amount), String(r.claims??''), (r.posting||'auto')]);
+    // Summary feed (no claim detail) → non-expandable rows; the webhook/report path adds claims.
+    DATA.eraList = rows.map(r=>({ eraNumber:s(r.eraNumber), payer:s(r.payer), check:s(r.check),
+      date: r.date || new Date().toISOString().slice(0,10), posting:(r.posting||'auto'),
+      amount:r.amount, claimsCount:Number(r.claims)||0, claims:[] }));
     buildEra();
     setPill('eraMode','● Stedi · live');
   }
@@ -2122,7 +2248,7 @@ async function postPayment(btn){
   };
   // optimistic: show it in the ledger immediately
   DATA.payments.unshift([pmFmtDate(date), rec.payer, ref||'—', '$'+paid.toLocaleString(), '1', mode==='eob'?'Paper EOB':method, 'paid']);
-  fillTable('tblPayments', DATA.payments, 6);
+  buildPayments();
   // claim-level reconciliation: link the payment to its claim
   let reconNote='';
   if(claim){ const st=reconcileClaim(rec); reconNote=' · reconciled '+claim+' → '+st; }
