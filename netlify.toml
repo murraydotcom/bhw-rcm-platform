@@ -1,35 +1,10 @@
+# Netlify configuration — BHW RCM & Billing Command Center
+
 [build]
-  functions = "functions"
+  publish = "."
+  functions = "netlify/functions"
 
-[[redirects]]
-  from = "/api/stedi-eras"
-  to = "/.netlify/functions/stedi-eras"
-  status = 200
-
-[[redirects]]
-  from = "/api/stedi-eligibility"
-  to = "/.netlify/functions/stedi-eligibility"
-  status = 200
-
-[[redirects]]
-  from = "/api/stedi-claim-status"
-  to = "/.netlify/functions/stedi-claim-status"
-  status = 200
-
-[[redirects]]
-  from = "/api/notion-claims"
-  to = "/.netlify/functions/notion-claims"
-  status = 200
-
-[[redirects]]
-  from = "/api/notion-payments"
-  to = "/.netlify/functions/notion-payments"
-  status = 200
-
-[[redirects]]
-  from = "/api/notion-denials"
-  to = "/.netlify/functions/notion-denials"
-  status = 200
-
-[functions]
-  node_bundler = "esbuild"
+# Scheduled poller: pull new ADT files from the CRISP SFTP drop every 15 min.
+# Only runs work when the CRISP_SFTP_* env vars are set (otherwise it no-ops).
+[functions."crisp-sftp-poll"]
+  schedule = "*/15 * * * *"
