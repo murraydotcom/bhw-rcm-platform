@@ -1,237 +1,91 @@
 // Netlify Function: stedi-discovery.js
-// Runs a Stedi Insurance Discovery check to find unknown active coverage for self-pay patients
-// Different from stedi-eligibility.js - this searches by demographics rather than checking a known payer
-// Environment variables needed in Netlify:
-//   STEDI_KEY_PREFIX / STEDI_KEY_SUFFIX (or STEDI_API_KEY) = your Stedi API key
-//   NOTION_TOKEN = your Notion integration token
-//   NOTION_INSURANCE_DB = 6bf580758d30828098a101e533cbed4d
+// Stedi Insurance Discovery — find a patient's ACTIVE coverage from demographics
+// (no member ID needed). Great for self-pay / uninsured and for finding hidden
+// secondary coverage. Endpoint: insurance-discovery/check/v1.
 //
-// IMPORTANT: For best results, enroll each billing NPI with Stedi's DISCOVERY payer ID first.
-// This is a one-time setup step in the Stedi portal under Enrollments - it improves match quality,
-// especially for Medicare. Discovery works without it but with lower confidence results.
+//   POST  → run a discovery check
+//   GET   → recent discovery history (stub → sampleMode until a store is wired)
+//
+// Env: STEDI_API_KEY (or STEDI_KEY_PREFIX + STEDI_KEY_SUFFIX)
 
-const NOTION_VERSION = "2022-06-28";
-const INSURANCE_DB_ID = process.env.NOTION_INSURANCE_DB || "6bf580758d30828098a101e533cbed4d";
+const { provider } = require("./lib/providers");
+const DISCOVERY_URL = "https://healthcare.us.stedi.com/2024-04-01/insurance-discovery/check/v1";
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Content-Type": "application/json",
+};
 
 exports.handler = async (event) => {
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Content-Type": "application/json",
-  };
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
-  }
-
-  const stediKey = process.env.STEDI_KEY_PREFIX && process.env.STEDI_KEY_SUFFIX
+  const stediKey = (process.env.STEDI_KEY_PREFIX && process.env.STEDI_KEY_SUFFIX)
     ? `${process.env.STEDI_KEY_PREFIX}.${process.env.STEDI_KEY_SUFFIX}`
     : process.env.STEDI_API_KEY;
-  const notionToken = process.env.NOTION_TOKEN;
-
-  if (!stediKey) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: "Stedi API key not set. Add STEDI_KEY_PREFIX and STEDI_KEY_SUFFIX to Netlify environment variables." }),
-    };
-  }
 
   try {
-    // POST - submit a new discovery check
+    // GET → recent discoveries. No discovery store yet — keep the dashboard on
+    // its sample table. Persist runs to a Notion DB later and read them here.
+    if (event.httpMethod === "GET") return json(200, { ok: true, sampleMode: true });
+
     if (event.httpMethod === "POST") {
-      const {
-        firstName, lastName, middleName, dob, ssn, gender,
-        address1, city, state, postalCode,
-        npi, dateOfService,
-      } = JSON.parse(event.body);
+      if (!stediKey) return json(200, { ok: true, sampleMode: true, error: "STEDI_API_KEY not set" });
 
-      if (!firstName || !lastName || !dob) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: "First name, last name, and date of birth are required." }),
-        };
-      }
+      const b = JSON.parse(event.body || "{}");
+      const { first, last, dob, sex, zip, dos, ssn4, billingEntity, address1, city, state } = b;
+      const prov = provider(billingEntity);
+      const svc = (dos || new Date().toISOString().split("T")[0]).replace(/-/g, "");
 
-      const dos = dateOfService ? dateOfService.replace(/-/g, "") : new Date().toISOString().split("T")[0].replace(/-/g, "");
-
-      const discoveryPayload = {
-        provider: {
-          npi: npi || "1306511597",
-        },
+      // Sensitive identifiers travel in the POST body only. Stedi strongly
+      // recommends SSN for matching; we send the last-4 the front desk collects.
+      const payload = {
+        provider: { npi: prov.npi },
+        encounter: { beginningDateOfService: svc, endDateOfService: svc },
         subscriber: {
-          firstName,
-          lastName,
-          ...(middleName ? { middleName } : {}),
-          dateOfBirth: dob.replace(/-/g, ""),
-          ...(ssn ? { ssn: ssn.replace(/\D/g, "") } : {}),
-          ...(gender ? { gender } : {}),
-          ...(address1 || city || state || postalCode
-            ? {
-                address: {
-                  ...(address1 ? { address1 } : {}),
-                  ...(city ? { city } : {}),
-                  ...(state ? { state } : {}),
-                  ...(postalCode ? { postalCode } : {}),
-                },
-              }
-            : {}),
-        },
-        encounter: {
-          beginningDateOfService: dos,
-          endDateOfService: dos,
+          firstName: first || "",
+          lastName: last || "",
+          dateOfBirth: dob ? dob.replace(/-/g, "") : "",
+          ...(ssn4 ? { ssn: String(ssn4).replace(/\D/g, "") } : {}),
+          ...(sex ? { gender: /^m/i.test(sex) ? "M" : /^f/i.test(sex) ? "F" : "U" } : {}),
+          address: { address1: address1 || "", city: city || "", state: state || "", postalCode: zip || "" },
         },
       };
 
-      const stediResponse = await fetch(
-        "https://healthcare.us.stedi.com/2024-04-01/insurance-discovery/check/v1",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Key ${stediKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(discoveryPayload),
-        }
-      );
+      const r = await fetch(DISCOVERY_URL, {
+        method: "POST",
+        headers: { Authorization: `Key ${stediKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (!r.ok) return json(r.status, { ok: false, error: data.message || "Discovery failed", details: data });
 
-      const stediData = await stediResponse.json();
-
-      if (!stediResponse.ok) {
-        return {
-          statusCode: stediResponse.status,
-          headers,
-          body: JSON.stringify({ error: stediData.message || "Stedi discovery check failed", details: stediData }),
-        };
+      const item = (data.items || [])[0];
+      if (!item || data.coveragesFound === 0) {
+        return json(200, { ok: true, sampleMode: false, result: { found: false }, status: data.status });
       }
 
-      // If still processing, return the discoveryId so the frontend can poll for results
-      if (stediData.status === "PENDING" || !stediData.items) {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            status: "PENDING",
-            discoveryId: stediData.discoveryId,
-            message: "Discovery check still processing. Poll again in a few seconds using the discoveryId.",
-          }),
-        };
-      }
-
-      const items = (stediData.items || []).map((item) => ({
-        payer: item.payer?.name || "Unknown payer",
-        memberId: item.subscriber?.memberId || "",
-        groupNumber: item.planInformation?.groupNumber || "",
-        planDescription: item.planInformation?.groupDescription || "",
-        planBegin: item.planDateInformation?.planBegin || null,
-        eligibilityBegin: item.planDateInformation?.eligibilityBegin || null,
-        matchConfidence: item.matchConfidence?.confidenceLevel || "Unknown",
-        matchReason: item.matchConfidence?.confidenceReason || "",
-      }));
-
-      // Save each found coverage result to Notion Insurance Verification database
-      if (notionToken && items.length) {
-        for (const item of items) {
-          await fetch("https://api.notion.com/v1/pages", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${notionToken}`,
-              "Notion-Version": NOTION_VERSION,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              parent: { database_id: INSURANCE_DB_ID },
-              properties: {
-                "Patient Name": { title: [{ text: { content: `${lastName}, ${firstName}` } }] },
-                "Payer": { rich_text: [{ text: { content: item.payer } }] },
-                "Member ID": { rich_text: [{ text: { content: item.memberId } }] },
-                "Verification Date": { date: { start: new Date().toISOString().split("T")[0] } },
-                "Status": { select: { name: "Discovery Match" } },
-                "Plan Name": { rich_text: [{ text: { content: item.planDescription } }] },
-              },
-            }),
-          });
-        }
-      }
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          status: "COMPLETE",
-          discoveryId: stediData.discoveryId,
-          matchCount: items.length,
-          items,
-        }),
+      const bi = item.benefitsInformation || [];
+      const planLine = bi.find((x) => x.name && !/active coverage/i.test(x.name));
+      const result = {
+        found: true,
+        payer: (item.payer && item.payer.name) || "",
+        memberId: (item.subscriber && item.subscriber.memberId) || "",
+        plan: (planLine && planLine.name) || "Active coverage",
+        coverageStart: null,
+        confidence: (item.confidence && item.confidence.level) || "",
+        note: (item.confidence && item.confidence.level === "REVIEW_NEEDED")
+          ? "Match needs review — verify patient identity, then confirm benefits in Eligibility before billing."
+          : "Confirm benefits in Eligibility before billing.",
       };
+      return json(200, { ok: true, sampleMode: false, result, status: data.status, coveragesFound: data.coveragesFound });
     }
 
-    // GET - poll for results using a discoveryId from a previous PENDING response
-    if (event.httpMethod === "GET") {
-      const params = event.queryStringParameters || {};
-      const discoveryId = params.discoveryId;
-
-      if (!discoveryId) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: "Missing discoveryId query parameter" }),
-        };
-      }
-
-      const stediResponse = await fetch(
-        `https://healthcare.us.stedi.com/2024-04-01/insurance-discovery/check/v1/${discoveryId}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Key ${stediKey}` },
-        }
-      );
-
-      const stediData = await stediResponse.json();
-
-      if (!stediResponse.ok) {
-        return {
-          statusCode: stediResponse.status,
-          headers,
-          body: JSON.stringify({ error: stediData.message || "Failed to retrieve discovery results" }),
-        };
-      }
-
-      if (stediData.status === "PENDING") {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ status: "PENDING", discoveryId }),
-        };
-      }
-
-      const items = (stediData.items || []).map((item) => ({
-        payer: item.payer?.name || "Unknown payer",
-        memberId: item.subscriber?.memberId || "",
-        groupNumber: item.planInformation?.groupNumber || "",
-        planDescription: item.planInformation?.groupDescription || "",
-        matchConfidence: item.matchConfidence?.confidenceLevel || "Unknown",
-      }));
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ status: "COMPLETE", discoveryId, matchCount: items.length, items }),
-      };
-    }
-
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: "Method not allowed" }),
-    };
+    return json(405, { error: "Method not allowed" });
   } catch (err) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return json(500, { ok: false, error: err.message });
   }
 };
+
+function json(statusCode, obj) { return { statusCode, headers: CORS, body: JSON.stringify(obj) }; }
