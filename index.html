@@ -2796,10 +2796,13 @@ function applyStediFeed(feed, rows){
     setPill('discMode','● Stedi · live');
   }
   if(feed==='era'){
-    // Summary feed (no claim detail) → non-expandable rows; the webhook/report path adds claims.
-    DATA.eraList = rows.map(r=>({ eraNumber:s(r.eraNumber), payer:s(r.payer), check:s(r.check),
-      date: r.date || new Date().toISOString().slice(0,10), posting:(r.posting||'auto'),
-      amount:r.amount, claimsCount:Number(r.claims)||0, claims:[] }));
+    // r.detail carries the per-claim + service-line breakdown → rows stay click-to-expand on live data.
+    DATA.eraList = rows.map(r=>{
+      const claims = Array.isArray(r.detail) ? r.detail : [];
+      return { eraNumber:s(r.eraNumber), payer:s(r.payer), check:s(r.check),
+        date: r.date || new Date().toISOString().slice(0,10), posting:(r.posting||'auto'),
+        amount:r.amount, claimsCount: claims.length || Number(r.claims)||0, claims };
+    });
     buildEra();
     setPill('eraMode','● Stedi · live');
   }
