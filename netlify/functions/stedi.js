@@ -14,7 +14,8 @@
 
 const { extractAwv } = require("./lib/awv");
 const { provider } = require("./lib/providers");
-const { resolvePayerId, payerRows } = require("./lib/payers");
+const { resolvePayerId, payerRows, payerBillingEntity } = require("./lib/payers");
+const { summarizeEra, claimDetail } = require("./lib/era");
 
 const NOTION_VERSION = "2022-06-28";
 const INSURANCE_DB_ID = process.env.NOTION_INSURANCE_DB || "6bf580758d30828098a101e533cbed4d";
@@ -89,16 +90,26 @@ async function claimStatusFeed(stediKey, notionToken) {
 }
 
 // One real-time 276 → normalized status.
+// Per Stedi's claim-status guide: send MINIMAL data (extra fields like a submitted
+// amount cause false no-matches), include DOB + gender, and use a ±7-day service
+// window (≤30 days). The claim must already be ACCEPTED by the payer (allow 2–3
+// days / a 277CA) — brand-new or rejected claims won't return a status.
 async function checkClaimStatus(c, stediKey) {
-  const prov = provider(c.billingEntity);
+  const prov = provider(c.billingEntity || payerBillingEntity(c.payer));
   const payload = {
     tradingPartnerServiceId: resolvePayerId(c.payer),
-    subscriber: { firstName: c.first || parseFirst(c.patient), lastName: c.last || parseLast(c.patient), memberId: c.memberId || "" },
+    subscriber: {
+      firstName: c.first || parseFirst(c.patient),
+      lastName: c.last || parseLast(c.patient),
+      memberId: c.memberId || "",
+      ...(c.dob ? { dateOfBirth: ymd(c.dob) } : {}),
+      ...(c.gender ? { gender: /^f/i.test(c.gender) ? "F" : "M" } : {}),
+    },
     providers: [{ providerType: "BillingProvider", npi: prov.npi, taxId: prov.taxId, organizationName: prov.organizationName }],
     encounter: {
-      beginningDateOfService: ymd(c.dos), endDateOfService: ymd(c.dos),
-      submittedAmount: c.charge != null ? String(c.charge) : undefined,
-      tradingPartnerClaimNumber: c.claimNumber || undefined,
+      beginningDateOfService: ymdShift(c.dos, -7),
+      endDateOfService: ymdShift(c.dos, 7),
+      ...(c.claimNumber ? { patientAccountNumber: c.claimNumber } : {}),
     },
   };
   const r = await fetch(CLAIMSTATUS_URL, { method: "POST", headers: { Authorization: `Key ${stediKey}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -147,34 +158,14 @@ async function eraFeed(stediKey) {
       const rr = await fetch(ERA_REPORT_URL(id), { headers: { Authorization: `Key ${stediKey}` } });
       const rep = await rr.json();
       if (!rr.ok) continue;
-      rows.push(summarizeEra(rep, id));
+      // Summary row + the per-claim/service drill-down so live remits expand like samples.
+      rows.push({ ...summarizeEra(rep, id), detail: claimDetail(rep) });
     } catch (_) { /* skip a bad report */ }
   }
   return json(200, { ok: true, sampleMode: false, rows });
 }
 
-// Aggregate one 835 report → a remittance row {payer, eraNumber, check, amount, claims, posting}.
-function summarizeEra(rep, id) {
-  const tx = (rep.transactions && rep.transactions[0]) || {};
-  const details = tx.detailInfo || [];
-  const payments = details.flatMap((d) => d.paymentInfo || []);
-  let total = 0, claims = 0;
-  for (const p of payments) {
-    const amt = Number(p.claimPaymentInfo?.claimPaymentAmount || 0);
-    if (!Number.isNaN(amt)) total += amt;
-    claims += 1;
-  }
-  const payer = (payments[0] && payments[0].payer && (payments[0].payer.name || payments[0].payer.organizationName))
-    || tx.payer?.name || "Payer";
-  return {
-    payer,
-    eraNumber: tx.controlNumber || (id ? id.slice(0, 8) : ""),
-    check: tx.financialInformation?.checkOrEftTraceNumber || tx.checkNumber || "",
-    amount: `$${total.toLocaleString()}`,
-    claims: String(claims),
-    posting: "auto",
-  };
-}
+// summarizeEra now lives in ./lib/era (shared with stedi-webhook.js).
 
 /* ---- POST eligibility (+ AWV) -------------------------------------------- */
 async function eligibility(body, stediKey, notionToken) {
@@ -185,7 +176,8 @@ async function eligibility(body, stediKey, notionToken) {
 
   const fullName = patient || [last, first].filter(Boolean).join(", ");
   const memId = memberId || member || "";
-  const prov = provider(billingEntity);
+  // Use the payer's enrolled billing entity (e.g. PBHS → addiction) unless overridden.
+  const prov = provider(billingEntity || payerBillingEntity(payer));
 
   const requested = Array.isArray(serviceTypeCodes) && serviceTypeCodes.length
     ? serviceTypeCodes
@@ -276,6 +268,8 @@ async function notionOpenClaims(token) {
       patient: getText(pick(p, "Patient", "Patient Name")),
       payer: getText(pick(p, "Payer")),
       memberId: getText(pick(p, "Member ID", "Member Id")),
+      dob: getDate(pick(p, "DOB", "Date of Birth", "Patient DOB")),
+      gender: getSelect(pick(p, "Gender", "Sex")) || getText(pick(p, "Gender", "Sex")),
       dos: getDate(pick(p, "Date of Service", "DOS", "Service Date")),
       charge: getNumber(pick(p, "Charge", "Amount", "Billed")),
       status,
@@ -331,6 +325,11 @@ function getText(p) {
 }
 function getDate(p) { return p && p.type === "date" && p.date ? p.date.start : null; }
 function ymd(d) { return d ? String(d).replace(/-/g, "").slice(0, 8) : ""; }
+function ymdShift(dateStr, days) {   // ISO date ± N days → YYYYMMDD (for the ±7 window)
+  const t = Date.parse(dateStr);
+  if (Number.isNaN(t)) return ymd(dateStr);
+  return new Date(t + days * 864e5).toISOString().slice(0, 10).replace(/-/g, "");
+}
 function daysSince(d) { const t = Date.parse(d); return Number.isNaN(t) ? "" : String(Math.max(0, Math.round((Date.now() - t) / 864e5))); }
 function getNumber(p) { return p && p.type === "number" ? p.number : null; }
 function getSelect(p) { return p && p.type === "select" && p.select ? p.select.name : null; }

@@ -27,9 +27,9 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return resp(405, { error: "method not allowed" });
 
   // 1) Authenticate — Stedi presents the credential you configured on the webhook.
-  const auth = event.headers.authorization || event.headers.Authorization || "";
-  const token = process.env.STEDI_WEBHOOK_TOKEN;
-  if (token && !auth.includes(token)) return resp(401, { error: "unauthorized" });
+  // Forgiving check: the secret can arrive in ANY header (Authorization: Bearer …,
+  // X-Api-Key, a custom header, …) or a query param — we just require it present.
+  if (!authorized(event, process.env.STEDI_WEBHOOK_TOKEN)) return resp(401, { error: "unauthorized" });
 
   let body;
   try { body = JSON.parse(event.body || "{}"); } catch { return resp(200, { ok: true, ignored: "unparseable" }); }
@@ -97,6 +97,17 @@ async function writePayment(p, summary) {
       },
     }),
   });
+}
+
+// True if the shared secret appears in any header or query-param value. If no
+// token is configured (dev), it's open. A long random secret makes a substring
+// match effectively as strong as an exact match, while tolerating whatever
+// header name / scheme (Bearer, raw key, custom) Stedi's credential set uses.
+function authorized(event, token) {
+  if (!token) return true;
+  const flat = (o) => Object.values(o || {}).flatMap((v) => Array.isArray(v) ? v : [v]);
+  const values = [...flat(event.headers), ...flat(event.multiValueHeaders), ...flat(event.queryStringParameters)];
+  return values.some((v) => typeof v === "string" && v.includes(token));
 }
 
 function resp(statusCode, obj) {
