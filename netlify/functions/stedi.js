@@ -44,7 +44,7 @@ exports.handler = async (event) => {
   try {
     if (event.httpMethod === "GET") {
       const q = event.queryStringParameters || {};
-      return await feed(q.feed, stediKey, notionToken);
+      return await feed(q.feed, stediKey, notionToken, q);
     }
     if (event.httpMethod === "POST") {
       return await eligibility(JSON.parse(event.body || "{}"), stediKey, notionToken);
@@ -56,14 +56,14 @@ exports.handler = async (event) => {
 };
 
 /* ---- GET feeds ----------------------------------------------------------- */
-async function feed(name, stediKey, notionToken) {
+async function feed(name, stediKey, notionToken, q = {}) {
   if (name === "payers") return json(200, { ok: true, sampleMode: false, rows: payerRows() });
   if (name === "eligibility") {
     if (!notionToken) return json(200, { ok: true, sampleMode: true });
     return json(200, { ok: true, sampleMode: false, rows: await notionVerifications(notionToken) });
   }
   if (name === "claimStatus") return await claimStatusFeed(stediKey, notionToken);
-  if (name === "era") return await eraFeed(stediKey);
+  if (name === "era") return await eraFeed(stediKey, q);
   return json(200, { ok: true, sampleMode: true });
 }
 
@@ -139,21 +139,34 @@ function mapStatusCategory(cat, statusValue) {
    835s arrive asynchronously. Poll Stedi for inbound 835 transactions, fetch
    each report, and aggregate to remittance rows. Field paths are best-effort —
    confirm against a real 835 for your payers, then tighten. -----------------*/
-async function eraFeed(stediKey) {
+async function eraFeed(stediKey, opts = {}) {
   if (!stediKey) return json(200, { ok: true, sampleMode: true });
 
-  const since = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 19) + "Z";
+  const debug = opts.debug != null && !/^(0|false)$/i.test(String(opts.debug));
+  const days = Number(opts.days) || Number(process.env.STEDI_ERA_LOOKBACK_DAYS) || 400;
+  const since = new Date(Date.now() - days * 864e5).toISOString().slice(0, 19) + "Z";
+
   const pr = await fetch(`${POLLING_URL}?startDateTime=${encodeURIComponent(since)}`, { headers: { Authorization: stediKey } });
-  const poll = await pr.json();
-  if (!pr.ok) return json(200, { ok: true, sampleMode: true, error: poll.message || "poll failed" });
+  const text = await pr.text();
+  let poll = {}; try { poll = JSON.parse(text); } catch (_) { /* non-JSON body */ }
+  if (!pr.ok) {
+    return json(200, { ok: true, sampleMode: !debug, error: (poll && poll.message) || `poll HTTP ${pr.status}`,
+      ...(debug ? { httpStatus: pr.status, body: String(text).slice(0, 800) } : {}) });
+  }
 
-  const eras = (poll.items || poll.transactions || [])
-    .filter((t) => (t.direction === "INBOUND") && String(t.x12?.transactionSetIdentifier || t.transactionSetIdentifier) === "835")
-    .slice(0, 15);
+  const items = poll.items || poll.transactions || poll.data || [];
+  // Diagnostic: GET ?feed=era&debug=1 returns exactly what Stedi's polling API
+  // gives back (window, count, raw item shape) so the 835 filter can match reality.
+  if (debug) {
+    return json(200, { ok: true, debug: true, since, days, polledCount: items.length,
+      topLevelKeys: Object.keys(poll || {}), sample: items.slice(0, 3) });
+  }
 
+  const eras = items.filter(is835Inbound).slice(0, 25);
   const rows = [];
   for (const t of eras) {
-    const id = t.transactionId || t.id;
+    const id = t.transactionId || t.id || t.artifactId;
+    if (!id) continue;
     try {
       const rr = await fetch(ERA_REPORT_URL(id), { headers: { Authorization: `Key ${stediKey}` } });
       const rep = await rr.json();
@@ -163,6 +176,18 @@ async function eraFeed(stediKey) {
     } catch (_) { /* skip a bad report */ }
   }
   return json(200, { ok: true, sampleMode: false, rows });
+}
+
+// Lenient inbound-835 test across the field names Stedi's polling API may use.
+function is835Inbound(t) {
+  const dir = String(t.direction || t.transactionDirection || t.flow || "").toUpperCase();
+  const setId = String(
+    (t.x12 && (t.x12.transactionSetIdentifier || t.x12.transactionSet)) ||
+    t.transactionSetIdentifier || t.transactionSet || t.transactionSetId ||
+    (t.transaction && t.transaction.transactionSetIdentifier) || ""
+  );
+  const inbound = dir ? /IN/.test(dir) : true;   // no direction field → don't exclude
+  return inbound && setId === "835";
 }
 
 // summarizeEra now lives in ./lib/era (shared with stedi-webhook.js).
