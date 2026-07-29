@@ -1914,6 +1914,34 @@ function reconStatus(r){
   if((r.paid || 0) === 0) return 'open';
   return reconDerive(r).outstanding > 0.5 ? 'partial' : 'paid';
 }
+// Roll the live line-level CPT rows up into one claim per Invoice #, so the
+// reconciliation page shows real claims to tag by program (dropdown default =
+// the CPT-derived program; you adjust it). Charges keeps every individual line.
+function buildReconLedger(rows){
+  if(!rows || !rows.length) return;
+  const provId = full => { const f=String(full||''); return PROVIDERS.find(p=>new RegExp('\\b'+p+'\\b','i').test(f)) || PROVIDERS[0]; };
+  const progId = name => { const hit=PROGRAMS.find(p=>p.name===name); return hit ? hit.id : 'primary'; };
+  const g = {};
+  rows.forEach(r=>{
+    const key = r.ctlNo || (r.patient+'|'+r.paymentDate);
+    const c = g[key] || (g[key] = { claim:key, patient:r.patient, payer:r.payer, provider:provId(r.provider),
+      billed:0, allowed:0, paid:0, patientResp:0, patientPaid:0, denied:false, lines:[] });
+    c.billed += Number(r.charge)||0;  c.allowed += Number(r.allowed)||0;
+    c.paid += Number(r.paid)||0;      c.patientResp += Number(r.patientResp)||0;
+    if(/deni|reject/i.test(r.status||'')) c.denied = true;
+    c.lines.push(r);
+  });
+  DATA.reconLedger = Object.values(g).map(c=>{
+    const top = c.lines.slice().sort((a,b)=>(Number(b.charge)||0)-(Number(a.charge)||0))[0] || {};
+    const status = (c.denied && c.paid===0) ? 'denied'
+      : c.paid===0 ? 'open'
+      : (c.billed && c.paid < c.billed) ? 'partial' : 'paid';
+    return { claim:c.claim, patient:c.patient, payer:c.payer, provider:c.provider,
+      billed:c.billed, allowed:c.allowed, paid:c.paid, patientResp:c.patientResp, patientPaid:c.patientPaid,
+      status, program:progId(top.program), cpt:top.cpt||'' };
+  });
+  buildClaimRecon();
+}
 let RECON_FILTER='';
 function setReconFilter(v){ RECON_FILTER=v; buildClaimRecon(); }
 function buildClaimRecon(){
@@ -2716,6 +2744,7 @@ function applyNotionRows(db, rows){
     DATA.denials = den.map(r=>[m(r.ctlNo)||'—', m(r.patient), m(r.payer), 'EOB '+m(r.denialReason||'—'),
       dollars(r.charge), '—', (r.status||'').toLowerCase()]);
     fillTable('tblDenials', DATA.denials, 6);
+    buildReconLedger(rows);   // roll the CPT lines up per Invoice # → claim-level reconciliation
   }
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
@@ -2807,7 +2836,17 @@ function applyStediFeed(feed, rows){
         date: r.date || new Date().toISOString().slice(0,10), posting:(r.posting||'auto'),
         amount:r.amount, claimsCount: claims.length || Number(r.claims)||0, claims };
     });
-    buildEra();
+    // Post each Stedi remittance into the money-received ledger (Payments page) so it shows
+    // electronic payments alongside manual paper/cash/check entries. Keep the manual rows;
+    // replace only prior ERA-type rows so re-polling doesn't duplicate.
+    const manual = (DATA.payments||[]).filter(r=> String(r[5]).toUpperCase()!=='ERA');
+    const eraPays = DATA.eraList.map(e=>{
+      const paid = (e.claims&&e.claims.length) ? e.claims.reduce((a,c)=>a+(c.paid||0),0) : parseMoney(e.amount);
+      return [ pmFmtDate(e.date), e.payer, e.check||'—', '$'+Math.round(paid).toLocaleString(),
+        String(e.claimsCount||0), 'ERA', (e.posting==='exception'?'review':'paid') ];
+    });
+    DATA.payments = [...eraPays, ...manual];
+    buildEra(); buildPayments();
     setPill('eraMode','● Stedi · live');
   }
   if(feed==='payers'){
