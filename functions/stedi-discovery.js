@@ -49,7 +49,11 @@ exports.handler = async (event) => {
           dateOfBirth: dob ? dob.replace(/-/g, "") : "",
           ...(ssn4 ? { ssn: String(ssn4).replace(/\D/g, "") } : {}),
           ...(sex ? { gender: /^m/i.test(sex) ? "M" : /^f/i.test(sex) ? "F" : "U" } : {}),
-          address: { address1: address1 || "", city: city || "", state: state || "", postalCode: zip || "" },
+          // Only send an address when a street line is actually present — Stedi rejects
+          // an empty address1 (must be 1–55 chars). Discovery still matches on SSN + name + DOB.
+          ...(address1 && address1.trim()
+            ? { address: { address1: address1.trim(), city: city || "", state: state || "", ...(zip ? { postalCode: zip } : {}) } }
+            : {}),
         },
       };
 
