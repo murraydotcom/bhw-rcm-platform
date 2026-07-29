@@ -1084,13 +1084,16 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
                 <div><label class="mini">DOB</label><input type="date" id="dsDob" value="1968-02-09" style="width:100%"></div>
                 <div><label class="mini">Gender</label><select id="dsSex" style="width:100%"><option>Male</option><option>Female</option><option>Unknown</option></select></div>
               </div>
-              <div class="g2 grid">
-                <div><label class="mini">SSN — last 4 (optional)</label><input type="text" id="dsSsn4" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="4321" style="width:100%"></div>
-                <div><label class="mini">ZIP (optional)</label><input type="text" id="dsZip" value="21215" style="width:100%"></div>
+              <div><label class="mini">SSN (optional — full 9 digits gives the best match; last-4 also works)</label><input type="text" id="dsSsn" maxlength="11" inputmode="numeric" autocomplete="off" placeholder="123-45-6789 or 6789" style="width:100%"></div>
+              <div><label class="mini">Street address (optional)</label><input type="text" id="dsAddr1" autocomplete="off" placeholder="123 Main St" style="width:100%"></div>
+              <div class="g3 grid">
+                <div><label class="mini">City</label><input type="text" id="dsCity" autocomplete="off" placeholder="Baltimore" style="width:100%"></div>
+                <div><label class="mini">State</label><input type="text" id="dsState" maxlength="2" autocomplete="off" placeholder="MD" style="width:100%"></div>
+                <div><label class="mini">ZIP</label><input type="text" id="dsZip" value="21215" style="width:100%"></div>
               </div>
               <div><label class="mini">Date of service</label><input type="date" id="dsDos" value="2026-07-20" style="width:100%"></div>
               <button class="btn btn-primary" onclick="runDiscovery()">⌕ Discover Coverage</button>
-              <div class="mini">Name + DOB is the minimum. <b>Last-4 of SSN</b> sharply improves matching when a patient can&rsquo;t recall which address or plan they used — it&rsquo;s sent securely to Stedi server-side (never in a URL) and isn&rsquo;t stored on this page.</div>
+              <div class="mini">Name + DOB is the minimum. Adding a <b>full SSN</b> or a <b>street address</b> sharply improves matching. Everything is sent securely to Stedi server-side (never in a URL) and isn&rsquo;t stored on this page.</div>
             </div>
           </div>
           <div class="card">
@@ -2650,14 +2653,15 @@ async function runEligibility(){
    ============================================================ */
 async function runDiscovery(){
   const g=id=>document.getElementById(id).value;
-  const first=g('dsFirst'), last=g('dsLast'), dob=g('dsDob'), sex=g('dsSex'), zip=g('dsZip'), dos=g('dsDos'), ssn4=g('dsSsn4');
+  const first=g('dsFirst'), last=g('dsLast'), dob=g('dsDob'), sex=g('dsSex'), zip=g('dsZip'), dos=g('dsDos');
+  const ssn4=g('dsSsn'), address1=g('dsAddr1'), city=g('dsCity'), state=g('dsState');   // ssn4 field now accepts full or last-4
   const out=document.getElementById('dsResult');
   out.innerHTML='<p class="mini">Searching payers for active coverage…</p>';
   let data;
   try{
     // Sensitive fields travel in the POST body only — never a query string.
     const res=await fetch(CONFIG.fn.stediDiscovery,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({first,last,dob,sex,zip,dos,ssn4})});
+      body:JSON.stringify({first,last,dob,sex,zip,dos,ssn4,address1,city,state})});
     data=await res.json();
   }catch(e){
     data={ok:true,sampleMode:true,result:DATA.discSample.active};   // offline demo
