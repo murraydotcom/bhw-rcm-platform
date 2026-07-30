@@ -428,7 +428,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <div class="card"><div class="card-head"><h3>Payment Source Split</h3></div><div class="chart-wrap sm"><canvas id="chPaySource"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-head"><h3>Recent Remittances</h3><button class="btn btn-ai btn-sm" onclick="openAI('Reconcile these remittances against expected contract rates and flag any underpayments to appeal.','Underpayment scan')">Flag underpayments</button></div>
+          <div class="card-head split"><div><h3>Collections — all sources, deduped</h3><div class="card-sub" id="payIntegrity">Combines Stedi 835, Notion claim payments, and manual EOB/patient postings — each real payment counted once.</div></div><button class="btn btn-ai btn-sm" onclick="openAI('Reconcile these remittances against expected contract rates and flag any underpayments to appeal.','Underpayment scan')">Flag underpayments</button></div>
           <div class="table-scroll"><table id="tblPayments">
             <thead><tr><th>Date</th><th>Payer</th><th>Check/EFT #</th><th class="num">Amount</th><th class="num">Claims</th><th>Type</th><th>Status</th></tr></thead>
             <tbody></tbody>
@@ -485,14 +485,18 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <div class="card" style="margin-bottom:16px">
           <div class="card-head split">
             <div><h3>Claim-Level Reconciliation</h3><div class="card-sub">Tag each claim to a <b>program</b> &amp; <b>provider</b> as you reconcile — it flows into CPT-by-program and P&amp;L. Adj = billed − allowed; Balance = payer underpayment.</div></div>
-            <button class="btn btn-ai btn-sm" onclick="openAI('From the claim-level reconciliation, list the underpaid claims where the payer paid less than allowed, quantify each shortfall, and draft the appeal basis.','Underpayment appeals')">Find underpayments</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="tag" id="reconDoneCount">0 / 0 reconciled</span>
+              <button class="btn btn-ghost btn-sm" onclick="reconcileAll()">Reconcile all shown</button>
+              <button class="btn btn-ai btn-sm" onclick="openAI('From the claim-level reconciliation, list the underpaid claims where the payer paid less than allowed, quantify each shortfall, and draft the appeal basis.','Underpayment appeals')">Find underpayments</button>
+            </div>
           </div>
           <div class="section-tools">
             <label class="mini">Group by program</label>
             <select onchange="setReconFilter(this.value)" id="reconFilter" data-progfill="all"></select>
           </div>
           <div class="table-scroll"><table id="tblClaimRecon">
-            <thead><tr><th>Claim #</th><th>Patient</th><th>Program</th><th>Provider</th><th>Payer</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th class="num">Adj</th><th class="num">Pt Resp</th><th class="num">Balance</th><th>Status</th></tr></thead>
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Program</th><th>Provider</th><th>Payer</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th class="num">Adj</th><th class="num">Pt Resp</th><th class="num">Balance</th><th>Status</th><th>Done</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -1443,6 +1447,10 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
     <span class="ai-tag" id="aiTag">Albert Murray</span>
     <div class="ai-msg" id="aiMsg">Ask Albert anything — a number, a decision, RCM, cash flow, taxes, or where the healthcare economy is headed. He's blunt; that's the point.</div>
   </div>
+  <div class="ai-input" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)">
+    <input id="aiInput" type="text" autocomplete="off" placeholder="Ask Albert…" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)" onkeydown="if(event.key==='Enter'){event.preventDefault();askAlbert();}">
+    <button class="btn btn-primary btn-sm" onclick="askAlbert()">Send</button>
+  </div>
   <div class="ai-foot">
     Albert runs on Claude via <span class="tag">/.netlify/functions/albert</span>. Add an <span class="tag">ANTHROPIC_API_KEY</span> in Netlify to enable live answers.
   </div>
@@ -1882,6 +1890,14 @@ function closeAI(){
 }
 /* sendPrompt: wire CONFIG.ai.endpoint to enable live LLM generation.
    Until then, echoes the prompt so the workflow is testable. */
+// Free-text question to Albert from the drawer input.
+function askAlbert(){
+  const el=document.getElementById('aiInput'); if(!el) return;
+  const q=(el.value||'').trim(); if(!q) return;
+  el.value='';
+  const tagEl=document.getElementById('aiTag'); if(tagEl) tagEl.textContent='Albert Murray';
+  sendPrompt(q, 'Albert Murray');
+}
 // Compact snapshot of the current live figures, sent with each question so
 // Albert can reference real numbers without the user pasting them.
 function dashboardContext(){
@@ -2008,6 +2024,7 @@ function buildClaimRecon(){
   const tb = document.querySelector('#tblClaimRecon tbody'); if(!tb) return;
   const money = n => '$' + Number(n || 0).toLocaleString();
   let ar = 0, posted = 0, under = 0, ptTotal = 0;
+  const done = reconDoneSet(); let total = 0, doneCt = 0;
   const progSel=(i,cur)=>`<select onchange="setReconProgram(${i},this.value)" onclick="event.stopPropagation()" style="padding:4px 6px;font-size:11px">${progOptions(cur,false)}</select>`;
   const provSel=(i,cur)=>`<select onchange="setReconProvider(${i},this.value)" onclick="event.stopPropagation()" style="padding:4px 6px;font-size:11px">${providerOptions(cur)}</select>`;
   tb.innerHTML = DATA.reconLedger.map((r,i) => {
@@ -2018,19 +2035,36 @@ function buildClaimRecon(){
     else if(r.status !== 'paid') ar += d.outstanding;
     if(r.status === 'partial') under++;
     ptTotal += d.ptBal;
+    total++; const isDone = done.has(r.claim); if(isDone) doneCt++;
     if(RECON_FILTER && r.program !== RECON_FILTER) return '';
     const bal = d.outstanding > 0 ? `<span style="color:var(--denied)">${money(d.outstanding)}</span>` : '$0';
-    return `<tr>
+    return `<tr${isDone?' style="opacity:.55"':''}>
       <td><b>${r.claim}</b></td><td>${r.patient}</td>
       <td>${progSel(i, r.program)}</td><td>${provSel(i, r.provider)}</td><td>${r.payer}</td>
       <td class="num">${money(r.billed)}</td><td class="num">${r.allowed ? money(r.allowed) : '—'}</td>
       <td class="num">${money(r.paid)}</td><td class="num">${d.adj ? money(d.adj) : '—'}</td>
       <td class="num">${money(r.patientResp)}</td><td class="num">${bal}</td>
-      <td>${badge(r.status)}</td></tr>`;
-  }).join('') || '<tr><td colspan="12" class="mini" style="padding:12px">No claims in this program.</td></tr>';
+      <td>${badge(r.status)}</td>
+      <td style="text-align:center"><input type="checkbox" ${isDone?'checked':''} onchange="toggleReconDone(${i},this.checked)" title="Mark this claim reconciled"></td></tr>`;
+  }).join('') || '<tr><td colspan="13" class="mini" style="padding:12px">No claims in this program.</td></tr>';
   const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   set('reconAR', money(Math.round(ar))); set('reconPosted', money(Math.round(posted)));
   set('reconUnder', under); set('reconPtBal', money(Math.round(ptTotal)));
+  set('reconDoneCount', doneCt + ' / ' + total + ' reconciled');
+}
+function reconDoneSet(){ try{ return new Set(JSON.parse(localStorage.getItem('reconDone')||'[]')); }catch(e){ return new Set(); } }
+function toggleReconDone(i, on){
+  const r = DATA.reconLedger[i]; if(!r) return;
+  const done = reconDoneSet();
+  if(on) done.add(r.claim); else done.delete(r.claim);
+  try{ localStorage.setItem('reconDone', JSON.stringify([...done])); }catch(e){}
+  buildClaimRecon();
+}
+function reconcileAll(){
+  const done = reconDoneSet();
+  (DATA.reconLedger||[]).forEach(r=>{ if(!RECON_FILTER || r.program===RECON_FILTER) done.add(r.claim); });
+  try{ localStorage.setItem('reconDone', JSON.stringify([...done])); }catch(e){}
+  buildClaimRecon();
 }
 // Re-tag a claim's program → shift its collected revenue between programs (P&L)
 // and re-attribute its CPT (CPT-by-program).
@@ -2367,6 +2401,51 @@ function inPeriod(v){
   const now=Date.now();
   return d.getTime() >= now - PERIOD_DAYS*864e5 && d.getTime() <= now + 864e5;
 }
+/* ---- Unified, deduplicated collections ledger ----------------------------
+   Pulls every payment from all three sources and counts each real payment ONCE:
+   Stedi 835 (authoritative electronic) → Notion Claims paid column → manual
+   EOB / patient postings. Dedup key: claim#+amount OR check#+amount. A payment
+   already seen from a higher-priority source is flagged .dup and excluded from
+   every total. ------------------------------------------------------------- */
+function buildCollections(){
+  const seen = new Set();
+  const norm = v => String(v==null?'':v).trim().toLowerCase();
+  const out = [];
+  const add = (rec) => {
+    const amt = Math.round(rec.amount||0);
+    if(amt<=0) return;
+    const kClaim = rec.claim ? 'c:'+norm(rec.claim)+'|'+amt : '';
+    const kCheck = rec.check ? 'k:'+norm(rec.check)+'|'+amt : '';
+    if((kClaim && seen.has(kClaim)) || (kCheck && seen.has(kCheck))){ rec.dup = true; }
+    else { if(kClaim) seen.add(kClaim); if(kCheck) seen.add(kCheck); }
+    out.push(rec);
+  };
+  (DATA.eraList||[]).forEach(e=>{ (e.claims||[]).forEach(c=>{
+    add({ source:'835 (Stedi)', claim:c.claim, check:e.check, payer:e.payer, amount:c.paid, date:e.date }); }); });
+  (DATA.claimsRaw||[]).forEach(r=>{
+    add({ source:'Notion claim', claim:r.ctlNo, check:r.check, payer:r.payer, amount:r.paid, date:r.paymentDate }); });
+  (DATA.paymentsRaw||[]).forEach(r=>{
+    add({ source:'Manual/EOB', claim:r.claim, check:r.check, payer:r.payer, amount:r.amount, date:r.date }); });
+  // Soft warning: a manual / Notion payment that shares a check # with an 835 but
+  // wasn't caught by the strict claim/check+amount dedup — e.g. one lump EOB vs the
+  // per-claim 835 lines. Not auto-excluded (we're not certain) — flagged for review.
+  const eraChecks = new Set();
+  out.forEach(r=>{ if(!r.dup && String(r.source).startsWith('835') && r.check) eraChecks.add(norm(r.check)); });
+  out.forEach(r=>{ if(r.dup || String(r.source).startsWith('835')) return;
+    const k = norm(r.check); if(k && eraChecks.has(k)) r.warn = true; });
+  DATA.collections = out;
+  return out;
+}
+function collectionsTotal(filterFn){
+  return (DATA.collections||[]).filter(r=>!r.dup && (!filterFn||filterFn(r))).reduce((a,r)=>a+(r.amount||0),0);
+}
+// Rebuild the whole money side after any source changes.
+function refreshMoney(){
+  buildCollections();
+  computeDashboardKpis(DATA.claimsRaw||[]);
+  buildPayments();
+  buildMonthClose();
+}
 /* ---- Dashboard KPI tiles computed from live claims (honest — blanks what the
        data can't support, e.g. A/R Days needs claim dates) ---- */
 function computeDashboardKpis(rows){
@@ -2386,8 +2465,9 @@ function computeDashboardKpis(rows){
   });
   set('kpiCharges', money(chargeMtd));
   set('kpiChargesSub', dated+'/'+total+' claims dated · '+money(chargeAll)+' loaded');
-  set('kpiCollRate', billedAdj>0 ? (paid/billedAdj*100).toFixed(1)+'%' : '—');
-  set('kpiCollSub', billedAdj>0 ? money(paid)+' of '+money(billedAdj)+' adjudicated' : 'no payments posted yet');
+  const collected = collectionsTotal();   // deduped across 835 + Notion + manual
+  set('kpiCollRate', chargeAll>0 ? (collected/chargeAll*100).toFixed(1)+'%' : '—');
+  set('kpiCollSub', collected>0 ? money(collected)+' collected of '+money(chargeAll)+' billed (all sources)' : 'no payments captured yet');
   set('kpiDenRate', total ? (denied/total*100).toFixed(1)+'%' : '—');
   set('kpiDenSub', denied+' of '+total+' claims');
   set('kpiArDays','—');    set('kpiArSub','needs claim dates');
@@ -2440,8 +2520,9 @@ function buildMonthClose(){
     billed+=c; collected+=p;
     if(/deni|reject/.test(st)||r.denialReason){denied+=c;deniedCt++;}
     if(st==='open'||st==='pending'){openAR+=Math.max(0,c-p);openCt++;} });
+  const mcCollected = collectionsTotal(r=>String(r.date||'').slice(0,7)===month);  // deduped, all sources
   set('mcBilled',mcMoney(billed)); set('mcBilledSub',rows.length+' claims');
-  set('mcCollected',mcMoney(collected)); set('mcCollRate',billed?(collected/billed*100).toFixed(1)+'% collected':'—');
+  set('mcCollected',mcMoney(mcCollected)); set('mcCollRate',billed?(mcCollected/billed*100).toFixed(1)+'% collected':'—');
   set('mcDenied',mcMoney(denied)); set('mcDeniedSub',deniedCt+' claims');
   set('mcOpenAR',mcMoney(openAR)); set('mcOpenSub',openCt+' open claims');
   let mcNote = rows.length ? (rows.length+' claims dated in '+month) : ('No claims dated in '+month);
@@ -2522,7 +2603,22 @@ function setPeriod(v){
   buildEra(); buildPayments(); buildBanking();
 }
 function buildPayments(){
-  fillTable('tblPayments', (DATA.payments||[]).filter(r=>inPeriod(r[0])), 6);
+  if(!DATA.collections) buildCollections();
+  const recs = (DATA.collections||[]).filter(r=>!r.dup && inPeriod(r.date));
+  const rows = recs.map(r=>[
+    (r.date ? (pmFmtDate(r.date)||r.date) : '—'), r.payer||'—', r.check||'—',
+    '$'+Math.round(r.amount||0).toLocaleString(), '1', r.source||'—', r.warn ? 'review' : 'posted'
+  ]);
+  fillTable('tblPayments', rows, 6);
+  const dups=(DATA.collections||[]).filter(r=>r.dup).length;
+  const warns=recs.filter(r=>r.warn).length;
+  const total=collectionsTotal(r=>inPeriod(r.date));
+  const el=document.getElementById('payIntegrity');
+  if(el){
+    el.textContent = recs.length+' payments captured · '+dups+' duplicate(s) removed · $'+Math.round(total).toLocaleString()+' collected this period (835 + Notion + manual, deduped)'
+      + (warns ? '  ⚠ '+warns+' share a check # with an 835 — review for possible overlap' : '');
+    el.style.color = warns ? 'var(--denied)' : '';
+  }
 }
 
 /* ---- Remittances (835) — drill down to claim + service, with comments ---- */
@@ -2954,9 +3050,12 @@ function applyNotionRows(db, rows){
       dollars(r.charge), '—', (r.status||'').toLowerCase()]);
     fillTable('tblDenials', DATA.denials, 6);
     buildReconLedger(rows);        // one reconciliation row per CPT line
-    computeDashboardKpis(rows);    // real Charges MTD / Collection / Denial from live claims
-    DATA.claimsRaw = rows;         // raw rows for the Monthly Close page
-    buildMonthClose();
+    DATA.claimsRaw = rows;         // raw rows for KPIs / Monthly Close / collections
+    refreshMoney();                // collections + KPIs + Payments + Monthly Close
+  }
+  if(db==='payments'){
+    DATA.paymentsRaw = rows;       // manual EOB / cash / check postings from Notion
+    refreshMoney();
   }
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
@@ -3048,17 +3147,8 @@ function applyStediFeed(feed, rows){
         date: r.date || new Date().toISOString().slice(0,10), posting:(r.posting||'auto'),
         amount:r.amount, claimsCount: claims.length || Number(r.claims)||0, claims };
     });
-    // Post each Stedi remittance into the money-received ledger (Payments page) so it shows
-    // electronic payments alongside manual paper/cash/check entries. Keep the manual rows;
-    // replace only prior ERA-type rows so re-polling doesn't duplicate.
-    const manual = (DATA.payments||[]).filter(r=> String(r[5]).toUpperCase()!=='ERA');
-    const eraPays = DATA.eraList.map(e=>{
-      const paid = (e.claims&&e.claims.length) ? e.claims.reduce((a,c)=>a+(c.paid||0),0) : parseMoney(e.amount);
-      return [ pmFmtDate(e.date), e.payer, e.check||'—', '$'+Math.round(paid).toLocaleString(),
-        String(e.claimsCount||0), 'ERA', (e.posting==='exception'?'review':'paid') ];
-    });
-    DATA.payments = [...eraPays, ...manual];
-    buildEra(); buildPayments();
+    buildEra();
+    refreshMoney();   // ERA remittances flow into the unified, deduped collections ledger
     setPill('eraMode','● Stedi · live');
   }
   if(feed==='payers'){
@@ -3112,9 +3202,11 @@ async function postPayment(btn){
     payer: mode==='eob' ? (v('pmPayer')||'Payer') : 'Patient ('+method.toLowerCase()+')',
     billed:num('pmBilled'), allowed:num('pmAllowed'), patientResp:num('pmPatResp'), reason:v('pmReason')
   };
-  // optimistic: show it in the ledger immediately
-  DATA.payments.unshift([pmFmtDate(date), rec.payer, ref||'—', '$'+paid.toLocaleString(), '1', mode==='eob'?'Paper EOB':method, 'paid']);
-  buildPayments();
+  // optimistic: show it in the unified collections ledger immediately (dedup handles
+  // the case where the same payment also arrives as a Stedi 835).
+  DATA.paymentsRaw = DATA.paymentsRaw || [];
+  DATA.paymentsRaw.unshift({ patient, payer:rec.payer, type:mode==='eob'?'Paper EOB':'Patient payment', method, check:ref, claim, date, amount:paid });
+  refreshMoney();
   // claim-level reconciliation: link the payment to its claim
   let reconNote='';
   if(claim){ const st=reconcileClaim(rec); reconNote=' · reconciled '+claim+' → '+st; }
@@ -3192,6 +3284,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   loadNotion('expenses','tblExpenses');
   loadNotion('reconciliation','tblRecon');
   loadNotion('contracts','tblContracts');
+  loadNotion('payments','tblPayments');   // manual EOB / patient postings → collections ledger
 
   // Stedi live feeds — source these straight from Stedi, not Notion.
   // Claim status is NOT auto-loaded: each load runs live (billable) 276 checks,
