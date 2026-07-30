@@ -120,4 +120,86 @@ function firstAdjustment(adj) {
   };
 }
 
-module.exports = { summarizeEra, claimPayments, claimDetail };
+/* ============================================================================
+ * Stedi GuideJSON 835 (from a core transaction's OUTPUT artifact:
+ * https://core.us.stedi.com/2023-08-01/transactions/{id}/output).
+ * GuideJSON keys carry segment ids (…_CLP, …_SVC, …_CAS, …_NM1) and element
+ * positions (_01, _02…). We locate segments/elements by key SUBSTRING so minor
+ * guide-name drift doesn't break parsing.
+ * ==========================================================================*/
+function _norm(k) { return String(k).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+// Every object that CONTAINS a key matching keyTest (keeps sibling access).
+function containersWith(node, keyTest, acc) {
+  acc = acc || [];
+  if (Array.isArray(node)) { for (const n of node) containersWith(n, keyTest, acc); }
+  else if (node && typeof node === "object") {
+    if (Object.keys(node).some(keyTest)) acc.push(node);
+    for (const k in node) containersWith(node[k], keyTest, acc);
+  }
+  return acc;
+}
+const hasSeg = (id) => (k) => _norm(k).includes(_norm(id));
+// First sub-object whose key includes the segment id (e.g. "CLP").
+function subSeg(obj, id) { id = _norm(id); if (obj && typeof obj === "object") for (const k in obj) if (_norm(k).includes(id)) return obj[k]; return null; }
+// First element value whose key includes any of the wanted substrings.
+function el(obj, ...wants) { if (!obj || typeof obj !== "object") return undefined; const nw = wants.map(_norm); for (const k in obj) { const nk = _norm(k); if (nw.some((w) => nk.includes(w))) return obj[k]; } return undefined; }
+function gnum(...v) { for (const x of v) { if (x && typeof x === "object") continue; const n = Number(x); if (x != null && x !== "" && !Number.isNaN(n)) return n; } return 0; }
+function bizId(item, element) { const bis = (item && item.businessIdentifiers) || []; const hit = bis.find((b) => String(b.element) === element); return hit ? hit.value : ""; }
+
+function payerFromGuide(rep) {
+  for (const c of containersWith(rep, hasSeg("N1"))) {
+    const n1 = subSeg(c, "N1");
+    if (n1 && String(el(n1, "entityidentifiercode", "_01")) === "PR") { const nm = el(n1, "name", "_02"); if (nm) return nm; }
+  }
+  return "";
+}
+
+function summarizeGuide(rep, item) {
+  const bpr = subSeg(containersWith(rep, hasSeg("BPR"))[0], "BPR");
+  const total = gnum(el(bpr, "totalactualproviderpaymentamount", "monetaryamount", "_02"));
+  const trn = subSeg(containersWith(rep, hasSeg("TRN"))[0], "TRN");
+  const check = el(trn, "referenceidentification", "_02") || bizId(item, "TRN-02") || "";
+  const clps = containersWith(rep, hasSeg("CLP"));
+  const meta = item && item.x12 && item.x12.metadata;
+  return {
+    payer: payerFromGuide(rep) || "Payer",
+    eraNumber: (meta && meta.transaction && meta.transaction.controlNumber) || "",
+    check: String(check || ""),
+    amount: `$${Math.round(total).toLocaleString()}`,
+    claims: String(clps.length),
+    posting: "auto",
+    date: (meta && meta.functionalGroup && meta.functionalGroup.date) || undefined,
+  };
+}
+
+function claimDetailGuide(rep) {
+  return containersWith(rep, hasSeg("CLP")).map((c) => {
+    const clp = subSeg(c, "CLP");
+    let nm1 = null;
+    for (const nc of containersWith(c, hasSeg("NM1"))) {
+      const n = subSeg(nc, "NM1");
+      if (n && ["QC", ""].includes(String(el(n, "entityidentifiercode", "_01") || ""))) { nm1 = n; break; }
+      if (!nm1 && n) nm1 = n;
+    }
+    const patient = [el(nm1, "namelastororganizationname", "_03"), el(nm1, "namefirst", "_04")].filter(Boolean).join(", ");
+    const billed = gnum(el(clp, "totalclaimchargeamount", "_03"));
+    const paid = gnum(el(clp, "claimpaymentamount", "_04"));
+    const patResp = gnum(el(clp, "patientresponsibilityamount", "_05"));
+    const services = containersWith(c, hasSeg("SVC")).map((sc) => {
+      const svc = subSeg(sc, "SVC");
+      const comp = el(svc, "compositemedicalprocedureidentifier", "_01");
+      const cpt = (comp && typeof comp === "object") ? el(comp, "procedurecode", "_02") : comp;
+      const cas = subSeg(sc, "CAS");
+      const grp = cas ? el(cas, "claimadjustmentgroupcode", "_01") : "";
+      const rc = cas ? el(cas, "adjustmentreasoncode", "_02") : "";
+      return { cpt: String(cpt || ""), desc: "", billed: gnum(el(svc, "lineitemchargeamount", "_02")), allowed: 0,
+        paid: gnum(el(svc, "lineitemproviderpaymentamount", "_03")),
+        adjCode: rc ? String((grp ? grp + "-" : "") + rc) : "", adjDesc: "", patResp: 0, prCode: grp === "PR" ? String(rc || "") : "" };
+    });
+    return { claim: el(clp, "claimsubmitteridentifier", "claimsubmittersidentifier", "_01") || "", patient,
+      billed, allowed: 0, paid, patResp, status: paid > 0 ? (billed && paid < billed ? "partial" : "paid") : "denied",
+      comment: "", services };
+  });
+}
+
+module.exports = { summarizeEra, claimPayments, claimDetail, summarizeGuide, claimDetailGuide };
