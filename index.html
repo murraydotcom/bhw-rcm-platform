@@ -33,6 +33,11 @@
   --card:#ffffff; --shadow:0 1px 3px rgba(36,50,57,.08),0 4px 14px rgba(36,50,57,.05);
   --radius:14px;
 }
+:root[data-theme="dark"]{
+  --base:#141a1d; --card:#1e272b; --ink:#e6edf0; --ink-soft:#9db0b7; --line:#2b373c;
+  --blue-d:#8fb8c8; --blue-l:#6f97a8; --billed:#7f8a86; --neutral:#3a4b53;
+  --shadow:0 1px 3px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.38);
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -296,6 +301,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <span class="pill live" id="notionPill">● Notion: sample mode</span>
         <span class="pill live" id="stediPill">● Stedi: connected</span>
         <button class="btn btn-ghost btn-sm" onclick="openAI('Give me a plain-English executive summary of the current revenue cycle health across BHW Medical Group.','Executive summary')">✦ Ask AI</button>
+        <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle light or dark mode">🌙</button>
       </div>
     </div>
 
@@ -313,11 +319,11 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
 
         <div class="grid kpis" style="margin-bottom:16px">
-          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Charges MTD</div><div class="k-val">$248,910</div><div class="k-delta up">▲ 8.4% vs last mo</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Collection Rate</div><div class="k-val">94.2%</div><div class="k-delta up">▲ 1.6 pts</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Denial Rate</div><div class="k-val">6.1%</div><div class="k-delta up">▼ 0.9 pts</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">A/R Days</div><div class="k-val">31.5</div><div class="k-delta up">▼ 2.3 days</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Clean Claim Rate</div><div class="k-val">91.7%</div><div class="k-delta up">▲ 2.1 pts</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Charges MTD</div><div class="k-val" id="kpiCharges">—</div><div class="k-delta" id="kpiChargesSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Collection Rate</div><div class="k-val" id="kpiCollRate">—</div><div class="k-delta" id="kpiCollSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Denial Rate</div><div class="k-val" id="kpiDenRate">—</div><div class="k-delta" id="kpiDenSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">A/R Days</div><div class="k-val" id="kpiArDays">—</div><div class="k-delta" id="kpiArSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Clean Claim Rate</div><div class="k-val" id="kpiCleanRate">—</div><div class="k-delta" id="kpiCleanSub"></div></div>
         </div>
 
         <div class="grid g3" style="margin-bottom:16px">
@@ -1921,24 +1927,15 @@ function buildReconLedger(rows){
   if(!rows || !rows.length) return;
   const provId = full => { const f=String(full||''); return PROVIDERS.find(p=>new RegExp('\\b'+p+'\\b','i').test(f)) || PROVIDERS[0]; };
   const progId = name => { const hit=PROGRAMS.find(p=>p.name===name); return hit ? hit.id : 'primary'; };
-  const g = {};
-  rows.forEach(r=>{
-    const key = r.ctlNo || (r.patient+'|'+r.paymentDate);
-    const c = g[key] || (g[key] = { claim:key, patient:r.patient, payer:r.payer, provider:provId(r.provider),
-      billed:0, allowed:0, paid:0, patientResp:0, patientPaid:0, denied:false, lines:[] });
-    c.billed += Number(r.charge)||0;  c.allowed += Number(r.allowed)||0;
-    c.paid += Number(r.paid)||0;      c.patientResp += Number(r.patientResp)||0;
-    if(/deni|reject/i.test(r.status||'')) c.denied = true;
-    c.lines.push(r);
-  });
-  DATA.reconLedger = Object.values(g).map(c=>{
-    const top = c.lines.slice().sort((a,b)=>(Number(b.charge)||0)-(Number(a.charge)||0))[0] || {};
-    const status = (c.denied && c.paid===0) ? 'denied'
-      : c.paid===0 ? 'open'
-      : (c.billed && c.paid < c.billed) ? 'partial' : 'paid';
-    return { claim:c.claim, patient:c.patient, payer:c.payer, provider:c.provider,
-      billed:c.billed, allowed:c.allowed, paid:c.paid, patientResp:c.patientResp, patientPaid:c.patientPaid,
-      status, program:progId(top.program), cpt:top.cpt||'' };
+  // One row per CPT line — no invoice rollup, so each service code reconciles on its own.
+  DATA.reconLedger = rows.map(r=>{
+    const billed = Number(r.charge)||0, paid = Number(r.paid)||0;
+    const status = (/deni|reject/i.test(r.status||'') && paid===0) ? 'denied'
+      : paid===0 ? 'open'
+      : (billed && paid < billed) ? 'partial' : 'paid';
+    return { claim:(r.ctlNo||'—')+(r.cpt?(' · '+r.cpt):''), patient:r.patient, payer:r.payer, provider:provId(r.provider),
+      billed, allowed:Number(r.allowed)||0, paid, patientResp:Number(r.patientResp)||0, patientPaid:0,
+      status, program:progId(r.program), cpt:r.cpt||'' };
   });
   buildClaimRecon();
 }
@@ -2307,6 +2304,43 @@ function inPeriod(v){
   const now=Date.now();
   return d.getTime() >= now - PERIOD_DAYS*864e5 && d.getTime() <= now + 864e5;
 }
+/* ---- Dashboard KPI tiles computed from live claims (honest — blanks what the
+       data can't support, e.g. A/R Days needs claim dates) ---- */
+function computeDashboardKpis(rows){
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  const money=n=>'$'+Math.round(n).toLocaleString();
+  if(!rows || !rows.length) return;
+  const now=new Date(), mStart=new Date(now.getFullYear(), now.getMonth(), 1);
+  const total=rows.length;
+  let chargeMtd=0, chargeAll=0, paid=0, billedAdj=0, denied=0, dated=0;
+  rows.forEach(r=>{
+    const c=Number(r.charge)||0, p=Number(r.paid)||0, st=(r.status||'').toLowerCase();
+    chargeAll+=c;
+    if(/deni|reject/.test(st)) denied++;
+    if(p>0 || st==='paid' || st==='partial'){ paid+=p; billedAdj+=c; }
+    const d=r.paymentDate ? new Date(r.paymentDate) : null;
+    if(d && !isNaN(d)){ dated++; if(d>=mStart) chargeMtd+=c; }
+  });
+  set('kpiCharges', money(chargeMtd));
+  set('kpiChargesSub', dated+'/'+total+' claims dated · '+money(chargeAll)+' loaded');
+  set('kpiCollRate', billedAdj>0 ? (paid/billedAdj*100).toFixed(1)+'%' : '—');
+  set('kpiCollSub', billedAdj>0 ? money(paid)+' of '+money(billedAdj)+' adjudicated' : 'no payments posted yet');
+  set('kpiDenRate', total ? (denied/total*100).toFixed(1)+'%' : '—');
+  set('kpiDenSub', denied+' of '+total+' claims');
+  set('kpiArDays','—');    set('kpiArSub','needs claim dates');
+  set('kpiCleanRate','—'); set('kpiCleanSub','needs 277 acceptance data');
+}
+/* ---- Light / dark theme toggle (persisted) ---- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  const b=document.getElementById('themeBtn'); if(b) b.textContent = (t==='dark') ? '☀' : '🌙';
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+  const next = cur==='dark' ? 'light' : 'dark';
+  applyTheme(next); try{ localStorage.setItem('bhwTheme', next); }catch(e){}
+}
+(function(){ let t='light'; try{ t=localStorage.getItem('bhwTheme')||'light'; }catch(e){} applyTheme(t); })();
 function setPeriod(v){
   PERIOD_DAYS = Number(v)||0;
   PERIOD_LABEL = PERIOD_LABELS[PERIOD_DAYS] || 'all time';
@@ -2744,7 +2778,8 @@ function applyNotionRows(db, rows){
     DATA.denials = den.map(r=>[m(r.ctlNo)||'—', m(r.patient), m(r.payer), 'EOB '+m(r.denialReason||'—'),
       dollars(r.charge), '—', (r.status||'').toLowerCase()]);
     fillTable('tblDenials', DATA.denials, 6);
-    buildReconLedger(rows);   // roll the CPT lines up per Invoice # → claim-level reconciliation
+    buildReconLedger(rows);        // one reconciliation row per CPT line
+    computeDashboardKpis(rows);    // real Charges MTD / Collection / Denial from live claims
   }
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
