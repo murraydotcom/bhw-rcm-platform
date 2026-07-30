@@ -255,6 +255,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
     <nav class="nav-group">
       <div class="label">Billing Tracker</div>
+      <div class="nav-item" onclick="go('monthclose',this)"><span class="ic">◵</span> Monthly Close</div>
       <div class="nav-item" onclick="go('finhealth',this)"><span class="ic">＄</span> Financial Health</div>
       <div class="nav-item" onclick="go('banking',this)"><span class="ic">🏦</span> Banking / Cash</div>
       <div class="nav-item" onclick="go('provperf',this)"><span class="ic">◔</span> Provider Profitability</div>
@@ -300,7 +301,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </select>
         <span class="pill live" id="notionPill">● Notion: sample mode</span>
         <span class="pill live" id="stediPill">● Stedi: connected</span>
-        <button class="btn btn-ghost btn-sm" onclick="openAI('Give me a plain-English executive summary of the current revenue cycle health across BHW Medical Group.','Executive summary')">✦ Ask AI</button>
+        <button class="btn btn-ghost btn-sm" onclick="openAI('Give me a plain-English executive summary of the current revenue cycle health across BHW Medical Group.','Executive summary')">✦ Ask Albert Murray</button>
         <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle light or dark mode">🌙</button>
       </div>
     </div>
@@ -1391,6 +1392,42 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <div class="note"><b>Method note.</b> Sample figures are illustrative and BHW-flavored (Maryland payers, your programs) so the workflow is demonstrable before credentials are set. Once Stedi and Notion keys are added, every live-feed section replaces sample data automatically — no rebuild. Benchmarks referenced from MGMA/Medicare should be re-pulled against your current specialty and region before use in contracting.</div>
       </section>
 
+      <!-- ==================== MONTHLY CLOSE ==================== -->
+      <section class="view" id="monthclose">
+        <div class="page-head"><h2>Monthly Close</h2><p>Month-end summary (modeled on your billing-summary format) plus the close checklist — computed from live claims. Data-driven flags surface what still needs work before you close the month.</p></div>
+
+        <div class="section-tools" style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label class="mini">Month</label>
+          <input type="month" id="mcMonth" onchange="buildMonthClose()" style="padding:6px 10px">
+          <button class="btn btn-ghost btn-sm" onclick="copyMonthClose()">⧉ Copy summary for Notion</button>
+          <button class="btn btn-ai btn-sm" onclick="aiMonthClose()">✦ Generate AI analysis</button>
+          <span class="mini" id="mcNote"></span>
+        </div>
+
+        <div class="grid g4" style="margin-bottom:16px">
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Total Billed</div><div class="k-val" id="mcBilled">—</div><div class="k-delta" id="mcBilledSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Total Collected</div><div class="k-val" id="mcCollected">—</div><div class="k-delta" id="mcCollRate"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Denied</div><div class="k-val" id="mcDenied">—</div><div class="k-delta" id="mcDeniedSub"></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Open A/R</div><div class="k-val" id="mcOpenAR">—</div><div class="k-delta" id="mcOpenSub"></div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head"><h3>Month-End Close Checklist</h3><span class="tag" id="mcProgress">0 / 0</span></div>
+          <div class="card-sub" style="margin-bottom:10px">Run in order — each step depends on the one before it being clean. Checks save per month, on this device.</div>
+          <div id="mcChecklist"></div>
+          <div id="mcFlags" style="margin-top:14px"></div>
+        </div>
+
+        <div class="grid g2" style="margin-bottom:16px">
+          <div class="card"><div class="card-head"><h3>Collection by Payer</h3></div><div class="table-scroll"><table id="mcByPayer"><thead><tr><th>Payer</th><th class="num">Claims</th><th class="num">Billed</th><th class="num">Collected</th><th class="num">Rate</th></tr></thead><tbody></tbody></table></div></div>
+          <div class="card"><div class="card-head"><h3>Denials by Payer</h3></div><div class="table-scroll"><table id="mcDenPayer"><thead><tr><th>Payer</th><th class="num">Denied Claims</th><th class="num">Denied $</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><h3>Provider Breakdown</h3></div><div class="table-scroll"><table id="mcByProvider"><thead><tr><th>Provider</th><th class="num">Claims</th><th class="num">Billed</th><th class="num">Collected</th><th class="num">Rate</th></tr></thead><tbody></tbody></table></div></div>
+          <div class="card"><div class="card-head"><h3>Status Breakdown</h3></div><div class="table-scroll"><table id="mcByStatus"><thead><tr><th>Status</th><th class="num">Claims</th><th class="num">Billed</th><th class="num">Collected</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+      </section>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -1399,15 +1436,15 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 <div class="overlay" id="overlay" onclick="closeAI()"></div>
 <aside class="ai-panel" id="aiPanel">
   <div class="ai-head">
-    <h4>✦ BHW AI Assistant</h4>
+    <h4>✦ Albert Murray, CPA</h4>
     <span class="x" onclick="closeAI()">&times;</span>
   </div>
   <div class="ai-body">
-    <span class="ai-tag" id="aiTag">Assistant</span>
-    <div class="ai-msg" id="aiMsg">Ask a question to get started.</div>
+    <span class="ai-tag" id="aiTag">Albert Murray</span>
+    <div class="ai-msg" id="aiMsg">Ask Albert anything — a number, a decision, RCM, cash flow, taxes, or where the healthcare economy is headed. He's blunt; that's the point.</div>
   </div>
   <div class="ai-foot">
-    Prompts route through <span class="tag">sendPrompt()</span>. Wire to your LLM endpoint in the config block to enable live generation.
+    Albert runs on Claude via <span class="tag">/.netlify/functions/albert</span>. Add an <span class="tag">ANTHROPIC_API_KEY</span> in Netlify to enable live answers.
   </div>
 </aside>
 
@@ -1436,7 +1473,7 @@ const CONFIG = {
     notePost: "/.netlify/functions/note-post",  // claim/remittance cycle notes → Notion
     stripeBank: "/.netlify/functions/stripe-bank"  // Stripe Financial Connections (bank sync)
   },
-  ai: { endpoint: "" }                  // optional LLM proxy for sendPrompt()
+  ai: { endpoint: "/.netlify/functions/albert" }   // Albert Murray CPA advisor (Claude)
 };
 // Live mode is decided at runtime by the Notion function (it reports
 // sampleMode:true until NOTION_TOKEN is set). Starts optimistic; the
@@ -1809,7 +1846,7 @@ const TITLES = {
   dashboard:"Dashboard", charges:"Charges & Claims", payments:"Payments", denials:"Denials",
   reconciliation:"Reconciliation", chargemaster:"Charge Master", verify:"Insurance Verify",
   contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary",
-  finhealth:"Financial Health", banking:"Banking / Cash",
+  monthclose:"Monthly Close", finhealth:"Financial Health", banking:"Banking / Cash",
   provperf:"Provider Profitability", ratebench:"Rate Benchmarking", taxplan:"Tax Planning", aicfo:"AI CFO",
   goals:"Weekly Goals", cpt:"CPT by Program", claimslog:"Claims Log", pnl:"P&L by Program",
   expenses:"Expenses", edumedia:"EduMedia Tracker", q3goals:"Q3 Goals vs Actual",
@@ -1836,7 +1873,7 @@ function go(id, el){
 function openAI(prompt, tag){
   document.getElementById('aiPanel').classList.add('open');
   document.getElementById('overlay').classList.add('on');
-  document.getElementById('aiTag').textContent = tag || 'Assistant';
+  document.getElementById('aiTag').textContent = tag || 'Albert Murray';
   sendPrompt(prompt, tag);
 }
 function closeAI(){
@@ -1845,12 +1882,38 @@ function closeAI(){
 }
 /* sendPrompt: wire CONFIG.ai.endpoint to enable live LLM generation.
    Until then, echoes the prompt so the workflow is testable. */
+// Compact snapshot of the current live figures, sent with each question so
+// Albert can reference real numbers without the user pasting them.
+function dashboardContext(){
+  try{
+    const rows = DATA.claimsRaw || [];
+    if(!rows.length) return 'No live claims loaded (dashboard may be in sample mode).';
+    const money=n=>'$'+Math.round(n||0).toLocaleString();
+    let billed=0,collected=0,denied=0,open=0,openAR=0; const byP={};
+    rows.forEach(r=>{ const c=+r.charge||0,p=+r.paid||0,st=(r.status||'').toLowerCase();
+      billed+=c; collected+=p;
+      if(/deni|reject/.test(st)||r.denialReason) denied++;
+      if(st==='open'||st==='pending'){ open++; openAR+=Math.max(0,c-p); }
+      const k=r.payer||'—'; const g=byP[k]||(byP[k]={c:0,b:0,p:0}); g.c++; g.b+=c; g.p+=p;
+    });
+    const top=Object.entries(byP).sort((a,b)=>b[1].b-a[1].b).slice(0,6)
+      .map(([k,g])=>`  - ${k}: ${g.c} claims, ${money(g.b)} billed, ${money(g.p)} collected (${g.b?(g.p/g.b*100).toFixed(0):0}%)`).join('\n');
+    return [
+      `Claims loaded: ${rows.length}`,
+      `Total billed: ${money(billed)}`,
+      `Total collected: ${money(collected)} (${billed?(collected/billed*100).toFixed(1):0}% net collection)`,
+      `Denied claims: ${denied} of ${rows.length}`,
+      `Open claims: ${open} · Open A/R ${money(openAR)}`,
+      `Top payers by billed:\n${top}`
+    ].join('\n');
+  }catch(e){ return ''; }
+}
 async function sendPrompt(prompt, tag){
   const box = document.getElementById('aiMsg');
-  box.textContent = 'Thinking…';
+  box.textContent = 'Albert’s thinking…';
   if(CONFIG.ai.endpoint){
     try{
-      const r = await fetch(CONFIG.ai.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+      const r = await fetch(CONFIG.ai.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt, context: dashboardContext()})});
       const j = await r.json();
       box.textContent = j.text || JSON.stringify(j);
     }catch(e){ box.textContent = 'AI endpoint error: '+e.message; }
@@ -1858,12 +1921,12 @@ async function sendPrompt(prompt, tag){
   }
   setTimeout(()=>{
     box.textContent =
-`[Sample mode — no AI endpoint wired yet]
+`[Albert’s not wired up yet]
 
-Prompt sent:
+You asked:
 "${prompt}"
 
-Once CONFIG.ai.endpoint is set (or this app is embedded where sendPrompt() is provided by the host), the response will render here — pulling live figures from the Notion + Stedi data layer.`;
+To get a real answer, add an ANTHROPIC_API_KEY environment variable in Netlify (from console.anthropic.com), then redeploy. Albert then answers live in his own voice, using your dashboard’s figures.`;
   }, 350);
 }
 
@@ -2330,6 +2393,118 @@ function computeDashboardKpis(rows){
   set('kpiArDays','—');    set('kpiArSub','needs claim dates');
   set('kpiCleanRate','—'); set('kpiCleanSub','needs 277 acceptance data');
 }
+/* ---- Monthly Close: summary + close checklist, computed from live claims ---- */
+const MC_CHECKLIST = [
+  {step:"1 · Close out claims & charges", items:[
+    "All services rendered have a matching charge (missing-charges report)",
+    "All of the month's claims submitted — none in draft/hold",
+    "Clearinghouse (Stedi) rejection queue cleared to zero" ]},
+  {step:"2 · Reconcile money", items:[
+    "All deposits (EFT, card, cash/check) reconciled to the bank statement",
+    "Credit balances resolved (paid but not at zero — overpayment / posting / COB)",
+    "Recoupments / retractions / takebacks documented against the correct claim" ]},
+  {step:"3 · Write-offs & adjustments", items:[
+    "Contractual adjustments (expected) separated from write-offs (preventable)",
+    "Preventable write-off patterns flagged for staff re-education" ]},
+  {step:"4 · Denial review", items:[
+    "Denials trended by CPT, payer, provider, and reason",
+    "Root cause + fix in place for each new/recurring denial pattern" ]},
+  {step:"5 · Financial statements", items:[
+    "P&L generated & reviewed", "Balance Sheet generated & reviewed",
+    "Provider productivity reviewed (visits, revenue per provider)",
+    "General Ledger current & reconciled to bank" ]},
+  {step:"6 · Feed Profit First", items:[
+    "Actual collections confirmed (basis for 10th/25th sweeps)",
+    "Reserves updated (Clawback, No-Show, Credentialing Runway) vs actuals",
+    "Projected vs actual payroll % variance noted" ]},
+  {step:"7 · Close the loop", items:[
+    "Aging A/R closed — nothing new past 60 days unaddressed",
+    "Entity-level books updated (BHW LLC, CRNP, Mind & Mood Recovery)" ]},
+];
+function mcMoney(n){ return '$'+Math.round(n||0).toLocaleString(); }
+function mcCap(s){ s=String(s||'—'); return s.charAt(0).toUpperCase()+s.slice(1); }
+function mcMonthVal(){
+  const el=document.getElementById('mcMonth'); if(!el) return '';
+  if(!el.value){ const d=new Date(); el.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+  return el.value;
+}
+function mcRows(month){ return (DATA.claimsRaw||[]).filter(r=>String(r.paymentDate||'').slice(0,7)===month); }
+function buildMonthClose(){
+  const host=document.querySelector('#mcByPayer tbody'); if(!host) return;
+  const month=mcMonthVal(), rows=mcRows(month), all=DATA.claimsRaw||[];
+  const undated=all.filter(r=>!r.paymentDate).length;
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  const emptyRow=n=>`<tr><td colspan="${n}" class="mini" style="padding:12px">No claims dated in this month.</td></tr>`;
+  let billed=0,collected=0,denied=0,deniedCt=0,openAR=0,openCt=0;
+  rows.forEach(r=>{ const c=+r.charge||0,p=+r.paid||0,st=(r.status||'').toLowerCase();
+    billed+=c; collected+=p;
+    if(/deni|reject/.test(st)||r.denialReason){denied+=c;deniedCt++;}
+    if(st==='open'||st==='pending'){openAR+=Math.max(0,c-p);openCt++;} });
+  set('mcBilled',mcMoney(billed)); set('mcBilledSub',rows.length+' claims');
+  set('mcCollected',mcMoney(collected)); set('mcCollRate',billed?(collected/billed*100).toFixed(1)+'% collected':'—');
+  set('mcDenied',mcMoney(denied)); set('mcDeniedSub',deniedCt+' claims');
+  set('mcOpenAR',mcMoney(openAR)); set('mcOpenSub',openCt+' open claims');
+  let mcNote = rows.length ? (rows.length+' claims dated in '+month) : ('No claims dated in '+month);
+  if(undated) mcNote += rows.length ? (' · '+undated+' undated') : (' — '+undated+" claims have no date");
+  set('mcNote', mcNote);
+  const grp=fn=>{const m={};rows.forEach(r=>{const k=fn(r)||'—';const g=m[k]||(m[k]={claims:0,billed:0,collected:0,denied:0,deniedCt:0});g.claims++;g.billed+=+r.charge||0;g.collected+=+r.paid||0;if(/deni|reject/.test((r.status||'').toLowerCase())||r.denialReason){g.denied+=+r.charge||0;g.deniedCt++;}});return m;};
+  const rate=g=>g.billed?(g.collected/g.billed*100).toFixed(1)+'%':'—';
+  const byP=grp(r=>r.payer);
+  host.innerHTML = Object.entries(byP).sort((a,b)=>b[1].billed-a[1].billed).map(([k,g])=>`<tr><td>${k}</td><td class="num">${g.claims}</td><td class="num">${mcMoney(g.billed)}</td><td class="num">${mcMoney(g.collected)}</td><td class="num">${rate(g)}</td></tr>`).join('')||emptyRow(5);
+  document.querySelector('#mcDenPayer tbody').innerHTML = Object.entries(byP).filter(e=>e[1].deniedCt).sort((a,b)=>b[1].denied-a[1].denied).map(([k,g])=>`<tr><td>${k}</td><td class="num">${g.deniedCt}</td><td class="num">${mcMoney(g.denied)}</td></tr>`).join('')||emptyRow(3);
+  const byV=grp(r=>r.provider);
+  document.querySelector('#mcByProvider tbody').innerHTML = Object.entries(byV).sort((a,b)=>b[1].billed-a[1].billed).map(([k,g])=>`<tr><td>${k}</td><td class="num">${g.claims}</td><td class="num">${mcMoney(g.billed)}</td><td class="num">${mcMoney(g.collected)}</td><td class="num">${rate(g)}</td></tr>`).join('')||emptyRow(5);
+  const byS=grp(r=>r.status);
+  document.querySelector('#mcByStatus tbody').innerHTML = Object.entries(byS).sort((a,b)=>b[1].claims-a[1].claims).map(([k,g])=>`<tr><td>${mcCap(k)}</td><td class="num">${g.claims}</td><td class="num">${mcMoney(g.billed)}</td><td class="num">${mcMoney(g.collected)}</td></tr>`).join('')||emptyRow(4);
+  mcRenderChecklist(month); mcRenderFlags(rows, all);
+}
+function mcRenderChecklist(month){
+  let checked={}; try{ checked=JSON.parse(localStorage.getItem('mcCheck_'+month)||'{}'); }catch(e){}
+  let html='', total=0, done=0;
+  MC_CHECKLIST.forEach((g,gi)=>{ html+=`<div style="margin:12px 0 4px;font-weight:700;font-size:12.5px;color:var(--ink-soft)">Step ${g.step}</div>`;
+    g.items.forEach((it,ii)=>{ const id='mc_'+gi+'_'+ii; total++; const on=!!checked[id]; if(on)done++;
+      html+=`<label style="display:flex;gap:9px;align-items:flex-start;padding:4px 0;font-size:13px;cursor:pointer"><input type="checkbox" ${on?'checked':''} onchange="mcToggle('${month}','${id}',this.checked)" style="margin-top:3px"><span style="${on?'opacity:.5;text-decoration:line-through':''}">${it}</span></label>`; }); });
+  const cl=document.getElementById('mcChecklist'); if(cl) cl.innerHTML=html;
+  const pr=document.getElementById('mcProgress'); if(pr) pr.textContent=done+' / '+total;
+}
+function mcToggle(month,id,on){
+  let c={}; try{c=JSON.parse(localStorage.getItem('mcCheck_'+month)||'{}');}catch(e){}
+  c[id]=on; try{localStorage.setItem('mcCheck_'+month,JSON.stringify(c));}catch(e){}
+  mcRenderChecklist(month);
+}
+function mcRenderFlags(rows, all){
+  const flags=[];
+  const open=rows.filter(r=>['open','pending'].includes((r.status||'').toLowerCase()));
+  if(open.length) flags.push(['pending','Step 1 · Open',open.length+' claims ('+mcMoney(open.reduce((a,r)=>a+(+r.charge||0),0))+') still open — confirm submitted']);
+  const credit=rows.filter(r=>(+r.paid||0)>(+r.charge||0)+0.5);
+  if(credit.length) flags.push(['pending','Step 2 · Credit balances',credit.length+' claims paid over charge — resolve overpayment / COB']);
+  const den=rows.filter(r=>/deni|reject/.test((r.status||'').toLowerCase())||r.denialReason);
+  if(den.length) flags.push(['denied','Step 4 · Denials',den.length+' denied ('+mcMoney(den.reduce((a,r)=>a+(+r.charge||0),0))+') — trend & root-cause']);
+  const now=Date.now(), aged=open.filter(r=>{const d=r.paymentDate?new Date(r.paymentDate):null;return d&&!isNaN(d)&&(now-d.getTime())>60*864e5;});
+  if(aged.length) flags.push(['denied','Step 7 · Aging 60+',aged.length+' open claims ('+mcMoney(aged.reduce((a,r)=>a+(+r.charge||0),0))+') past 60 days']);
+  const undated=all.filter(r=>!r.paymentDate).length;
+  if(undated) flags.push(['pending','Data hygiene',undated+" claims have no date — can't attribute to a month (load dated line-level claims)"]);
+  const host=document.getElementById('mcFlags'); if(!host) return;
+  if(!flags.length){ host.innerHTML='<div class="mini" style="color:#4f7a4f">✓ No open flags for this month.</div>'; return; }
+  host.innerHTML='<div class="card-sub" style="font-weight:700;margin-bottom:4px">Flags — data-driven items to work</div>'+flags.map(f=>`<div style="display:flex;gap:9px;align-items:baseline;padding:6px 0;font-size:12.5px;border-top:1px solid var(--line)"><span class="badge b-${f[0]}">${f[1]}</span><span>${f[2]}</span></div>`).join('');
+}
+function copyMonthClose(){
+  const month=mcMonthVal(), rows=mcRows(month);
+  let billed=0,collected=0; rows.forEach(r=>{billed+=+r.charge||0;collected+=+r.paid||0;});
+  const grp=fn=>{const m={};rows.forEach(r=>{const k=fn(r)||'—';const g=m[k]||(m[k]={c:0,b:0,p:0});g.c++;g.b+=+r.charge||0;g.p+=+r.paid||0;});return m;};
+  let md='# '+month+' Billing Summary\n\n**Total Billed:** '+mcMoney(billed)+' · '+rows.length+' claims\n**Total Collected:** '+mcMoney(collected)+' · '+(billed?(collected/billed*100).toFixed(1):'0')+'% collection rate\n\n## Collection by Payer\n| Payer | Claims | Billed | Collected | Rate |\n|---|---|---|---|---|\n';
+  Object.entries(grp(r=>r.payer)).sort((a,b)=>b[1].b-a[1].b).forEach(([k,g])=>{md+='| '+k+' | '+g.c+' | '+mcMoney(g.b)+' | '+mcMoney(g.p)+' | '+(g.b?(g.p/g.b*100).toFixed(1):'0')+'% |\n';});
+  md+='\n## Provider Breakdown\n| Provider | Claims | Billed | Collected |\n|---|---|---|---|\n';
+  Object.entries(grp(r=>r.provider)).sort((a,b)=>b[1].b-a[1].b).forEach(([k,g])=>{md+='| '+k+' | '+g.c+' | '+mcMoney(g.b)+' | '+mcMoney(g.p)+' |\n';});
+  const n=document.getElementById('mcNote');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(md).then(()=>{if(n)n.textContent='Copied — paste into a Notion page.';}).catch(()=>{if(n)n.textContent='Copy blocked — select the page and copy manually.';}); }
+  else if(n) n.textContent='Clipboard not available here.';
+}
+function aiMonthClose(){
+  const month=mcMonthVal(), rows=mcRows(month);
+  let billed=0,collected=0,den=0; rows.forEach(r=>{billed+=+r.charge||0;collected+=+r.paid||0; if(/deni|reject/.test((r.status||'').toLowerCase())||r.denialReason)den++;});
+  openAI('Act as our RCM analyst. For '+month+', we billed $'+Math.round(billed)+' across '+rows.length+' claims, collected $'+Math.round(collected)+' ('+(billed?(collected/billed*100).toFixed(1):0)+'%), '+den+' denied. From the payer, provider, denial and status breakdowns on this page, give the top 3 denial/underpayment problems, the root cause of each, and a prioritized recovery action plan with dollar estimates.','Monthly analysis · '+month);
+}
 /* ---- Light / dark theme toggle (persisted) ---- */
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t);
@@ -2780,6 +2955,8 @@ function applyNotionRows(db, rows){
     fillTable('tblDenials', DATA.denials, 6);
     buildReconLedger(rows);        // one reconciliation row per CPT line
     computeDashboardKpis(rows);    // real Charges MTD / Collection / Denial from live claims
+    DATA.claimsRaw = rows;         // raw rows for the Monthly Close page
+    buildMonthClose();
   }
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
