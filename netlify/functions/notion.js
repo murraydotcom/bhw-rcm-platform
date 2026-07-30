@@ -77,7 +77,7 @@ async function queryDatabase(dbId, prefer) {
       const j = await r.json();
       out = out.concat(j.results || []);
       cursor = j.has_more ? j.next_cursor : null;
-    } while (cursor && out.length < 500);
+    } while (cursor && out.length < 5000);
   }
   return out;
 }

@@ -15,7 +15,7 @@
 const { extractAwv } = require("./lib/awv");
 const { provider } = require("./lib/providers");
 const { resolvePayerId, payerRows, payerBillingEntity } = require("./lib/payers");
-const { summarizeEra, claimDetail } = require("./lib/era");
+const { summarizeEra, claimDetail, summarizeGuide, claimDetailGuide } = require("./lib/era");
 
 const NOTION_VERSION = "2022-06-28";
 const INSURANCE_DB_ID = process.env.NOTION_INSURANCE_DB || "6bf580758d30828098a101e533cbed4d";
@@ -163,31 +163,49 @@ async function eraFeed(stediKey, opts = {}) {
   }
 
   const eras = items.filter(is835Inbound).slice(0, 25);
+
+  // Safety net: ?feed=era&raw=1 returns the first 835's parsed output artifact
+  // verbatim, so its GuideJSON structure can be confirmed if a field looks off.
+  const raw = opts.raw != null && !/^(0|false)$/i.test(String(opts.raw));
+  if (raw && eras.length) {
+    const url = outputUrl(eras[0]);
+    const rr = await fetch(url, { headers: { Authorization: stediKey } });
+    const rep = await rr.json().catch(() => ({}));
+    return json(200, { ok: true, raw: true, url, httpStatus: rr.status, output: rep });
+  }
+
   const rows = [];
   for (const t of eras) {
-    const id = t.transactionId || t.id || t.artifactId;
-    if (!id) continue;
+    const url = outputUrl(t);
+    if (!url) continue;
     try {
-      const rr = await fetch(ERA_REPORT_URL(id), { headers: { Authorization: `Key ${stediKey}` } });
+      const rr = await fetch(url, { headers: { Authorization: stediKey } });   // core API: bare key auth (same as polling)
       const rep = await rr.json();
       if (!rr.ok) continue;
-      // Summary row + the per-claim/service drill-down so live remits expand like samples.
-      rows.push({ ...summarizeEra(rep, id), detail: claimDetail(rep) });
-    } catch (_) { /* skip a bad report */ }
+      // GuideJSON summary + per-claim/service drill-down so live remits expand like samples.
+      rows.push({ ...summarizeGuide(rep, t), detail: claimDetailGuide(rep) });
+    } catch (_) { /* skip a bad artifact */ }
   }
   return json(200, { ok: true, sampleMode: false, rows });
 }
 
-// Lenient inbound-835 test across the field names Stedi's polling API may use.
+// Inbound-835 test. Stedi's polling item nests the code at
+// x12.metadata.transaction.transactionSetIdentifier.
 function is835Inbound(t) {
-  const dir = String(t.direction || t.transactionDirection || t.flow || "").toUpperCase();
+  const dir = String(t.direction || "").toUpperCase();
+  const meta = t.x12 && t.x12.metadata;
   const setId = String(
-    (t.x12 && (t.x12.transactionSetIdentifier || t.x12.transactionSet)) ||
-    t.transactionSetIdentifier || t.transactionSet || t.transactionSetId ||
-    (t.transaction && t.transaction.transactionSetIdentifier) || ""
+    (meta && meta.transaction && meta.transaction.transactionSetIdentifier) ||
+    (t.x12 && t.x12.transactionSetIdentifier) || ""
   );
-  const inbound = dir ? /IN/.test(dir) : true;   // no direction field → don't exclude
-  return inbound && setId === "835";
+  return (dir ? /IN/.test(dir) : true) && setId === "835";
+}
+
+// The parsed-JSON output artifact URL from a polling item.
+function outputUrl(t) {
+  const arts = t.artifacts || [];
+  const o = arts.find((a) => a.usage === "output" && /json/i.test(a.artifactType || "")) || arts.find((a) => a.usage === "output");
+  return o ? o.url : null;
 }
 
 // summarizeEra now lives in ./lib/era (shared with stedi-webhook.js).
