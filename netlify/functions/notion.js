@@ -25,6 +25,8 @@ const DB = {
   weekly:         process.env.NOTION_WEEKLY_DB,
   reconciliation: process.env.NOTION_RECONCILIATION_DB,
   contracts:      process.env.NOTION_CONTRACTS_DB,
+  payments:       process.env.NOTION_PAYMENTS_DB,
+  deposits:       process.env.NOTION_DEPOSITS_DB,
 };
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Content-Type": "application/json" };
@@ -144,40 +146,36 @@ function deriveProgram(cpt, desc) {
 
 function mapRow(db, p) {
   if (db === "claims") {
-    // Column names span two ChARM exports + the historical tracker; `first` picks
-    // whichever the row actually has. Tracker uses "Charged"/"Payment Amount";
-    // the line-level export uses "Charge"/"Payer Payment"+"Patient Payment".
-    const charge = num(first(p, ["Charged", "Charge", "Invoice Amount", "Procedure Total", "Total Invoice Due"]));
-    const insPaid = num(first(p, ["Payment Amount", "Payer Payment", "Claim Payment", "Remit Payment", "Insurance Payment Collected", "Payment Amt"]));
-    const patPaid = num(first(p, ["Patient Payment"]));
-    const paidTotal = (insPaid + patPaid) || num(first(p, ["Total Payment Collected"]));
-    const cpt    = first(p, ["Procedure Code", "HCPCS/CPT", "CPT"]);
-    const desc   = first(p, ["Procedure Description", "Description"]);
-    const denial = first(p, ["Denial Reason", "Remit Remarks"]);
-    const st     = String(first(p, ["Status", "Claim Status Code"]) || "").toLowerCase();
-    const status = paidTotal > 0 ? (charge && paidTotal < charge ? "partial" : "paid")
-      : (denial || /deni|reject/.test(st)) ? "denied"
-      : /not submitted|unsubmitted|not sent|ready|draft/.test(st) ? "open"
-      : /submitted|sent|pending|process|accepted/.test(st) ? "pending"
-      : /unpaid|outstanding|open/.test(st) ? "open"
-      : (st || "open");
+    // OPEN / SENT claims — CharmHealth (ANSI) → Notion, later Stedi 276/277.
+    // CHARGES + STATUS live here; payment/adjudication detail lives in the Payments DB.
+    // Field names below map the new schema onto the ones the dashboard already uses
+    // (charge = Billed, paymentDate = Date of Service, paid = 0) so nothing breaks.
+    const last = first(p, ["Patient Last", "Last Name", "Patient Last Name"]);
+    const firstN = first(p, ["Patient First", "First Name", "Patient First Name"]);
+    const patient = (last || firstN) ? [last, firstN].filter(Boolean).join(", ") : first(p, ["Patient Name", "Patient"]);
+    const cpt = first(p, ["CPT", "CPT(s)", "HCPCS/CPT", "Procedure Code"]);
+    const raw = String(first(p, ["Status", "Claim Status"]) || "").toLowerCase();
+    const status = /partial/.test(raw) ? "partial"
+      : /paid/.test(raw) ? "paid"
+      : /deni|reject/.test(raw) ? "denied"
+      : /submit|sent|accept|process|pending/.test(raw) ? "pending"
+      : (raw || "open");
     return {
-      ctlNo:        first(p, ["Patient Ctl No", "Patient Ctrl No.", "Claim #", "Invoice #", "Invoice Number", "Patient Record ID"]),
-      patient:      first(p, ["Patient Name"]),
-      program:      first(p, ["Program"]) || deriveProgram(cpt, desc),
+      ctlNo:        first(p, ["Claim #", "Claim Number", "Claim No", "Patient Ctl No", "Invoice #"]),
+      claimNo:      first(p, ["Claim #", "Claim Number", "Claim No"]),
+      patient, patientLast: last, patientFirst: firstN,
+      patientId:    first(p, ["Patient ID", "Patient Record ID", "Internal ID"]),
+      program:      first(p, ["Program"]) || deriveProgram(cpt, first(p, ["Procedure Description"])),
       cpt,
-      cptDesc:      desc,
-      charge,
-      paid:         paidTotal,
-      allowed:      num(first(p, ["Allowed Amount (Charge - Provider Adjustment)", "Allowed Amount", "Allowed"])),
-      patientResp:  num(first(p, ["Patient Responsibility", "Patient Resp"])),
-      adjustment:   num(first(p, ["Provider Adjustment"])),
-      dx:           ["Dx 1", "Dx 2", "Dx 3", "Dx 4"].map((k) => first(p, [k])).filter(Boolean),
-      payer:        stripId(first(p, ["Payer Name & ID", "Payer Name", "Payer"])),
-      provider:     first(p, ["Rendering Provider", "Claim Provider", "Provider", "Billing Provider", "Billing Provider Name"]),
-      paymentDate:  normDate(first(p, ["Payment Date", "Date of Service - From", "Date of Service", "Encounter Date", "Invoice Date"])),
+      charge:       num(first(p, ["Billed", "Charged", "Charge", "Invoice Amount", "Total Invoice Due"])),
+      paid:         0,                                   // paid lives in the Payments DB now
+      payer:        stripId(first(p, ["Payer", "Payer Name", "Payer Name & ID"])),
+      provider:     first(p, ["Provider", "Rendering Provider", "Billing Provider Name"]),
+      paymentDate:  normDate(first(p, ["Date of Service", "DOS", "Date of Service - From", "Encounter Date"])),
+      submitted:    normDate(first(p, ["Submitted Date", "Submitted", "Date Submitted"])),
       status,
-      denialReason: denial,
+      statusRaw:    first(p, ["Status", "Claim Status"]) || "Open",
+      denialReason: first(p, ["Denial Reason", "Adjustment/Denial Code", "Remit Remarks"]),
     };
   }
   if (db === "chargeMaster") {
@@ -199,6 +197,47 @@ function mapRow(db, p) {
     return { payer: stripId(first(p, ["Payer", "Payer Name"])), type: first(p, ["Type", "Plan Type"]),
       effective: first(p, ["Effective", "Effective Date"]), renewal: first(p, ["Renewal", "Renewal Date"]),
       rate: first(p, ["Rate Summary", "Rate"]), status: first(p, ["Status"]) };
+  }
+  if (db === "payments") {
+    // Adjudication / payment detail from Stedi 835, manual site postings, or an
+    // uploaded EOB. Attaches to a claim by Claim # or Patient ID + Date of Service.
+    const last = first(p, ["Patient Last", "Last Name"]);
+    const firstN = first(p, ["Patient First", "First Name"]);
+    return {
+      claim:       first(p, ["Claim #", "Claim Number", "Patient Ctl No", "Invoice #"]),
+      patientId:   first(p, ["Patient ID", "Patient Record ID", "Internal ID"]),
+      patient:     first(p, ["Patient", "Patient Name"]) || [last, firstN].filter(Boolean).join(", "),
+      patientLast: last, patientFirst: firstN,
+      dos:         normDate(first(p, ["Date of Service", "DOS"])),
+      payer:       stripId(first(p, ["Payer", "Payer Name"])),
+      method:      first(p, ["Method"]),
+      check:       first(p, ["Check/Ref #", "Check/Ref", "Check/EFT No", "Check Number"]),
+      cpt:         first(p, ["CPT", "CPT(s)", "HCPCS/CPT", "Procedure Code"]),
+      billed:      num(first(p, ["Billed"])),
+      allowed:     num(first(p, ["Allowed"])),
+      amount:      num(first(p, ["Paid", "Payment Amount", "Amount"])),
+      patientResp: num(first(p, ["Patient Resp", "Patient Responsibility"])),
+      coinsurance: num(first(p, ["Coinsurance"])),
+      copay:       num(first(p, ["Copay"])),
+      deductible:  num(first(p, ["Deductible"])),
+      notCovered:  num(first(p, ["Not Covered", "Non-covered"])),
+      denial:      first(p, ["Adjustment/Denial Code", "Denial Code", "Adjustment Code", "Reason", "Remit Remarks"]),
+      type:        first(p, ["Type"]) || "Primary",
+      source:      first(p, ["Source"]) || "Manual",
+      date:        normDate(first(p, ["Payment Date", "Date", "Date of Service"])),
+      nextAppt:    normDate(first(p, ["Next Appt Date", "Next Appointment"])),
+    };
+  }
+  if (db === "deposits") {
+    // Bank deposits recorded for reconciliation — links a payment/batch to an account.
+    return {
+      date:     normDate(first(p, ["Deposit Date", "Date"])),
+      account:  first(p, ["Bank Account", "Account"]),
+      amount:   num(first(p, ["Amount", "Deposit"])),
+      program:  first(p, ["Program"]),
+      provider: first(p, ["Provider"]),
+      ref:      first(p, ["Claim/Batch Ref", "Reference", "Claim #", "Batch"]),
+    };
   }
   if (db === "reconciliation") {
     return { source: first(p, ["Source", "Payer"]), expected: num(first(p, ["Expected"])), received: num(first(p, ["Received"])),
