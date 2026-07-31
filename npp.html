@@ -11,6 +11,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="BHW Medical Group Notice of Privacy Practices describing permitted uses of health information and patient rights.">
+<meta name="theme-color" content="#243239">
 <title>Notice of Privacy Practices — BHW Medical Group</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,17 +35,27 @@
   h4{ font-size:14px; font-weight:700; margin:16px 0 4px; }
   p{ margin:0 0 12px; } ul{ margin:0 0 14px 20px; } li{ margin-bottom:6px; }
   a{ color:var(--blue-d); }
+  :focus-visible{ outline:3px solid #fab219; outline-offset:3px; }
+  .skip-link{ position:fixed; left:16px; top:12px; z-index:10; transform:translateY(-160%); background:#fff; color:var(--ink); padding:9px 13px; border-radius:8px; font-weight:700; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,.16); transition:transform .18s ease; }
+  .skip-link:focus{ transform:translateY(0); }
+  .top-row{ display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+  .portal-nav{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .portal-nav a{ color:#c9d6db; border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:6px 9px; font-size:10px; font-weight:700; text-decoration:none; }
+  .portal-nav a:hover,.portal-nav a[aria-current="page"]{ color:#243239; background:#a9c8d5; border-color:#a9c8d5; }
   .placeholder{ background:#fff6d9; padding:0 4px; border-radius:4px; font-weight:600; }
   .callout{ background:#fdf7ef; border:1px solid #ecd9c1; border-left:4px solid var(--bronze);
     border-radius:10px; padding:14px 16px; font-size:13.5px; color:#6b5233; margin:8px 0 20px; }
   .callout b{ color:#5a4223; }
   .contact{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:10px; }
   footer{ border-top:1px solid var(--line); margin-top:40px; padding-top:18px; font-size:12.5px; color:var(--ink-soft); }
+  @media(max-width:640px){ .top-row{align-items:flex-start;flex-direction:column}.portal-nav{overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:2px}.portal-nav a{white-space:nowrap}h2.title{font-size:23px}.required{font-size:12px}.wrap{padding-left:17px;padding-right:17px} }
+  @media print{ header.top{background:#fff;color:var(--ink);border-bottom:2px solid var(--ink)} header.top .sub{color:var(--ink-soft)} .portal-nav,.skip-link{display:none}.wrap{max-width:none;padding-bottom:0}.placeholder{background:transparent;border-bottom:1px solid #999} }
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap"><h1>BHW Medical Group</h1><div class="sub">Notice of Privacy Practices</div></div></header>
-<div class="wrap">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="top"><div class="wrap"><div class="top-row"><div><h1>BHW Medical Group</h1><div class="sub">Notice of Privacy Practices</div></div><nav class="portal-nav" aria-label="Deployed pages"><a href="index.html">Command Center</a><a href="bhw_billing_tracker.html">Weekly Tracker</a><a href="privacy.html">Privacy</a><a href="npp.html" aria-current="page">NPP</a></nav></div></div></header>
+<main class="wrap" id="main-content">
 
   <h2 class="title">Notice of Privacy Practices</h2>
   <div class="required">THIS NOTICE DESCRIBES HOW MEDICAL INFORMATION ABOUT YOU MAY BE USED AND DISCLOSED, AND HOW YOU CAN GET ACCESS TO THIS INFORMATION. PLEASE REVIEW IT CAREFULLY.</div>
@@ -110,9 +122,9 @@
 
   <footer>
     <p>This Notice of Privacy Practices is a template provided for general informational purposes and is not legal advice. HIPAA requires you to customize it to your organization, have it reviewed by your Privacy Officer and legal counsel, post it, provide it to patients at first service and on request, and obtain written acknowledgment of receipt. Confirm 42 CFR Part 2 (substance use disorder) and Maryland-specific requirements before use.</p>
-    <p style="margin-top:10px">© <span class="placeholder">[2026]</span> BHW Medical Group.</p>
+    <p style="margin-top:10px">© 2026 BHW Medical Group.</p>
   </footer>
 
-</div>
+</main>
 </body>
 </html>

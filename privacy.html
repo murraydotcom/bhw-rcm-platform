@@ -9,6 +9,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="BHW Medical Group website privacy policy covering information collection, use, sharing, security, and privacy choices.">
+<meta name="theme-color" content="#243239">
 <title>Privacy Policy — BHW Medical Group</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +32,13 @@
   p{ margin:0 0 12px; }
   ul{ margin:0 0 14px 20px; } li{ margin-bottom:6px; }
   a{ color:var(--blue-d); }
+  :focus-visible{ outline:3px solid #fab219; outline-offset:3px; }
+  .skip-link{ position:fixed; left:16px; top:12px; z-index:10; transform:translateY(-160%); background:#fff; color:var(--ink); padding:9px 13px; border-radius:8px; font-weight:700; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,.16); transition:transform .18s ease; }
+  .skip-link:focus{ transform:translateY(0); }
+  .top-row{ display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+  .portal-nav{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .portal-nav a{ color:#c9d6db; border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:6px 9px; font-size:10px; font-weight:700; text-decoration:none; }
+  .portal-nav a:hover,.portal-nav a[aria-current="page"]{ color:#243239; background:#a9c8d5; border-color:#a9c8d5; }
   .lead{ font-size:16px; color:var(--ink-soft); }
   .callout{ background:#fdf7ef; border:1px solid #ecd9c1; border-left:4px solid var(--bronze);
     border-radius:10px; padding:14px 16px; font-size:13.5px; color:#6b5233; margin:8px 0 20px; }
@@ -37,11 +46,14 @@
   .placeholder{ background:#fff6d9; padding:0 4px; border-radius:4px; font-weight:600; }
   footer{ border-top:1px solid var(--line); margin-top:40px; padding-top:18px; font-size:12.5px; color:var(--ink-soft); }
   .contact{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:10px; }
+  @media(max-width:640px){ .top-row{align-items:flex-start;flex-direction:column}.portal-nav{overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:2px}.portal-nav a{white-space:nowrap}h2.title{font-size:23px}.wrap{padding-left:17px;padding-right:17px} }
+  @media print{ header.top{background:#fff;color:var(--ink);border-bottom:2px solid var(--ink)} header.top .sub{color:var(--ink-soft)} .portal-nav,.skip-link{display:none}.wrap{max-width:none;padding-bottom:0}.placeholder{background:transparent;border-bottom:1px solid #999} }
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap"><h1>BHW Medical Group</h1><div class="sub">Privacy Policy</div></div></header>
-<div class="wrap">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="top"><div class="wrap"><div class="top-row"><div><h1>BHW Medical Group</h1><div class="sub">Privacy Policy</div></div><nav class="portal-nav" aria-label="Deployed pages"><a href="index.html">Command Center</a><a href="bhw_billing_tracker.html">Weekly Tracker</a><a href="privacy.html" aria-current="page">Privacy</a><a href="npp.html">NPP</a></nav></div></div></header>
+<main class="wrap" id="main-content">
 
   <h2 class="title">Privacy Policy</h2>
   <p class="updated">Effective date: <span class="placeholder">[Month DD, 2026]</span> &nbsp;·&nbsp; Last updated: <span class="placeholder">[Month DD, 2026]</span></p>
@@ -114,9 +126,9 @@
 
   <footer>
     <p>This Privacy Policy is provided for general informational purposes and does not constitute legal advice. Please have it reviewed by qualified legal counsel, and ensure it is consistent with your HIPAA Notice of Privacy Practices and applicable Maryland and federal law before publishing.</p>
-    <p style="margin-top:10px">© <span class="placeholder">[2026]</span> BHW Medical Group. All rights reserved.</p>
+    <p style="margin-top:10px">© 2026 BHW Medical Group. All rights reserved.</p>
   </footer>
 
-</div>
+</main>
 </body>
 </html>
