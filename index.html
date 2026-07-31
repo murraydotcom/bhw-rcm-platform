@@ -496,7 +496,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             <select onchange="setReconFilter(this.value)" id="reconFilter" data-progfill="all"></select>
           </div>
           <div class="table-scroll"><table id="tblClaimRecon">
-            <thead><tr><th>Claim #</th><th>Patient</th><th>Program</th><th>Provider</th><th>Payer</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th class="num">Adj</th><th class="num">Pt Resp</th><th class="num">Balance</th><th>Status</th><th>Done</th></tr></thead>
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Program</th><th>Provider</th><th>Payer</th><th class="num">Billed</th><th class="num">Allowed</th><th class="num">Paid</th><th class="num">Adj</th><th class="num">Pt Resp</th><th class="num">Balance</th><th>Status</th><th>Bank deposited to</th><th>Deposit date</th><th>Done</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -1351,6 +1351,32 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             <tbody></tbody>
           </table></div>
         </div>
+
+        <!-- Opt-in participation status + decision -->
+        <div class="grid g2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-head"><h3>Participation Status &amp; The Decision</h3><span class="tag">PY 2026</span></div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:12.5px;margin-bottom:12px">
+              <li><b>Status:</b> Opt-in eligible (individual &amp; group). Exceeds only 1 of 3 low-volume thresholds &mdash; <i>not required</i> to report.</li>
+              <li><b>Practice:</b> Baltimore Healthcare &amp; Wellness, LLC &mdash; Amaris (NPI 1841844222) + Yahaira (attached Jun 2026). Adding Yahaira does <i>not</i> make the group required for 2026.</li>
+              <li><b>Special status:</b> <span class="tag">Small practice</span> <span class="tag">HPSA</span> &mdash; +6 Quality bonus, PI/Cost reweight likely. Path = traditional MIPS (no APM).</li>
+              <li><b>Path:</b> Report once as a <b>GROUP</b> (covers both providers, one filing, both get the adjustment).</li>
+            </ul>
+            <div class="note"><b>You only get paid if you OPT IN.</b> Voluntary reporting = $0 adjustment. The opt-in election is made at submission (Jan&ndash;Mar 2027) and is <b>irrevocable</b>. Opt in only if the projected composite clears 75 &mdash; otherwise you take penalty risk for a small upside (Part B base is under $90k).</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Deadlines &amp; Milestones</h3></div>
+            <div style="display:flex;flex-direction:column;gap:0">
+              <div class="split"><span><b>Now (Aug 2026)</b> &mdash; verify 6 measures; capture both outcome measures; check Yahaira's QPP status</span><span class="tag">Amaris</span></div>
+              <div class="split"><span><b>~Oct 3, 2026</b> &mdash; start continuous 90-day Improvement Activities window</span><span class="tag">Amaris</span></div>
+              <div class="split"><span><b>Ongoing</b> &mdash; log counts monthly; hold the 75% data-completeness floor</span><span class="tag">Amaris</span></div>
+              <div class="split"><span><b>Dec 31, 2026</b> &mdash; performance year ends; data locks</span><span class="tag">&mdash;</span></div>
+              <div class="split"><span><b>Jan&ndash;Mar 2027</b> &mdash; submit &amp; <b style="color:var(--bronze)">ELECT OPT-IN as group</b> (the money step)</span><span class="tag">Amaris</span></div>
+              <div class="split"><span><b>Jan&ndash;Dec 2028</b> &mdash; payment adjustment applies to Part B claims</span><span class="tag">&mdash;</span></div>
+            </div>
+            <div class="note" style="margin-top:12px">Confirm exact submission &amp; election dates at <b>qpp.cms.gov</b> &mdash; CMS sets them each year. Full tracker: <b>BHW-MIPS-2026-Quality-Tracker.xlsx</b>.</div>
+          </div>
+        </div>
       </section>
 
       <!-- ==================== REFERENCE: SOURCES & METHOD ==================== -->
@@ -1514,6 +1540,10 @@ const EXTRA_STREAMS = [
 ];
 const REVENUE_STREAMS = [...PROGRAMS, ...EXTRA_STREAMS];
 const PROVIDERS = ["Amaris","Yahaira","Tyesha","Tonya"];
+const BANK_ACCOUNTS = ["TD · BHW Checking/Savings","TD · BHW Integrative Checking","TD · BHW Integrative Savings","BHW Mind & Mood Checking/Savings"];
+function reconDepMap(){ try{ return JSON.parse(localStorage.getItem('reconDeposit')||'{}'); }catch(e){ return {}; } }
+function setReconBank(i,v){ const r=DATA.reconLedger[i]; if(!r)return; const m=reconDepMap(); m[r.claim]=Object.assign({},m[r.claim],{account:v}); try{localStorage.setItem('reconDeposit',JSON.stringify(m));}catch(e){} }
+function setReconDepDate(i,v){ const r=DATA.reconLedger[i]; if(!r)return; const m=reconDepMap(); m[r.claim]=Object.assign({},m[r.claim],{date:v}); try{localStorage.setItem('reconDeposit',JSON.stringify(m));}catch(e){} }
 const progName = id => (REVENUE_STREAMS.find(p=>p.id===id)||{}).name || id;
 const progId   = name => (REVENUE_STREAMS.find(p=>p.id===name||p.name===name)||{}).id || name;
 // <option> lists for pickers
@@ -2024,9 +2054,10 @@ function buildClaimRecon(){
   const tb = document.querySelector('#tblClaimRecon tbody'); if(!tb) return;
   const money = n => '$' + Number(n || 0).toLocaleString();
   let ar = 0, posted = 0, under = 0, ptTotal = 0;
-  const done = reconDoneSet(); let total = 0, doneCt = 0;
+  const done = reconDoneSet(); const depMap = reconDepMap(); let total = 0, doneCt = 0;
   const progSel=(i,cur)=>`<select onchange="setReconProgram(${i},this.value)" onclick="event.stopPropagation()" style="padding:4px 6px;font-size:11px">${progOptions(cur,false)}</select>`;
   const provSel=(i,cur)=>`<select onchange="setReconProvider(${i},this.value)" onclick="event.stopPropagation()" style="padding:4px 6px;font-size:11px">${providerOptions(cur)}</select>`;
+  const bankSel=(i,cur)=>`<select onchange="setReconBank(${i},this.value)" onclick="event.stopPropagation()" style="padding:4px 6px;font-size:11px"><option value="">Bank…</option>${BANK_ACCOUNTS.map(a=>`<option ${a===cur?'selected':''}>${a}</option>`).join('')}</select>`;
   tb.innerHTML = DATA.reconLedger.map((r,i) => {
     // KPIs reflect the full ledger; the filter only narrows the visible rows.
     const d = reconDerive(r);
@@ -2038,6 +2069,7 @@ function buildClaimRecon(){
     total++; const isDone = done.has(r.claim); if(isDone) doneCt++;
     if(RECON_FILTER && r.program !== RECON_FILTER) return '';
     const bal = d.outstanding > 0 ? `<span style="color:var(--denied)">${money(d.outstanding)}</span>` : '$0';
+    const dep = depMap[r.claim] || {};
     return `<tr${isDone?' style="opacity:.55"':''}>
       <td><b>${r.claim}</b></td><td>${r.patient}</td>
       <td>${progSel(i, r.program)}</td><td>${provSel(i, r.provider)}</td><td>${r.payer}</td>
@@ -2045,8 +2077,10 @@ function buildClaimRecon(){
       <td class="num">${money(r.paid)}</td><td class="num">${d.adj ? money(d.adj) : '—'}</td>
       <td class="num">${money(r.patientResp)}</td><td class="num">${bal}</td>
       <td>${badge(r.status)}</td>
+      <td>${bankSel(i, dep.account||'')}</td>
+      <td><input type="date" value="${dep.date||''}" onchange="setReconDepDate(${i},this.value)" onclick="event.stopPropagation()" style="padding:3px 5px;font-size:11px"></td>
       <td style="text-align:center"><input type="checkbox" ${isDone?'checked':''} onchange="toggleReconDone(${i},this.checked)" title="Mark this claim reconciled"></td></tr>`;
-  }).join('') || '<tr><td colspan="13" class="mini" style="padding:12px">No claims in this program.</td></tr>';
+  }).join('') || '<tr><td colspan="15" class="mini" style="padding:12px">No claims in this program.</td></tr>';
   const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   set('reconAR', money(Math.round(ar))); set('reconPosted', money(Math.round(posted)));
   set('reconUnder', under); set('reconPtBal', money(Math.round(ptTotal)));
@@ -3054,9 +3088,10 @@ function applyNotionRows(db, rows){
     refreshMoney();                // collections + KPIs + Payments + Monthly Close
   }
   if(db==='payments'){
-    DATA.paymentsRaw = rows;       // manual EOB / cash / check postings from Notion
+    DATA.paymentsRaw = rows;       // adjudication / payment detail from Notion
     refreshMoney();
   }
+  if(db==='deposits'){ DATA.depositsRaw = rows; }   // bank deposits (reconciliation)
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
     buildCDM();
@@ -3284,7 +3319,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   loadNotion('expenses','tblExpenses');
   loadNotion('reconciliation','tblRecon');
   loadNotion('contracts','tblContracts');
-  loadNotion('payments','tblPayments');   // manual EOB / patient postings → collections ledger
+  loadNotion('payments','tblPayments');   // adjudication / payment detail → collections ledger
+  loadNotion('deposits','tblRecon');       // bank deposits for reconciliation
 
   // Stedi live feeds — source these straight from Stedi, not Notion.
   // Claim status is NOT auto-loaded: each load runs live (billable) 276 checks,
