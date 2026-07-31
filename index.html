@@ -230,6 +230,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('denials',this)"><span class="ic">▲</span> Denials</div>
       <div class="nav-item" onclick="go('reconciliation',this)"><span class="ic">⇄</span> Reconciliation</div>
       <div class="nav-item" onclick="go('chargemaster',this)"><span class="ic">≣</span> Charge Master</div>
+      <a class="nav-item" href="coding-worksheet.html" style="text-decoration:none"><span class="ic">✎</span> Coding Worksheet</a>
       <div class="nav-item" onclick="go('verify',this)"><span class="ic">◈</span> Insurance Verify</div>
       <div class="nav-item" onclick="go('contracts',this)"><span class="ic">§</span> Contracts</div>
       <div class="nav-item" onclick="go('insights',this)"><span class="ic">✦</span> AI Insights</div>
@@ -253,13 +254,21 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('mips',this)"><span class="ic">◔</span> Quality &amp; MIPS</div>
     </nav>
 
+    <nav class="nav-group" id="progNav">
+      <div class="label">Programs</div>
+      <!-- program nav items injected by fillProgramNav() -->
+    </nav>
+
     <nav class="nav-group">
       <div class="label">Billing Tracker</div>
       <div class="nav-item" onclick="go('monthclose',this)"><span class="ic">◵</span> Monthly Close</div>
       <div class="nav-item" onclick="go('finhealth',this)"><span class="ic">＄</span> Financial Health</div>
-      <div class="nav-item" onclick="go('banking',this)"><span class="ic">🏦</span> Banking / Cash</div>
+      <div class="nav-item" onclick="go('forecast',this)"><span class="ic">📈</span> Forecast</div>
+      <div class="nav-item" onclick="go('banking',this)"><span class="ic">📒</span> The Books</div>
       <div class="nav-item" onclick="go('provperf',this)"><span class="ic">◔</span> Provider Profitability</div>
       <div class="nav-item" onclick="go('ratebench',this)"><span class="ic">≷</span> Rate Benchmarking</div>
+      <div class="nav-item" onclick="go('benchmarks',this)"><span class="ic">⌸</span> Industry Benchmarks</div>
+      <div class="nav-item" onclick="go('revopps',this)"><span class="ic">💡</span> Revenue Opportunities</div>
       <div class="nav-item" onclick="go('taxplan',this)"><span class="ic">%</span> Tax Planning</div>
       <div class="nav-item" onclick="go('aicfo',this)"><span class="ic">✦</span> AI CFO</div>
       <div class="nav-item" onclick="go('goals',this)"><span class="ic">◎</span> Weekly Goals</div>
@@ -380,7 +389,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <div class="card">
           <div class="card-head"><h3>Claim Ledger</h3><span class="tag">Sample · Notion:Claims</span></div>
           <div class="table-scroll"><table id="tblClaims">
-            <thead><tr><th>Claim #</th><th>Patient</th><th>Program</th><th>CPT</th><th class="num">Charge</th><th>Payer</th><th>DOS</th><th>Status</th><th>Provider</th></tr></thead>
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Patient ID</th><th>DOS</th><th>Payer</th><th>Program</th><th>CPT</th><th class="num">Billed</th><th>Provider</th><th>Status</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -399,22 +408,32 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             </div>
           </div>
           <div class="grid g4" style="gap:12px">
-            <div><label class="mini">Date</label><input type="date" id="pmDate" style="width:100%"></div>
-            <div><label class="mini">Patient</label><input type="text" id="pmPatient" placeholder="Last, First" style="width:100%"></div>
+            <div><label class="mini">Payment date</label><input type="date" id="pmDate" style="width:100%"></div>
+            <div><label class="mini">Date of service</label><input type="date" id="pmDos" style="width:100%"></div>
+            <div><label class="mini">Patient (Last, First)</label><input type="text" id="pmPatient" placeholder="Last, First" style="width:100%"></div>
+            <div><label class="mini">Patient ID</label><input type="text" id="pmPatientId" placeholder="BHW0001" style="width:100%"></div>
             <div class="pm-eob"><label class="mini">Payer</label><input type="text" id="pmPayer" placeholder="e.g. Aetna" style="width:100%"></div>
-            <div><label class="mini">Method</label><select id="pmMethod" style="width:100%"><option>Check</option><option>EFT</option><option>Cash</option><option>Card</option></select></div>
+            <div><label class="mini">Method</label><select id="pmMethod" style="width:100%"><option>Check</option><option>Cash</option><option>ACH</option><option>Digital Card</option></select></div>
             <div><label class="mini">Check / Ref #</label><input type="text" id="pmRef" placeholder="CHK-1002" style="width:100%"></div>
-            <div><label class="mini">Claim # <span style="opacity:.6">(optional)</span></label><input type="text" id="pmClaim" placeholder="CLM-…" style="width:100%"></div>
+            <div><label class="mini">Claim #</label><input type="text" id="pmClaim" placeholder="CLM-…" style="width:100%"></div>
+            <div><label class="mini">CPT(s)</label><input type="text" id="pmCpt" placeholder="99214" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Type</label><select id="pmType" style="width:100%"><option>Primary</option><option>Secondary</option><option>Cash / patient</option></select></div>
             <div class="pm-eob"><label class="mini">Billed</label><input type="number" id="pmBilled" placeholder="0.00" style="width:100%"></div>
             <div class="pm-eob"><label class="mini">Allowed</label><input type="number" id="pmAllowed" placeholder="0.00" style="width:100%"></div>
             <div><label class="mini">Paid</label><input type="number" id="pmPaid" placeholder="0.00" style="width:100%"></div>
-            <div class="pm-eob"><label class="mini">Patient resp.</label><input type="number" id="pmPatResp" placeholder="0.00" style="width:100%"></div>
-            <div class="pm-eob" style="grid-column:span 2"><label class="mini">Adjustment / denial code <span style="opacity:.6">(optional)</span></label><input type="text" id="pmReason" placeholder="CO-45 contractual · or EOB 439 denial" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Patient resp. (total)</label><input type="number" id="pmPatResp" placeholder="0.00" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Coinsurance</label><input type="number" id="pmCoins" placeholder="0.00" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Copay</label><input type="number" id="pmCopay" placeholder="0.00" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Deductible</label><input type="number" id="pmDeduct" placeholder="0.00" style="width:100%"></div>
+            <div class="pm-eob"><label class="mini">Not covered</label><input type="number" id="pmNotCov" placeholder="0.00" style="width:100%"></div>
+            <div class="pm-eob" style="grid-column:span 2"><label class="mini">Adjustment / denial code(s)</label><input type="text" id="pmReason" placeholder="CO-45 · PR-1 deductible · N56" style="width:100%"></div>
+            <div><label class="mini">Next appt <span style="opacity:.6">(if collecting in office)</span></label><input type="date" id="pmNextAppt" style="width:100%"></div>
           </div>
           <div class="btn-row" style="margin-top:14px;align-items:center">
             <button class="btn btn-primary btn-sm" onclick="postPayment(this)">＋ Post payment</button>
             <span class="mini" id="pmMsg"></span>
           </div>
+          <div id="pmBalanceFlag"></div>
         </div>
 
         <div class="grid g4" style="margin-bottom:16px">
@@ -629,76 +648,80 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <!-- ==================== RCM: WEEKLY SUMMARY ==================== -->
       <section class="view" id="weekly">
         <div class="page-head split">
-          <div><h2>Weekly Summary</h2><p>From the Notion <b>Weekly Scoreboard</b> — week of <span id="wkRange">June 29 – July 5, 2026</span>.</p></div>
-          <button class="btn btn-ai" onclick="openAI('Generate this week’s full revenue-cycle summary with metrics, wins, misses, and next-week priorities for BHW Medical Group.','Weekly summary')">Regenerate</button>
+          <div><h2>Weekly Summary</h2><p>Live from your claims, collections, and denials — week of <span id="wkRange">—</span>. Wins and watch-list update themselves as the numbers move.</p></div>
+          <button class="btn btn-ai" onclick="openAI('Generate this week’s full revenue-cycle summary with metrics, wins, misses, and next-week priorities for BHW Medical Group.','Weekly summary')">AI recap</button>
         </div>
         <div class="grid g4" style="margin-bottom:16px">
-          <div class="card kpi"><div class="k-label">Claims Submitted</div><div class="k-val" id="wkClaims">108</div></div>
-          <div class="card kpi"><div class="k-label">Office Visits</div><div class="k-val" id="wkVisits">96</div></div>
-          <div class="card kpi"><div class="k-label">Denials</div><div class="k-val" id="wkDenials" style="color:var(--denied)">9</div></div>
-          <div class="card kpi"><div class="k-label">APCM / RPM / CharmEd Active</div><div class="k-val" style="font-size:20px"><span id="wkApcm">42</span> / <span id="wkRpm">31</span> / <span id="wkCharm">18</span></div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Claims This Week</div><div class="k-val" id="wkClaims">0</div><div class="mini" id="wkClaimsSub">submitted / dated</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Collected This Week</div><div class="k-val" id="wkVisits">$0</div><div class="mini">payments posted</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Open Denials</div><div class="k-val" id="wkDenials" style="color:var(--denied)">0</div><div class="mini">to work</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Charges This Week</div><div class="k-val" id="wkCharges" style="font-size:22px">$0</div><div class="mini">billed</div></div>
         </div>
         <div class="grid g2">
           <div class="card">
             <h3>Wins</h3><hr class="soft">
-            <ul style="list-style:none;display:flex;flex-direction:column;gap:9px">
-              <li>✅ Clean claim rate crossed 91% for the first time this quarter.</li>
-              <li>✅ Cleared 5 aged Aetna prior-auth denials (EOB 323) via peer-to-peer.</li>
-              <li>✅ A/R days down to 31.5 — best in 6 months.</li>
-            </ul>
+            <ul id="wkWins" style="list-style:none;display:flex;flex-direction:column;gap:9px"></ul>
           </div>
           <div class="card">
             <h3>Watch List</h3><hr class="soft">
-            <ul style="list-style:none;display:flex;flex-direction:column;gap:9px">
-              <li>⚠ $18,240 in unposted ERAs carrying into next week.</li>
-              <li>⚠ 3 claims approaching Maryland Medicaid timely-filing window (EOB 528 risk).</li>
-              <li>⚠ Aetna contract renewal inside 60 days — rate escalator to review.</li>
-            </ul>
+            <ul id="wkWatch" style="list-style:none;display:flex;flex-direction:column;gap:9px"></ul>
           </div>
         </div>
       </section>
 
-      <!-- ==================== BILLING: BANKING / CASH ==================== -->
+      <!-- ==================== THE BOOKS ==================== -->
       <section class="view" id="banking">
         <div class="page-head split">
-          <div><h2>Banking / Cash</h2><p>Live bank feed via <b>Stripe Financial Connections</b> — deposits auto-match to payer EFTs, and cash in/out feeds Financial Health. Connect once; it syncs automatically.</p></div>
+          <div><h2>The Books</h2><p>Bookkeeping &amp; bank reconciliation. Deposits <b>auto-match</b> to the payments you&rsquo;ve recorded, every line gets a <b>category</b>, and you <b>split it to a program</b> — so your P&amp;L and each program&rsquo;s budget stay accurate. Connect the bank once and it syncs on its own.</p></div>
           <div class="btn-row">
             <span class="pill live" id="bankMode">● Bank · sample</span>
-            <button class="btn btn-ghost btn-sm" onclick="toggleBankHelp()">① Setup steps</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleBankHelp()">① Connect bank</button>
             <button class="btn btn-primary btn-sm" onclick="connectBank()">🏦 Connect bank</button>
           </div>
         </div>
         <div class="card" id="bankHelp" style="display:none;margin-bottom:16px">
           <div class="card-head split"><h3>Connect your bank — one-time setup</h3><span onclick="toggleBankHelp()" style="cursor:pointer;font-size:20px;line-height:1;color:var(--ink-soft)">&times;</span></div>
           <ol style="margin:0 0 0 18px;font-size:13px;line-height:1.75">
-            <li><b>Get your keys.</b> Stripe → Developers → API keys (keep <b>Test mode</b> on). Copy the <b>Publishable</b> key (<code>pk_test…</code>) and <b>Secret</b> key (<code>sk_test…</code>). Never share the secret key.</li>
+            <li><b>Get your keys.</b> Stripe → Developers → API keys. Copy the <b>Publishable</b> key (<code>pk_…</code>) and <b>Secret</b> key (<code>sk_…</code>). Never share the secret key.</li>
             <li><b>Turn on Financial Connections.</b> Stripe → Settings → Financial Connections → enable it and turn on the <b>Transactions</b> permission.</li>
-            <li><b>Add the keys to Netlify.</b> Site configuration → Environment variables: <code>STRIPE_SECRET_KEY</code> = your <code>sk_test…</code>, <code>STRIPE_PUBLISHABLE_KEY</code> = your <code>pk_test…</code>. Then trigger a redeploy.</li>
-            <li><b>Connect the bank.</b> Click <b>Connect bank</b> above → pick your business bank → log in <i>inside Stripe's window</i>. Copy the <code>STRIPE_FC_CUSTOMER</code> value the page then shows into Netlify and redeploy once. After that it syncs on its own.</li>
+            <li><b>Add the keys to Netlify.</b> Site configuration → Environment variables: <code>STRIPE_SECRET_KEY</code> and <code>STRIPE_PUBLISHABLE_KEY</code>. Then redeploy.</li>
+            <li><b>Connect the bank.</b> Click <b>Connect bank</b> above → pick each account (BHW, Integrative, Mind &amp; Mood, ELVT&rsquo;D) → log in <i>inside Stripe&rsquo;s window</i>. Copy the <code>STRIPE_FC_CUSTOMER</code> value into Netlify and redeploy once. After that it syncs on its own.</li>
           </ol>
-          <div class="mini" style="margin-top:10px">Everything stays in test mode until you swap in live keys. Cost ≈ $0.30/account/month.</div>
+          <div class="mini" style="margin-top:10px">Cost ≈ $0.30/account/month. Your login happens inside Stripe&rsquo;s secure window — this site never sees your bank credentials.</div>
         </div>
         <div class="grid g4" style="margin-bottom:16px">
-          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Cash on Hand</div><div class="k-val" id="bkBalance">$0</div><div class="mini" id="bkAccts">— accounts</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Cash In</div><div class="k-val" id="bkIn">$0</div><div class="mini" id="bkPeriod">this month</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Cash Out</div><div class="k-val" id="bkOut">$0</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Unmatched Deposits</div><div class="k-val" id="bkUnmatched" style="color:var(--denied)">0</div><div class="mini">need review</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Book Balance</div><div class="k-val" id="bkBalance">—</div><div class="mini" id="bkAccts">— accounts</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Deposits In</div><div class="k-val" id="bkIn">$0</div><div class="mini" id="bkPeriod">this period</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Expenses Out</div><div class="k-val" id="bkOut">$0</div><div class="mini">this period</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Unreconciled</div><div class="k-val" id="bkUnmatched" style="color:var(--denied)">0</div><div class="mini">deposits to match</div></div>
         </div>
-        <div class="note" id="bankNote" style="margin-bottom:16px"><b>Sample mode.</b> Click <b>Connect bank</b> once deployed with your Stripe keys + Financial Connections enabled — your bank login opens in Stripe&rsquo;s secure window (the site never sees it), then transactions sync here automatically. Cost is ~$0.30/account/month.</div>
+        <div class="note" id="bankNote" style="margin-bottom:16px"><b>Not connected yet.</b> Your accounts are listed below. Click <b>Connect bank</b> once deployed with Stripe keys + Financial Connections on — your login opens in Stripe&rsquo;s secure window, then transactions sync here and auto-match to your recorded payments.</div>
         <div class="grid g3" style="margin-bottom:16px">
-          <div class="card"><div class="card-head"><h3>Connected Accounts</h3></div>
+          <div class="card"><div class="card-head"><h3>Accounts</h3><span class="tag">by program</span></div>
             <div class="table-scroll"><table id="tblBankAccts">
-              <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th class="num">Balance</th></tr></thead>
+              <thead><tr><th>Account</th><th>Institution</th><th class="num">Balance</th></tr></thead>
               <tbody></tbody>
             </table></div>
           </div>
-          <div class="card" style="grid-column:span 2">
-            <div class="card-head"><h3>Transactions</h3><span class="tag">auto-matched to payers</span></div>
-            <div class="table-scroll"><table id="tblBankTxns">
-              <thead><tr><th>Date</th><th>Description</th><th>Account</th><th class="num">Amount</th><th>Matched to</th></tr></thead>
+          <div class="card"><div class="card-head"><h3>By Program</h3><span class="tag">net this period</span></div>
+            <div class="table-scroll"><table id="tblBookProgram">
+              <thead><tr><th>Program</th><th class="num">In</th><th class="num">Out</th><th class="num">Net</th></tr></thead>
               <tbody></tbody>
             </table></div>
           </div>
+          <div class="card"><div class="card-head"><h3>By Category</h3><span class="tag">this period</span></div>
+            <div class="table-scroll"><table id="tblBookCategory">
+              <thead><tr><th>Category</th><th class="num">Amount</th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head split"><div><h3>Ledger</h3><div class="card-sub">Every deposit and expense. Category &amp; program auto-fill — adjust any dropdown and it&rsquo;s saved. ✓ marks a line reconciled to the bank.</div></div></div>
+          <div class="table-scroll"><table id="tblBankTxns">
+            <thead><tr><th>Date</th><th>Description</th><th>Account</th><th>Category</th><th>Program</th><th class="num">Amount</th><th>Reconciled</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
         </div>
       </section>
 
@@ -761,11 +784,18 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Clinical : Admin</div><div class="k-val" id="ppRatio">—</div><div class="mini">payroll ratio</div></div>
         </div>
         <div class="card" style="margin-bottom:16px"><div class="card-head"><h3>Revenue vs. Compensation by Provider</h3></div><div class="chart-wrap sm"><canvas id="chProvPerf"></canvas></div></div>
-        <div class="card">
-          <div class="card-head"><h3>Provider P&amp;L</h3><span class="tag">QTD</span></div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head split"><div><h3>Provider P&amp;L</h3><div class="card-sub">Revenue builds from the Rendering Provider on each claim. Enter each provider's annual comp to see margin (saved on this device).</div></div><span class="tag">YTD</span></div>
           <div class="table-scroll"><table id="tblProvPerf">
-            <thead><tr><th>Provider</th><th>Programs</th><th class="num">Visits</th><th class="num">Revenue</th><th class="num">Comp</th><th class="num">Margin</th><th class="num">Margin %</th></tr></thead>
+            <thead><tr><th>Provider</th><th class="num">Lines</th><th class="num">Revenue</th><th>Comp (annual)</th><th class="num">Margin</th><th class="num">Margin %</th></tr></thead>
             <tbody></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Revenue by Provider &times; Program</h3><span class="tag">the breakdown you asked for</span></div>
+          <div class="table-scroll"><table id="tblProvMatrix">
+            <thead id="provMatrixHead"></thead>
+            <tbody id="provMatrixBody"></tbody>
           </table></div>
         </div>
       </section>
@@ -773,20 +803,74 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <!-- ==================== BILLING: RATE BENCHMARKING ==================== -->
       <section class="view" id="ratebench">
         <div class="page-head split">
-          <div><h2>Rate Benchmarking</h2><p>Your <b>allowed rate</b> per CPT/payer vs. <b>Medicare</b> and the <b>market median</b> — where you&rsquo;re underpaid, and your payer-negotiation targets. (Flychain&rsquo;s &ldquo;contracted rate analysis.&rdquo;)</p></div>
-          <button class="btn btn-ai" onclick="openAI('From rate benchmarking, list the codes and payers where I am below market, quantify the annual upside, and draft the negotiation ask for the worst payer.','Rate negotiation')">Draft negotiation</button>
+          <div><h2>Rate Benchmarking</h2><p>Your <b>allowed rate</b> per CPT vs. <b>Medicare</b> and the <b>MD Medicaid</b> floor — seeded with your real BHW code set and the live <b>Maryland Medicaid</b> fee schedule (1.1.26). Enter your contracted allowed + Medicare per code to see where you&rsquo;re underpaid.</p></div>
+          <button class="btn btn-ai" onclick="openAI('From rate benchmarking, list the codes where my allowed is below Medicare or below the Medicaid floor, quantify the annual upside using my claim volume, and draft the payer-negotiation ask for the biggest gaps.','Rate negotiation')">Draft negotiation</button>
         </div>
         <div class="grid g4" style="margin-bottom:16px">
-          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Codes Below Market</div><div class="k-val" id="rbBelow">0</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Est. Annual Upside</div><div class="k-val" id="rbUpside">$0</div><div class="mini">if paid at market</div></div>
-          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">Worst Payer Gap</div><div class="k-val" id="rbWorst" style="font-size:19px">—</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Below Medicare</div><div class="k-val" id="rbBelow">0</div><div class="mini">codes you priced</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Est. Annual Upside</div><div class="k-val" id="rbUpside">$0</div><div class="mini">to Medicare, at your volume</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Below Medicaid Floor</div><div class="k-val" id="rbFloor" style="color:var(--denied)">0</div><div class="mini">should never happen</div></div>
           <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Avg vs. Medicare</div><div class="k-val" id="rbVsMcr">—</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px"><div class="card-head"><h3>Your Rate vs. Medicare vs. Market</h3></div><div class="chart-wrap"><canvas id="chRateBench"></canvas></div></div>
+        <div class="note" style="margin-bottom:16px"><b>Medicare and MD Medicaid rates are real</b> — Medicare Part B non-facility PAR at your <b>QPP/APM</b> rate (Maryland Locality 01, Jan 2026) and your Medicaid Professional Services Fee Schedule (eff. 1.1.26, E/M at the PCP-enhanced rate). Both are pre-loaded and editable. Just type <b>Your Allowed</b> (your contracted commercial rate) per code and it saves on this device; volume for the upside estimate comes from your live claims. <span class="mini">(96110 is carrier-priced with no set Medicare rate.)</span></div>
+        <div class="card" style="margin-bottom:16px"><div class="card-head"><h3>Your Rate vs. Medicare vs. MD Medicaid</h3></div><div class="chart-wrap"><canvas id="chRateBench"></canvas></div></div>
         <div class="card">
-          <div class="card-head"><h3>Rate Detail</h3><span class="tag">Benchmarks illustrative — re-pull for your region/specialty</span></div>
+          <div class="card-head split"><div><h3>Rate Detail</h3><div class="card-sub">Your real BHW codes. Edit Your Allowed + Medicare per code; Medicaid is the state floor.</div></div>
+            <select id="rbProgFilter" onchange="buildRateBench()" style="padding:4px 8px"><option value="">All programs</option></select></div>
           <div class="table-scroll"><table id="tblRateBench">
-            <thead><tr><th>CPT</th><th>Service</th><th>Program</th><th>Payer</th><th class="num">Your Allowed</th><th class="num">Medicare</th><th class="num">Market Median</th><th class="num">Gap</th><th>Flag</th></tr></thead>
+            <thead><tr><th>CPT</th><th>Service</th><th>Program</th><th class="num">Vol</th><th>Your Allowed</th><th>Medicare</th><th class="num">MD Medicaid</th><th class="num">Gap vs Mcr</th><th>Flag</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- ==================== INDUSTRY BENCHMARKS (NAICS 621111) ==================== -->
+      <section class="view" id="benchmarks">
+        <div class="page-head split">
+          <div><h2>Industry Benchmarks</h2><p>How BHW compares to physician practices under $5M — <b>NAICS 621111</b>. Benchmark figures are from your industry report; your actuals compute from the P&amp;L as real data flows in.</p></div>
+          <button class="btn btn-ai" onclick="openAI('Compare my margins, spending, and liquidity to the NAICS 621111 physician-practice benchmarks. Where am I ahead, where am I behind, and what are the top three moves to close the gaps?','Benchmark read')">Benchmark read</button>
+        </div>
+        <div class="grid g4" id="bmRatings" style="margin-bottom:16px"></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-head"><h3>Profit Margins</h3><span class="tag">higher is better</span></div><div id="bmProfit" style="padding:4px 2px"></div></div>
+          <div class="card"><div class="card-head"><h3>Spending (% of revenue)</h3><span class="tag">lower is better</span></div><div id="bmSpend" style="padding:4px 2px"></div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-head"><h3>Key Industry Metrics</h3></div>
+            <div class="table-scroll"><table id="tblBmKey"><thead><tr><th>Metric</th><th class="num">Industry</th><th>Comparison</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div class="card"><div class="card-head"><h3>Liquidity &amp; Cash</h3></div><div id="bmCash" style="padding:4px 2px"></div></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Known Industry Risks &amp; What To Do</h3><span class="tag">from your NAICS 621111 report</span></div>
+          <div id="bmRisks" style="display:flex;flex-direction:column;gap:12px;padding:2px"></div>
+        </div>
+      </section>
+
+      <!-- ==================== REVENUE OPPORTUNITIES ==================== -->
+      <section class="view" id="revopps">
+        <div class="page-head split">
+          <div><h2>Revenue Opportunities</h2><p>Money on the table right now — underpayments, denials, patient balances, and unbilled work — pulled together from across the dashboard, each with the action to capture it.</p></div>
+          <button class="btn btn-ai" onclick="openAI('Look across my revenue opportunities — rate underpayments, denials, patient balances, unbilled claims, and undercoded recurring services. Rank them by dollars and effort, and tell me the first three to work this week.','Revenue opportunities')">Find opportunities</button>
+        </div>
+        <div class="grid g4" id="roKpis" style="margin-bottom:16px"></div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head split"><div><h3>Opportunities by Category</h3><div class="card-sub">Computed live from your claims, rates, and balances. Grows as you price contracts and post data.</div></div></div>
+          <div class="table-scroll"><table id="tblRevOpps">
+            <thead><tr><th>Opportunity</th><th class="num">Est. $</th><th>Basis</th><th>How to capture</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head split"><div><h3>Capture Gaps</h3><div class="card-sub">Where you billed the base service but missed the companion/add-on. Computed from your live claim mix.</div></div><span class="tag">quantified</span></div>
+          <div class="table-scroll"><table id="tblGaps">
+            <thead><tr><th>Missed code</th><th>Service</th><th class="num">Captured</th><th class="num">Eligible</th><th class="num">Gap</th><th class="num">$ Missed</th><th>Note</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-head split"><div><h3>Recurring Revenue You May Be Leaving</h3><div class="card-sub">High-value, often-undercoded services — capture on every eligible patient. Rates are your Medicare QPP allowed.</div></div><span class="tag">per unit</span></div>
+          <div class="table-scroll"><table id="tblRecur">
+            <thead><tr><th>Code</th><th>Service</th><th class="num">Medicare (QPP)</th><th>Why it's missed / how to capture</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -814,6 +898,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Compounds</div><div class="k-val" style="font-size:18px">every yr</div><div class="mini">not one-time</div></div>
         </div>
         <div class="note" style="margin-bottom:16px"><b>How to read this.</b> The estimate is directional (built from average ranges), deliberately conservative, and <b>compounds every year</b> you keep the changes. Start with the biggest levers (entity structure + S-corp salary), then work down. A precise number needs your actual books + prior return — treat this as the agenda for a CPA conversation.</div>
+        <div class="card" id="txCalc" style="margin-bottom:16px"></div>
         <div id="taxLevers"></div>
         <div class="note"><b>Not tax advice.</b> These are common planning areas for healthcare practices; specifics (esp. QBI/SSTB phaseouts, reasonable-comp, and S-corp health-insurance reporting) depend on your facts. Confirm each with a healthcare CPA before acting.</div>
       </section>
@@ -982,6 +1067,53 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             <thead><tr><th>Title</th><th>Format</th><th>Status</th><th>Publish Date</th><th class="num">Revenue</th></tr></thead>
             <tbody></tbody>
           </table></div>
+        </div>
+      </section>
+
+      <!-- ==================== PROGRAM PAGE (generic, per program) ==================== -->
+      <section class="view" id="programpage">
+        <div class="page-head split">
+          <div><h2 id="pgTitle">Program</h2><p id="pgSub"></p></div>
+          <button class="btn btn-ai" onclick="pgAsk()">Analyze program</button>
+        </div>
+        <div class="grid g4" style="margin-bottom:16px" id="pgKpis"></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card">
+            <div class="card-head split"><div><h3>Annual Budget</h3><div class="card-sub">Set your targets — pull them from your LivePlan / business plan. Saved on this device.</div></div></div>
+            <div id="pgBudgetEditor" style="padding:4px 2px"></div>
+          </div>
+          <div class="card">
+            <div class="card-head split"><h3 id="pgBvaTitle">Budget vs. Actual (YTD)</h3><span class="tag" id="pgPace">—</span></div>
+            <div id="pgBva" style="padding:6px 2px"></div>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-head"><h3>Revenue</h3><span class="tag">YTD attributed</span></div><div id="pgRevDetail" style="padding:4px 2px"></div></div>
+          <div class="card"><div class="card-head"><h3>Direct Expenses</h3><span class="tag">tagged to this program</span></div>
+            <div class="table-scroll"><table id="tblPgExp"><thead><tr><th>Item</th><th>Category</th><th class="num">Amount</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+        <div class="note" id="pgGuide"></div>
+      </section>
+
+      <!-- ==================== FORECAST (LivePlan-style) ==================== -->
+      <section class="view" id="forecast">
+        <div class="page-head split">
+          <div><h2>Forecast</h2><p>A living 12-month projection — like LivePlan, but fed by your real run-rate. Set the growth assumptions and it recalculates revenue, expenses, net, and cash on hand, month by month.</p></div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="fcUseRunRate()">↻ Reset to run-rate</button>
+            <button class="btn btn-ai" onclick="openAI('Stress-test my 12-month forecast. Where is it fragile, what growth rate breaks cash flow, and what should I change first?','Forecast stress-test')">Stress-test</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head split"><div><h3>Assumptions</h3><div class="card-sub">Starting values default to your run-rate from actuals. Edit any field — the whole forecast updates.</div></div></div>
+          <div id="fcAssume" class="section-tools" style="flex-wrap:wrap"></div>
+        </div>
+        <div class="grid g4" style="margin-bottom:16px" id="fcKpis"></div>
+        <div class="card" style="margin-bottom:16px"><div class="card-head"><h3>12-Month Projection</h3></div><div class="chart-wrap"><canvas id="chForecast"></canvas></div></div>
+        <div class="card">
+          <div class="card-head"><h3>Month-by-Month</h3></div>
+          <div class="table-scroll"><table id="tblForecast"><thead><tr><th>Month</th><th class="num">Revenue</th><th class="num">Expenses</th><th class="num">Net</th><th class="num">Cash on Hand</th></tr></thead><tbody></tbody></table></div>
         </div>
       </section>
 
@@ -1377,6 +1509,17 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             <div class="note" style="margin-top:12px">Confirm exact submission &amp; election dates at <b>qpp.cms.gov</b> &mdash; CMS sets them each year. Full tracker: <b>BHW-MIPS-2026-Quality-Tracker.xlsx</b>.</div>
           </div>
         </div>
+
+        <!-- MIPS resource downloads -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-head"><h3>MIPS Resources — Downloads</h3><span class="tag">Team</span></div>
+          <p style="font-size:12.5px;color:#55636b;margin:4px 0 12px">Working files for the MIPS 2026 opt-in + Flow vascular screening rollout.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <a class="btn" style="text-decoration:none" href="files/BHW-MIPS-2026-Quality-Tracker.xlsx" download>⬇ Quality Tracker (.xlsx)</a>
+            <a class="btn" style="text-decoration:none" href="files/BHW-MIPS-Flow-Team-Brief.docx" download>⬇ Team Rollout Brief (.docx)</a>
+            <a class="btn" style="text-decoration:none" href="files/BHW-Biller-QuickRef.docx" download>⬇ Biller Quick-Reference (.docx)</a>
+          </div>
+        </div>
       </section>
 
       <!-- ==================== REFERENCE: SOURCES & METHOD ==================== -->
@@ -1531,7 +1674,9 @@ const PROGRAMS = [
   {id:"pophealth",name:"Population Health (CCM)"},
   {id:"charmed",  name:"CharmEd Minds"},
   {id:"flow",     name:"Flow Vascular Stabilization"},
-  {id:"edumedia", name:"BHW EduMedia"}
+  {id:"edumedia", name:"BHW EduMedia"},
+  {id:"elvtd",    name:"ELVT'D Wellness Center"},
+  {id:"foundation",name:"The Foundation (Nonprofit)"}
 ];
 const EXTRA_STREAMS = [
   {id:"ancillary",name:"Ancillary Income"},
@@ -1540,7 +1685,91 @@ const EXTRA_STREAMS = [
 ];
 const REVENUE_STREAMS = [...PROGRAMS, ...EXTRA_STREAMS];
 const PROVIDERS = ["Amaris","Yahaira","Tyesha","Tonya"];
-const BANK_ACCOUNTS = ["TD · BHW Checking/Savings","TD · BHW Integrative Checking","TD · BHW Integrative Savings","BHW Mind & Mood Checking/Savings"];
+const BANK_ACCOUNTS = ["TD · BHW Checking/Savings","TD · BHW Integrative Checking","TD · BHW Integrative Savings","BHW Mind & Mood Checking/Savings","ELVT'D Wellness Center"];
+// Category taxonomy for the books, and keyword auto-classification.
+const BOOK_CATEGORIES = ["Insurance revenue","Patient revenue","Grant / contract","Other income","Payroll","Rent / facilities","Software / EHR","Clearinghouse / billing","Bank / card fees","Medical supplies","Professional fees","Taxes","Owner draw","Transfer","Other expense"];
+function autoCategory(desc, amt){
+  const d=String(desc||"").toLowerCase();
+  if(amt>=0){
+    if(/grant|samhsa|hrsa|award|foundation|donat/.test(d)) return "Grant / contract";
+    if(/stripe|card|patient|copay|self[ -]?pay/.test(d))    return "Patient revenue";
+    if(/eft|hcclaimpmt|claimpmt|bcbs|carefirst|medicare|medicaid|novitas|aetna|cigna|united|humana|payer|remit|era|deposit/.test(d)) return "Insurance revenue";
+    return "Other income";
+  }
+  if(/payroll|gusto|adp|salary|wage|paychex/.test(d)) return "Payroll";
+  if(/rent|lease|garrison|property|facilit/.test(d))  return "Rent / facilities";
+  if(/charm|ehr|software|saas|subscription|google|microsoft|zoom|adobe|liveplan|notion/.test(d)) return "Software / EHR";
+  if(/stedi|clearinghouse|availity|change health|waystar|office ally/.test(d)) return "Clearinghouse / billing";
+  if(/\bfee\b|interest|service charge|nsf|overdraft/.test(d)) return "Bank / card fees";
+  if(/suppl|mckesson|medline|\blab\b|quest|labcorp/.test(d)) return "Medical supplies";
+  if(/legal|attorney|accountant|cpa|consult|professional/.test(d)) return "Professional fees";
+  if(/\btax\b|irs|comptroller|estimated|941|940/.test(d)) return "Taxes";
+  if(/draw|owner|distribution/.test(d)) return "Owner draw";
+  if(/transfer|xfer|zelle/.test(d)) return "Transfer";
+  return "Other expense";
+}
+// Default program for a book line, from the account it hit and the description.
+function autoProgram(acct, desc){
+  const a=String(acct||"").toLowerCase(), d=String(desc||"").toLowerCase();
+  if(/mind|mood/.test(a)||/psych|therapy|behav/.test(d)) return "mindmood";
+  if(/integrative/.test(a)) return "pophealth";
+  if(/elvt|wellness/.test(a)) return "elvtd";
+  if(/charmed|edumedia|course|media/.test(d)) return "charmed";
+  if(/flow|vascular/.test(d)) return "flow";
+  if(/foundation|grant|donat/.test(d)) return "foundation";
+  return "primary";
+}
+// Per-line bookkeeping overrides (category / program / reconciled), saved locally.
+function bookMap(){ try{ return JSON.parse(localStorage.getItem('bookLedger')||'{}'); }catch(e){ return {}; } }
+function bookKey(t){ return (t.date||'')+'|'+String(t.desc||'').slice(0,26)+'|'+Math.round(Number(t.amount)||0); }
+function setBookField(key,field,val){ const m=bookMap(); m[key]=Object.assign({},m[key],{[field]:val}); try{localStorage.setItem('bookLedger',JSON.stringify(m));}catch(e){} buildBanking(); }
+
+/* ============================================================
+   PROGRAM PAGES + BUDGETS + FORECAST  (Phase 3)
+   ============================================================ */
+// Which programs get a dedicated page, in nav order. (EduMedia keeps its own page.)
+const PROGRAM_PAGES = ["primary","mindmood","pophealth","charmed","flow","elvtd","foundation"];
+const PROGRAM_META = {
+  primary:  {icon:"🩺", desc:"BHW primary care — fee-for-service E/M visits, annual wellness visits, and chronic-care management.",
+             fill:"Revenue accrues as you tag paid claims to Primary Care on Reconciliation. Direct costs come from Expenses tagged to this program; shared overhead is allocated on the P&L."},
+  mindmood: {icon:"🧠", desc:"BHW Mind & Mood — behavioral and psychiatric services: therapy, medication management, and assessments.",
+             fill:"Tag behavioral-health claims to Mind & Mood on Reconciliation. Add clinician payroll and any program-specific costs on Expenses tagged to this program."},
+  pophealth:{icon:"👥", desc:"Population Health (CCM) — care coordination, remote monitoring, and value-based / PMPM revenue.",
+             fill:"CCM/RPM claims tag here on Reconciliation. PMPM and value-based bonuses post on Financial Health → they land in this program's revenue."},
+  charmed:  {icon:"✦", desc:"CharmEd Minds — cognitive-health program services and content.",
+             fill:"Post CharmEd revenue on Financial Health (or tag claims on Reconciliation). Log program staff and production cost on Expenses tagged to CharmEd Minds."},
+  flow:     {icon:"🩸", desc:"Flow: Vascular Stabilization Center — vascular procedures and stabilization services.",
+             fill:"Tag vascular claims to Flow on Reconciliation. Log tech, supplies, and equipment cost on Expenses tagged to Flow."},
+  elvtd:    {icon:"🌿", desc:"ELVT'D Wellness Center — wellness and cash-pay services.",
+             fill:"ELVT'D is largely cash-pay: post revenue on Financial Health and record deposits in The Books tagged to ELVT'D. Log its direct costs on Expenses."},
+  foundation:{icon:"🤝", desc:"The Foundation — your 501(c)(3) nonprofit arm. Tracked as surplus / (deficit), not profit. Keep its books separate from the for-profit practices.",
+             fill:"Post grant draws and donations as revenue (Financial Health → Grants). Log program spend on Expenses tagged to The Foundation. A nonprofit aims to break even, not to profit.", nonprofit:true},
+};
+// Per-program annual budgets (revenue target + expense budget), saved locally.
+function budgetMap(){ try{ return JSON.parse(localStorage.getItem('programBudgets')||'{}'); }catch(e){ return {}; } }
+function programBudget(pid){ const b=budgetMap()[pid]||{}; return {revenue:Number(b.revenue)||0, expense:Number(b.expense)||0}; }
+function setBudget(pid,field,val){ const m=budgetMap(); const n=Number(String(val).replace(/[^0-9.]/g,''))||0; m[pid]=Object.assign({},m[pid],{[field]:n}); try{localStorage.setItem('programBudgets',JSON.stringify(m));}catch(e){} buildProgramPage(pid); }
+// Per-program P&L (revenue − direct cost − allocated overhead), mirrors buildPnl.
+function programPnl(pid){
+  const rev=DATA.programRevenue||{}; const pe=programExpenses(); const direct=pe.direct, overhead=pe.overhead;
+  const totalRev=REVENUE_STREAMS.reduce((a,s)=>a+(rev[s.id]||0),0)||1;
+  const r=rev[pid]||0, alloc=overhead*(r/totalRev), d=direct[pid]||0, cost=d+alloc, margin=r-cost;
+  return {rev:r, direct:d, alloc, cost, margin, pct:r?margin/r*100:0};
+}
+// Fraction of the calendar year elapsed (for budget pacing).
+function yearElapsed(){ const now=new Date(), start=new Date(now.getFullYear(),0,1), end=new Date(now.getFullYear()+1,0,1); return (now-start)/(end-start); }
+
+// ---- LivePlan-style forecast assumptions (editable, saved locally) ----
+function fcDefaults(){
+  // Suggest a starting run-rate from actuals so the forecast isn't blank.
+  const rev=DATA.programRevenue||{}; const totRev=REVENUE_STREAMS.reduce((a,s)=>a+(rev[s.id]||0),0);
+  const totExp=(DATA.expenseItems||[]).reduce((a,e)=>a+(Number(e[2])||0),0);
+  const elapsed=Math.max(yearElapsed(),1/12), monthsIn=Math.max(1,Math.round(elapsed*12));
+  return { startRev:Math.round(totRev/monthsIn), revGrowth:3, startExp:Math.round(totExp/monthsIn), expGrowth:1.5, startCash:0 };
+}
+function fcAssumptions(){ try{ const saved=JSON.parse(localStorage.getItem('forecast')||'null'); return saved?Object.assign(fcDefaults(),saved):fcDefaults(); }catch(e){ return fcDefaults(); } }
+function setFc(field,val){ const a=fcAssumptions(); a[field]=Number(String(val).replace(/[^0-9.\-]/g,''))||0; try{localStorage.setItem('forecast',JSON.stringify(a));}catch(e){} buildForecast(); }
+function fcUseRunRate(){ try{localStorage.removeItem('forecast');}catch(e){} buildForecast(); }
 function reconDepMap(){ try{ return JSON.parse(localStorage.getItem('reconDeposit')||'{}'); }catch(e){ return {}; } }
 function setReconBank(i,v){ const r=DATA.reconLedger[i]; if(!r)return; const m=reconDepMap(); m[r.claim]=Object.assign({},m[r.claim],{account:v}); try{localStorage.setItem('reconDeposit',JSON.stringify(m));}catch(e){} }
 function setReconDepDate(i,v){ const r=DATA.reconLedger[i]; if(!r)return; const m=reconDepMap(); m[r.claim]=Object.assign({},m[r.claim],{date:v}); try{localStorage.setItem('reconDeposit',JSON.stringify(m));}catch(e){} }
@@ -1682,24 +1911,17 @@ const DATA = {
     ["2026-06-27","BCBS Maryland","Duplicate payment recoupment","recoup",-560]
   ],
   // ---- Bank / cash (Stripe Financial Connections). Sample until connected. ----
+  // Your real accounts. Balances/last4 fill in when you connect the bank via
+  // Stripe Financial Connections; `prog` seeds each line's default program split.
   bankAccounts: [
-    {name:"BHW Operating", inst:"Truist", last4:"4471", type:"Checking", balance:184300},
-    {name:"BHW Payroll",   inst:"Truist", last4:"9920", type:"Checking", balance:42800}
+    {name:"TD · BHW Checking/Savings",        inst:"TD Bank", last4:"", type:"Checking/Savings", balance:null, prog:"primary"},
+    {name:"TD · BHW Integrative Checking",    inst:"TD Bank", last4:"", type:"Checking",          balance:null, prog:"pophealth"},
+    {name:"TD · BHW Integrative Savings",     inst:"TD Bank", last4:"", type:"Savings",           balance:null, prog:"pophealth"},
+    {name:"BHW Mind & Mood Checking/Savings", inst:"TD Bank", last4:"", type:"Checking/Savings", balance:null, prog:"mindmood"},
+    {name:"ELVT'D Wellness Center",           inst:"—",       last4:"", type:"—",                 balance:null, prog:"elvtd"}
   ],
-  // [date, description, amount(+in/-out), acctLast4, matchedPayer|null]
-  bankTxns: [
-    ["2026-07-25","BCBS MARYLAND  HCCLAIMPMT EFT",   62410, "4471", "CareFirst BCBS Maryland"],
-    ["2026-07-24","NOVITAS MEDICARE  HCCLAIMPMT",    48905, "4471", "Medicare (CMS)"],
-    ["2026-07-24","AETNA  EFT PAYMENT",              20140, "4471", "Aetna"],
-    ["2026-07-23","MD MEDICAID MCO  EFT",            17330, "4471", "Medicaid Maryland"],
-    ["2026-07-22","STRIPE  PATIENT CARD PAYOUT",      7680, "4471", "Patient card"],
-    ["2026-07-21","EFT DEPOSIT  REF 88231",           3120, "4471", null],
-    ["2026-07-19","SAMHSA  GRANT ACH",               15000, "4471", "SAMHSA grant"],
-    ["2026-07-21","STEDI CLEARINGHOUSE",              -640, "4471", null],
-    ["2026-07-20","CHARMHEALTH EHR",                 -1400, "4471", null],
-    ["2026-07-20","PAYROLL RUN",                    -54400, "9920", null],
-    ["2026-07-18","OFFICE LEASE — GARRISON BLVD",    -4850, "4471", null]
-  ],
+  // [date, description, amount(+in/-out), acctLast4, matchedPayer|null] — fills from Stripe + Notion Deposits.
+  bankTxns: [],
 
   // ---- Tax planning levers for a healthcare small business (grounded in
   //      Flychain's 8 + the areas they skip). Educational — not tax advice. ----
@@ -1856,12 +2078,12 @@ const DATA = {
     {patient:"Baldwin, K.", type:"discharge", event:"Discharge — SNF",         facility:"Future Care",         daysAgo:20, dispo:"Home",              complexity:"moderate"}
   ],
   mipsRows: [
-    ["Controlling High Blood Pressure","Quality","71%","Decile 7","7.0","watch"],
-    ["Diabetes: HbA1c Poor Control (inverse)","Quality","18%","Decile 8","8.0","ontrack"],
-    ["Colorectal Cancer Screening","Quality","62%","Decile 6","6.0","watch"],
-    ["Depression Screening & Follow-Up","Quality","74%","Decile 8","8.0","ontrack"],
-    ["Preventive Care: BMI Screening","Quality","88%","Decile 9","9.0","ontrack"],
-    ["Tobacco Use: Screening & Cessation","Quality","91%","Decile 9","9.0","ontrack"]
+    ["Diabetes: HbA1c Poor Control (>9%, inverse)","Flow · Outcome","18%","Decile 8","8.0","ontrack"],
+    ["Diabetic Peripheral Neuropathy: Neuro Eval","Flow · Neuro · Process","74%","Decile 7","7.0","ontrack"],
+    ["Depression Screening & Follow-Up","Mind & Mood · High priority","81%","Decile 8","8.0","ontrack"],
+    ["Unhealthy Alcohol Use: Screening & Counseling","Mind & Mood · High priority","76%","Decile 7","7.0","ontrack"],
+    ["Advance Care Plan","CharmEd · High priority","69%","Decile 6","6.0","watch"],
+    ["Elder Maltreatment Screen & Follow-Up","CharmEd · High priority","88%","Decile 9","9.0","ontrack"]
   ],
   mipsPerf: { labels:["Quality","Promoting Interop","Improvement","Cost"], perf:[78,85,90,71], bench:[70,70,70,70] },
   mipsWt: { labels:["Quality 30%","Cost 30%","Promoting Interop 25%","Improvement 15%"], values:[30,30,25,15] }
@@ -1884,8 +2106,8 @@ const TITLES = {
   dashboard:"Dashboard", charges:"Charges & Claims", payments:"Payments", denials:"Denials",
   reconciliation:"Reconciliation", chargemaster:"Charge Master", verify:"Insurance Verify",
   contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary",
-  monthclose:"Monthly Close", finhealth:"Financial Health", banking:"Banking / Cash",
-  provperf:"Provider Profitability", ratebench:"Rate Benchmarking", taxplan:"Tax Planning", aicfo:"AI CFO",
+  monthclose:"Monthly Close", finhealth:"Financial Health", forecast:"Forecast", banking:"The Books", programpage:"Program",
+  provperf:"Provider Profitability", ratebench:"Rate Benchmarking", benchmarks:"Industry Benchmarks", revopps:"Revenue Opportunities", taxplan:"Tax Planning", aicfo:"AI CFO",
   goals:"Weekly Goals", cpt:"CPT by Program", claimslog:"Claims Log", pnl:"P&L by Program",
   expenses:"Expenses", edumedia:"EduMedia Tracker", q3goals:"Q3 Goals vs Actual",
   recovery:"Payment Recovery Timeline",
@@ -1902,6 +2124,14 @@ function go(id, el){
   if(el) el.classList.add('active');
   document.getElementById('crumb').textContent = TITLES[id] || id;
   window.scrollTo({top:0, behavior:'smooth'});
+  if(id==='forecast') buildForecast();
+  if(id==='benchmarks') buildBenchmarks();
+  if(id==='provperf') buildProvPerf();
+  if(id==='weekly') applyWeekly();
+  if(id==='taxplan') buildTaxPlan();
+  if(id==='aicfo') buildAiCfo();
+  if(id==='ratebench') buildRateBench();
+  if(id==='revopps') buildRevOpps();
   if(!rendered[id]){ renderCharts(id); rendered[id]=true; }
 }
 
@@ -1988,8 +2218,25 @@ function badge(status){
   const label=labels[status]||(status.charAt(0).toUpperCase()+status.slice(1));
   return `<span class="badge ${map[status]||'b-info'}">${label}</span>`;
 }
+// Short "how to fill this" hints shown when a table is empty (clean-slate mode),
+// so a blank page tells you where its data comes from instead of looking broken.
+const EMPTY_HINTS = {
+  tblClaims:    'No open claims yet. This fills from your Notion <b>Claims (Open)</b> database (env <code>NOTION_CLAIMS_DB</code>) — every unpaid/submitted claim line. Add claims in Notion or import your ChARM “Claim Procedures List”, and share the database with your Notion integration.',
+  tblClaimsLog: 'No claims logged yet. Same source as the Claims table — your Notion <b>Claims (Open)</b> database.',
+  tblEra:       'No remittances yet. This fills automatically from Stedi once 835/ERA files arrive, and from any manual EOB you post on the Payments page.',
+  tblPayments:  'No payments yet. This fills from Stedi 835 ERAs, your Notion <b>Payments</b> database (env <code>NOTION_PAYMENTS_DB</code>), and manual EOB/cash entries you post here.',
+  tblRecon:     'Nothing to reconcile yet. Sent claims appear here once claims load — then tag each with its program, provider, bank account, and deposit date.',
+  tblDenials:   'No denials yet. Denied claims flow in from your Notion claims feed and from 835 remittances with denial (CARC) codes.',
+  tblDeposits:  'No deposits yet. This fills from your Notion <b>Deposits</b> database (env <code>NOTION_DEPOSITS_DB</code>) or from connected bank data.',
+};
 function fillTable(id, rows, statusCol){
   const tb=document.querySelector('#'+id+' tbody'); if(!tb) return;
+  if(!rows || rows.length===0){
+    const cols = document.querySelectorAll('#'+id+' thead th').length || 1;
+    const hint = EMPTY_HINTS[id] || 'No data yet — this table fills from your live Notion and Stedi feeds.';
+    tb.innerHTML = `<tr><td colspan="${cols}" style="padding:18px 14px;color:var(--muted);font-size:13px;line-height:1.5">${hint}</td></tr>`;
+    return;
+  }
   tb.innerHTML = rows.map(r=>'<tr>'+r.map((c,i)=>{
     const numeric = (typeof c==='number') || /^-?\$?[\d,]+(\.\d+)?%?$/.test(String(c));
     if(statusCol!=null && i===statusCol) return '<td>'+badge(c)+'</td>';
@@ -2209,6 +2456,118 @@ function buildPnl(){
   if(charts['chPnl']){ charts['chPnl'].data.labels=short; charts['chPnl'].data.datasets[0].data=rows.map(r=>Math.round(r.rev)); charts['chPnl'].data.datasets[1].data=rows.map(r=>Math.round(r.cost)); charts['chPnl'].update(); }
   if(charts['chMargin']){ charts['chMargin'].data.labels=short; charts['chMargin'].data.datasets[0].data=rows.map(r=>+r.pct.toFixed(1)); charts['chMargin'].data.datasets[0].backgroundColor=rows.map(r=>r.margin<0?C.denied:(r.pct<20?C.pending:C.sage)); charts['chMargin'].update(); }
   if(charts['chProgRev']){ charts['chProgRev'].data.labels=DATA.progRev.labels; charts['chProgRev'].data.datasets[0].data=DATA.progRev.values; charts['chProgRev'].update(); }
+  const pp=document.getElementById('programpage'); if(CURRENT_PROGRAM && pp && pp.classList.contains('active')) buildProgramPage(CURRENT_PROGRAM);
+}
+
+/* ---- Program pages (Phase 3) ---- */
+let CURRENT_PROGRAM=null;
+function kpiCard(color,label,val,sub){ return `<div class="card kpi"><span class="k-accent" style="background:${color}"></span><div class="k-label">${label}</div><div class="k-val">${val}</div><div class="mini">${sub||''}</div></div>`; }
+function budgetBar(label,actual,budget,color){
+  const money=n=>'$'+Math.round(n).toLocaleString();
+  const pct = budget>0 ? Math.min(100, actual/budget*100) : 0;
+  const over = budget>0 && actual>budget;
+  return `<div style="margin:0 0 16px">
+    <div class="split" style="font-size:12px;margin-bottom:5px"><span>${label}</span><span><b>${money(actual)}</b>${budget>0?' / '+money(budget):' <span class="mini">(no budget set)</span>'}</span></div>
+    <div style="height:11px;background:rgba(128,128,128,.18);border-radius:6px;overflow:hidden"><div style="height:100%;width:${budget>0?pct:0}%;background:${over?'#c0503f':color};border-radius:6px;transition:width .3s"></div></div>
+    ${over?`<div class="mini" style="color:var(--denied);margin-top:3px">Over budget by ${money(actual-budget)}</div>`:''}
+  </div>`;
+}
+function fillProgramNav(){
+  const nav=document.getElementById('progNav'); if(!nav) return;
+  const items=PROGRAM_PAGES.map(pid=>{ const m=PROGRAM_META[pid]||{}; return `<div class="nav-item" onclick="openProgram('${pid}',this)"><span class="ic">${m.icon||'●'}</span> ${progName(pid).replace(/ \(.*/,'')}</div>`; }).join('');
+  nav.innerHTML=`<div class="label">Programs</div>`+items;
+}
+function openProgram(pid, el){
+  CURRENT_PROGRAM=pid;
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('programpage'); if(sec) sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const cr=document.getElementById('crumb'); if(cr) cr.textContent=progName(pid);
+  window.scrollTo({top:0,behavior:'smooth'});
+  buildProgramPage(pid);
+}
+function buildProgramPage(pid){
+  const meta=PROGRAM_META[pid]||{icon:'●',desc:'',fill:''};
+  const pl=programPnl(pid), bud=programBudget(pid);
+  const money=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString();
+  const nonprofit=!!meta.nonprofit;
+  const marginLabel = nonprofit?'Surplus / (Deficit)':'Net Margin';
+  const revBudLabel = nonprofit?'Funding target':'Revenue target';
+  const t=document.getElementById('pgTitle'); if(t) t.textContent=(meta.icon?meta.icon+' ':'')+progName(pid);
+  const s=document.getElementById('pgSub'); if(s) s.textContent=meta.desc;
+  const revPct = bud.revenue? pl.rev/bud.revenue*100 : null;
+  const kw=document.getElementById('pgKpis');
+  if(kw) kw.innerHTML=[
+    kpiCard('var(--sage)','Revenue (YTD)',money(pl.rev), bud.revenue?('of '+money(bud.revenue)+' target'):'set a target →'),
+    kpiCard('var(--bronze)','Expenses (YTD)',money(pl.cost), 'direct '+money(pl.direct)+' + overhead'),
+    kpiCard(pl.margin>=0?'var(--blue)':'var(--denied)',marginLabel,money(pl.margin), pl.rev?pl.pct.toFixed(1)+'% of revenue':'—'),
+    kpiCard('var(--pending)','% of Rev Budget', revPct==null?'—':Math.round(revPct)+'%', 'year '+Math.round(yearElapsed()*100)+'% elapsed')
+  ].join('');
+  const be=document.getElementById('pgBudgetEditor');
+  if(be) be.innerHTML=`
+    <label class="mini">${revBudLabel} (annual)</label>
+    <input type="text" value="${bud.revenue?bud.revenue.toLocaleString():''}" placeholder="e.g. 250,000" onchange="setBudget('${pid}','revenue',this.value)" style="width:100%;margin:4px 0 14px">
+    <label class="mini">Expense budget (annual)</label>
+    <input type="text" value="${bud.expense?bud.expense.toLocaleString():''}" placeholder="e.g. 180,000" onchange="setBudget('${pid}','expense',this.value)" style="width:100%;margin:4px 0 4px">
+    <div class="mini" style="margin-top:10px">Implied ${nonprofit?'surplus':'profit'} target: <b>${money((bud.revenue||0)-(bud.expense||0))}</b></div>`;
+  const pace=document.getElementById('pgPace'); if(pace) pace.textContent=Math.round(yearElapsed()*100)+'% of year elapsed';
+  const bva=document.getElementById('pgBva');
+  if(bva) bva.innerHTML = budgetBar('Revenue', pl.rev, bud.revenue, '#a8b59a') + budgetBar('Expenses', pl.cost, bud.expense, '#b07a55');
+  const rd=document.getElementById('pgRevDetail');
+  if(rd){ rd.innerHTML = pl.rev>0
+    ? `<div class="mini">Attributed revenue this year</div><div style="font-size:28px;font-weight:600;margin:6px 0">${money(pl.rev)}</div><div class="mini">Grows as you tag claims to this program on Reconciliation and post non-claim revenue on Financial Health.</div>`
+    : `<div style="color:var(--muted);font-size:13px;line-height:1.55">No revenue attributed yet. ${meta.fill}</div>`; }
+  const et=document.querySelector('#tblPgExp tbody');
+  if(et){ const items=(DATA.expenseItems||[]).filter(e=>e[3]===pid);
+    et.innerHTML = items.length ? items.map(e=>`<tr><td>${e[0]}</td><td>${e[1]}</td><td class="num">${money(e[2])}</td></tr>`).join('')
+      : `<tr><td colspan="3" style="padding:14px;color:var(--muted);font-size:13px">No direct expenses tagged here yet. Add them on the Expenses page and pick "${progName(pid)}".</td></tr>`; }
+  const g=document.getElementById('pgGuide');
+  if(g) g.innerHTML=`<b>How to populate this page.</b> ${meta.fill} Set the annual budget above so every figure shows against target and pace.`;
+}
+function pgAsk(){ const pid=CURRENT_PROGRAM||'primary'; const pl=programPnl(pid), bud=programBudget(pid);
+  openAI(`Analyze my ${progName(pid)} program. Revenue YTD $${Math.round(pl.rev).toLocaleString()}, expenses $${Math.round(pl.cost).toLocaleString()}, margin $${Math.round(pl.margin).toLocaleString()} (${pl.pct.toFixed(1)}%). Annual budget: revenue $${bud.revenue.toLocaleString()}, expense $${bud.expense.toLocaleString()}. Am I on pace, where's the risk, and what should I do next?`, progName(pid)); }
+
+/* ---- Forecast (LivePlan-style, Phase 3) ---- */
+function fcInput(field,label,val){ return `<div><label class="mini">${label}</label><input type="text" value="${(val||val===0)?Number(val).toLocaleString():''}" onchange="setFc('${field}',this.value)" style="width:130px"></div>`; }
+function buildForecast(){
+  const a=fcAssumptions();
+  const money=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString();
+  const wrap=document.getElementById('fcAssume');
+  if(wrap) wrap.innerHTML=[
+    fcInput('startRev','Starting monthly revenue',a.startRev),
+    fcInput('revGrowth','Revenue growth %/mo',a.revGrowth),
+    fcInput('startExp','Starting monthly expenses',a.startExp),
+    fcInput('expGrowth','Expense growth %/mo',a.expGrowth),
+    fcInput('startCash','Starting cash on hand',a.startCash)
+  ].join('');
+  const now=new Date(); const labels=[],rev=[],exp=[],net=[],cash=[]; let c=a.startCash;
+  for(let i=0;i<12;i++){
+    const d=new Date(now.getFullYear(), now.getMonth()+i, 1);
+    labels.push(d.toLocaleDateString('en-US',{month:'short',year:'2-digit'}));
+    const r=a.startRev*Math.pow(1+a.revGrowth/100,i), e=a.startExp*Math.pow(1+a.expGrowth/100,i), n=r-e; c+=n;
+    rev.push(r); exp.push(e); net.push(n); cash.push(c);
+  }
+  const totRev=rev.reduce((x,y)=>x+y,0), totExp=exp.reduce((x,y)=>x+y,0), totNet=totRev-totExp, endCash=cash[cash.length-1];
+  const k=document.getElementById('fcKpis');
+  if(k) k.innerHTML=[
+    kpiCard('var(--sage)','12-mo Revenue',money(totRev),'projected'),
+    kpiCard('var(--bronze)','12-mo Expenses',money(totExp),'projected'),
+    kpiCard(totNet>=0?'var(--blue)':'var(--denied)','12-mo Net',money(totNet),(totRev?Math.round(totNet/totRev*100):0)+'% margin'),
+    kpiCard(endCash>=0?'var(--sage)':'var(--denied)','Ending Cash',money(endCash), endCash<0?'goes negative — watch it':'in 12 months')
+  ].join('');
+  const tb=document.querySelector('#tblForecast tbody');
+  if(tb) tb.innerHTML=labels.map((L,i)=>`<tr><td>${L}</td><td class="num">${money(rev[i])}</td><td class="num">${money(exp[i])}</td><td class="num" style="color:${net[i]<0?'var(--denied)':'#4f7a4f'}">${money(net[i])}</td><td class="num" style="color:${cash[i]<0?'var(--denied)':'inherit'}">${money(cash[i])}</td></tr>`).join('');
+  const el=document.getElementById('chForecast');
+  if(el && typeof Chart!=='undefined'){
+    const ds=[
+      {label:'Revenue',data:rev.map(x=>Math.round(x)),borderColor:C.sage,backgroundColor:'rgba(168,181,154,.12)',fill:true,tension:.3},
+      {label:'Expenses',data:exp.map(x=>Math.round(x)),borderColor:C.bronze,backgroundColor:'rgba(176,122,85,.10)',fill:true,tension:.3},
+      {label:'Cash on Hand',data:cash.map(x=>Math.round(x)),borderColor:C.blue,borderWidth:2,tension:.3,fill:false}
+    ];
+    if(charts['chForecast']){ charts['chForecast'].data.labels=labels; charts['chForecast'].data.datasets=ds; charts['chForecast'].update(); }
+    else charts['chForecast']=new Chart(el,{type:'line',data:{labels,datasets:ds},options:{maintainAspectRatio:false,...bottomLegend}});
+  }
 }
 
 /* ---- CPT by program (filterable) ---- */
@@ -2253,6 +2612,18 @@ function buildFinHealth(){
   if(nt) nt.innerHTML=DATA.nonClaimRevenue.map(r=>`<tr><td>${String(r[0]||'').slice(5)}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="tag">${progName(r[3])}</span></td><td class="num">$${r[4].toLocaleString()}</td></tr>`).join('');
   const rt=document.querySelector('#tblRefunds tbody');
   if(rt) rt.innerHTML=DATA.refunds.map(r=>`<tr><td>${String(r[0]||'').slice(5)}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="badge ${r[3]==='recoup'?'b-denied':'b-info'}">${r[3]==='recoup'?'Recoupment':'Patient refund'}</span></td><td class="num" style="color:var(--denied)">-$${Math.abs(r[4]).toLocaleString()}</td></tr>`).join('');
+  buildPayerMix();
+}
+// Payer mix across ALL businesses — computed from the unified collections ledger
+// (every 835 / Notion payment / manual EOB, deduped), not sample data.
+function buildPayerMix(){
+  const by={};
+  (DATA.collections||[]).forEach(c=>{ if(c.dup) return; const p=(c.payer||'Unknown').trim()||'Unknown'; by[p]=(by[p]||0)+(Number(c.amount)||0); });
+  const entries=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  DATA.payer={ labels:entries.map(e=>e[0]), values:entries.map(e=>Math.round(e[1])) };
+  const pal=[C.blue,C.bronze,C.sage,C.pending,C.neutral,C.billed,'#9c7bb0','#6ba3a0'];
+  if(charts['chPayerMix']){ charts['chPayerMix'].data.labels=DATA.payer.labels; charts['chPayerMix'].data.datasets[0].data=DATA.payer.values; charts['chPayerMix'].data.datasets[0].backgroundColor=DATA.payer.labels.map((_,i)=>pal[i%pal.length]); charts['chPayerMix'].update(); }
+  if(charts['chPayer']){ charts['chPayer'].data.labels=DATA.payer.labels.slice(0,6); charts['chPayer'].data.datasets[0].data=DATA.payer.values.slice(0,6); charts['chPayer'].update(); }
 }
 function postNonClaim(){
   const v=id=>document.getElementById(id).value.trim();
@@ -2269,25 +2640,72 @@ function postNonClaim(){
 
 /* ---- Banking / Cash (Stripe Financial Connections) ---- */
 function toggleBankHelp(){ const el=document.getElementById('bankHelp'); if(el) el.style.display = el.style.display==='none' ? '' : 'none'; }
+// Try to auto-match a deposit to a payment you've already recorded (the unified
+// collections ledger), by amount. Returns {to} if matched, else null.
+function autoMatchDeposit(amt){
+  if(amt<=0) return null;
+  const cents=Math.round(amt);
+  const hit=(DATA.collections||[]).find(c=>!c.dup && Math.round(Number(c.amount)||0)===cents);
+  return hit ? {to:(hit.payer||hit.claim||'recorded payment')} : null;
+}
+// Fold Stripe bank transactions + Notion Deposits into one normalized ledger.
+function bookLedger(){
+  const acctByLast4={}; DATA.bankAccounts.forEach(a=>{ if(a.last4) acctByLast4[a.last4]=a; });
+  const out=[];
+  (DATA.bankTxns||[]).forEach(t=>{
+    const acct=acctByLast4[t[3]];
+    out.push({date:t[0], desc:t[1], amount:Number(t[2])||0, acctName:(acct&&acct.name)|| (t[3]?('····'+t[3]):'—'), acctProg:acct&&acct.prog, payer:t[4]||null});
+  });
+  (DATA.depositsRaw||[]).forEach(d=>{
+    out.push({date:d.date, desc:(d.ref||d.provider||d.program||'Deposit'), amount:Number(d.amount)||0, acctName:d.account||'—', acctProg:null, payer:d.provider||null});
+  });
+  return out.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+}
 function buildBanking(){
   const money=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString();
+  const ov=bookMap();
+  // Accounts
   const at=document.querySelector('#tblBankAccts tbody');
-  if(at) at.innerHTML=DATA.bankAccounts.map(a=>`<tr><td><b>${a.name}</b> ····${a.last4}</td><td>${a.inst||''}</td><td>${a.type||''}</td><td class="num">$${Number(a.balance||0).toLocaleString()}</td></tr>`).join('');
-  const bal=DATA.bankAccounts.reduce((s,a)=>s+Number(a.balance||0),0);
-  const txns=DATA.bankTxns.filter(t=>inPeriod(t[0]));
+  if(at) at.innerHTML=DATA.bankAccounts.map(a=>{
+    const bal = a.balance==null ? '<span class="mini">—</span>' : '$'+Number(a.balance).toLocaleString();
+    const l4 = a.last4 ? ' ····'+a.last4 : '';
+    return `<tr><td><b>${a.name}</b>${l4}<div class="mini">${progName(a.prog||'primary')}</div></td><td>${a.inst||'—'}</td><td class="num">${bal}</td></tr>`;
+  }).join('');
+  const bal=DATA.bankAccounts.reduce((s,a)=>s+(a.balance==null?0:Number(a.balance)),0);
+  const anyBal=DATA.bankAccounts.some(a=>a.balance!=null);
+  // Ledger (period-filtered), with per-line category/program/reconcile
+  const rows=bookLedger().filter(t=>inPeriod(t.date));
+  const catSel=(key,cur)=>`<select onchange="setBookField('${key}','cat',this.value)" style="padding:3px 5px;font-size:11px">${BOOK_CATEGORIES.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('')}</select>`;
+  const progSel=(key,cur)=>`<select onchange="setBookField('${key}','prog',this.value)" style="padding:3px 5px;font-size:11px">${PROGRAMS.map(p=>`<option value="${p.id}"${p.id===cur?' selected':''}>${p.name}</option>`).join('')}</select>`;
+  const progSum={}, catSum={}; let cin=0,cout=0,unmatched=0;
   const tt=document.querySelector('#tblBankTxns tbody');
-  if(tt) tt.innerHTML=txns.map(t=>{
-    const amt=t[2], match=t[4];
-    const matchCell = amt<0 ? '<span class="mini">expense</span>'
-      : match ? '<span class="badge b-paid">'+match+'</span>'
-      : '<span class="badge b-denied">Review</span>';
-    return `<tr><td>${String(t[0]).slice(5)}</td><td>${t[1]}</td><td>····${t[3]}</td>
-      <td class="num" style="color:${amt<0?'var(--denied)':'#4f7a4f'}">${money(amt)}</td><td>${matchCell}</td></tr>`;
-  }).join('') || '<tr><td colspan="5" class="mini" style="padding:12px">No transactions in this period.</td></tr>';
-  let cin=0,cout=0,unmatched=0;
-  txns.forEach(t=>{ if(t[2]>0){ cin+=t[2]; if(!t[4]) unmatched++; } else cout+=Math.abs(t[2]); });
+  if(tt) tt.innerHTML=rows.map(t=>{
+    const key=bookKey(t), o=ov[key]||{};
+    const cat = o.cat || autoCategory(t.desc,t.amount);
+    const prog = o.prog || t.acctProg || autoProgram(t.acctName,t.desc);
+    const amt=t.amount;
+    const match = amt>0 ? (t.payer?{to:t.payer}:autoMatchDeposit(amt)) : null;
+    const reconciled = o.rec===true || (amt>0 && !!match);
+    if(amt>=0){ cin+=amt; if(!match && o.rec!==true) unmatched++; } else cout+=Math.abs(amt);
+    progSum[prog]=progSum[prog]||{in:0,out:0}; if(amt>=0) progSum[prog].in+=amt; else progSum[prog].out+=Math.abs(amt);
+    catSum[cat]=(catSum[cat]||0)+amt;
+    const recCell = amt<0
+      ? `<label class="mini" style="cursor:pointer"><input type="checkbox" ${o.rec===true?'checked':''} onchange="setBookField('${key}','rec',this.checked)"> cleared</label>`
+      : match
+        ? `<span class="badge b-paid" title="matched to a recorded payment">✓ ${match.to}</span>`
+        : `<span class="badge b-denied">Review</span>`;
+    return `<tr><td>${String(t.date||'').slice(5)}</td><td>${t.desc}</td><td class="mini">${t.acctName}</td>
+      <td>${catSel(key,cat)}</td><td>${progSel(key,prog)}</td>
+      <td class="num" style="color:${amt<0?'var(--denied)':'#4f7a4f'}">${money(amt)}</td><td>${recCell}</td></tr>`;
+  }).join('') || `<tr><td colspan="7" style="padding:18px 14px;color:var(--muted);font-size:13px;line-height:1.5">No transactions yet. This ledger fills from your connected bank (Stripe) and your Notion <b>Deposits</b> database. Deposits then auto-match to payments you've recorded on the Payments page.</td></tr>`;
+  // By Program
+  const pt=document.querySelector('#tblBookProgram tbody');
+  if(pt){ const keys=Object.keys(progSum); pt.innerHTML = keys.length ? keys.sort((a,b)=>(progSum[b].in-progSum[b].out)-(progSum[a].in-progSum[a].out)).map(k=>{ const s=progSum[k],net=s.in-s.out; return `<tr><td>${progName(k)}</td><td class="num">${money(s.in)}</td><td class="num">${money(s.out)}</td><td class="num" style="color:${net<0?'var(--denied)':'#4f7a4f'}">${money(net)}</td></tr>`;}).join('') : '<tr><td colspan="4" class="mini" style="padding:12px">No activity yet.</td></tr>'; }
+  // By Category
+  const ct=document.querySelector('#tblBookCategory tbody');
+  if(ct){ const keys=Object.keys(catSum); ct.innerHTML = keys.length ? keys.sort((a,b)=>Math.abs(catSum[b])-Math.abs(catSum[a])).map(k=>`<tr><td>${k}</td><td class="num" style="color:${catSum[k]<0?'var(--denied)':'#4f7a4f'}">${money(catSum[k])}</td></tr>`).join('') : '<tr><td colspan="2" class="mini" style="padding:12px">No activity yet.</td></tr>'; }
   const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
-  set('bkBalance','$'+Math.round(bal).toLocaleString()); set('bkAccts',DATA.bankAccounts.length+' accounts');
+  set('bkBalance', anyBal ? '$'+Math.round(bal).toLocaleString() : '—'); set('bkAccts',DATA.bankAccounts.length+' accounts');
   set('bkIn','$'+Math.round(cin).toLocaleString()); set('bkOut','$'+Math.round(cout).toLocaleString());
   set('bkUnmatched',unmatched); set('bkPeriod',PERIOD_LABEL);
 }
@@ -2324,45 +2742,360 @@ async function connectBank(){
 }
 
 /* ---- Provider profitability ---- */
-function buildProvPerf(){
-  const money=n=>'$'+Math.round(n).toLocaleString();
-  const rows=DATA.providerFin.map(p=>({...p, margin:p.revenue-p.comp, pct:p.revenue?(p.revenue-p.comp)/p.revenue*100:0}));
-  const tb=document.querySelector('#tblProvPerf tbody');
-  if(tb) tb.innerHTML=rows.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.programs}</td><td class="num">${p.visits}</td><td class="num">${money(p.revenue)}</td><td class="num">${money(p.comp)}</td><td class="num" style="color:${p.margin>=0?'#4f7a4f':'var(--denied)'}">${money(p.margin)}</td><td class="num">${p.pct.toFixed(1)}%</td></tr>`).join('');
-  const top=rows.slice().sort((a,b)=>b.margin-a.margin)[0];
-  const clinical=DATA.providerFin.reduce((a,p)=>a+p.comp,0);
-  const admin=DATA.expenseItems.filter(e=>/admin/i.test(e[0])).reduce((a,e)=>a+e[2],0)||1;
-  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
-  set('ppCount',rows.length); set('ppTop',top?top.name:'—');
-  set('ppAvg',money(rows.reduce((a,p)=>a+p.revenue,0)/(rows.length||1)));
-  set('ppRatio',(clinical/admin).toFixed(1)+' : 1');
-  if(charts['chProvPerf']){ charts['chProvPerf'].data.labels=rows.map(r=>r.name); charts['chProvPerf'].data.datasets[0].data=rows.map(r=>r.revenue); charts['chProvPerf'].data.datasets[1].data=rows.map(r=>r.comp); charts['chProvPerf'].update(); }
+// Provider comp is entered by hand (no live payroll feed) and saved per device.
+function provCompMap(){ try{ return JSON.parse(localStorage.getItem('providerComp')||'{}'); }catch(e){ return {}; } }
+function setProvComp(name,val){ const m=provCompMap(); m[name]=Number(String(val).replace(/[^0-9.]/g,''))||0; try{localStorage.setItem('providerComp',JSON.stringify(m));}catch(e){} buildProvPerf(); }
+// Group live claim lines by rendering provider, and by provider × program.
+function providerStats(){
+  const by={};
+  (DATA.claimsRaw||[]).forEach(r=>{
+    const name=String(r.provider||'').trim()||'Unassigned';
+    const amt=Number(r.charge)||0;
+    const pid=r.program?(progId(r.program)||'primary'):'primary';
+    if(!by[name]) by[name]={rev:0,lines:0,prog:{}};
+    by[name].rev+=amt; by[name].lines+=1; by[name].prog[pid]=(by[name].prog[pid]||0)+amt;
+  });
+  return by;
 }
-/* ---- Rate benchmarking ---- */
+function buildProvPerf(){
+  const money=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString();
+  const stats=providerStats(), comp=provCompMap();
+  const rows=Object.keys(stats).map(name=>{ const s=stats[name], c=comp[name]||0, margin=s.rev-c;
+    return {name, rev:s.rev, lines:s.lines, comp:c, margin, pct:s.rev?margin/s.rev*100:0, prog:s.prog}; })
+    .sort((a,b)=>b.rev-a.rev);
+  const tb=document.querySelector('#tblProvPerf tbody');
+  if(tb) tb.innerHTML = rows.length ? rows.map(p=>`<tr>
+      <td><b>${p.name}</b></td><td class="num">${p.lines}</td><td class="num">${money(p.rev)}</td>
+      <td><input type="text" value="${p.comp?p.comp.toLocaleString():''}" placeholder="comp" onchange="setProvComp('${p.name.replace(/'/g,"\\'")}',this.value)" style="width:104px;font-size:12px"></td>
+      <td class="num" style="color:${p.margin>=0?'#4f7a4f':'var(--denied)'}">${money(p.margin)}</td>
+      <td class="num">${p.comp?p.pct.toFixed(1)+'%':'—'}</td></tr>`).join('')
+    : `<tr><td colspan="6" style="padding:16px;color:var(--muted);font-size:13px;line-height:1.5">No provider data yet. This builds from the <b>Rendering Provider</b> on each claim in your Notion Claims database. Once claims load, enter each provider's annual comp to see margin.</td></tr>`;
+  // Provider × Program matrix (only programs that have revenue)
+  const progsWith=PROGRAMS.filter(pg=>rows.some(r=>r.prog[pg.id]));
+  const mh=document.getElementById('provMatrixHead');
+  if(mh) mh.innerHTML=`<tr><th>Provider</th>${progsWith.map(pg=>`<th class="num">${pg.name.replace(/ \(.*/,'')}</th>`).join('')}<th class="num">Total</th></tr>`;
+  const mb=document.getElementById('provMatrixBody');
+  if(mb) mb.innerHTML = (rows.length && progsWith.length) ? rows.map(p=>`<tr><td><b>${p.name}</b></td>${progsWith.map(pg=>`<td class="num">${p.prog[pg.id]?money(p.prog[pg.id]):'—'}</td>`).join('')}<td class="num"><b>${money(p.rev)}</b></td></tr>`).join('')
+    : `<tr><td colspan="2" style="padding:16px;color:var(--muted);font-size:13px">Revenue-by-program appears here once your claims carry a Rendering Provider and Program.</td></tr>`;
+  const totRev=rows.reduce((a,p)=>a+p.rev,0), totComp=rows.reduce((a,p)=>a+p.comp,0);
+  const top=rows.slice().sort((a,b)=>b.margin-a.margin)[0];
+  const admin=(DATA.expenseItems||[]).filter(e=>/admin/i.test(String(e[0]))||/admin/i.test(String(e[1]))).reduce((a,e)=>a+(Number(e[2])||0),0)||1;
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  set('ppCount',rows.length); set('ppTop', rows.length?((top&&top.comp)?top.name:'enter comp →'):'—');
+  set('ppAvg',money(totRev/(rows.length||1)));
+  set('ppRatio', totComp?(totComp/admin).toFixed(1)+' : 1':'—');
+  if(charts['chProvPerf']){ charts['chProvPerf'].data.labels=rows.map(r=>r.name); charts['chProvPerf'].data.datasets[0].data=rows.map(r=>Math.round(r.rev)); charts['chProvPerf'].data.datasets[1].data=rows.map(r=>Math.round(r.comp)); charts['chProvPerf'].update(); }
+}
+/* ---- Rate benchmarking — real BHW codes + real MD Medicaid fee schedule (eff 1.1.26).
+   Your Allowed + Medicare are entered per code and saved locally. ---- */
+const BHW_FEES = [
+  {cpt:'99202',prog:'primary',desc:'New patient office visit, level 2',medicare:79.65,medicaid:76.32},
+  {cpt:'99203',prog:'primary',desc:'New patient office visit, level 3',medicare:124.6,medicaid:119.17},
+  {cpt:'99204',prog:'primary',desc:'New patient office visit, level 4',medicare:187.6,medicaid:178.2},
+  {cpt:'99205',prog:'primary',desc:'New patient office visit, level 5',medicare:250.65,medicaid:235.41},
+  {cpt:'99211',prog:'primary',desc:'Established patient visit, level 1',medicare:26.0,medicaid:24.87},
+  {cpt:'99212',prog:'primary',desc:'Established patient visit, level 2',medicare:63.1,medicaid:60.09},
+  {cpt:'99213',prog:'primary',desc:'Established patient visit, level 3',medicare:100.66,medicaid:97.02},
+  {cpt:'99214',prog:'primary',desc:'Established patient visit, level 4',medicare:143.33,medicaid:136.43},
+  {cpt:'99215',prog:'primary',desc:'Established patient visit, level 5',medicare:203.26,medicaid:191.23},
+  {cpt:'G2211',prog:'primary',desc:'Visit complexity add-on',medicare:18.21,medicaid:16.76},
+  {cpt:'99453',prog:'primary',desc:'RPM setup / patient education',medicare:23.52,medicaid:22.06},
+  {cpt:'99454',prog:'primary',desc:'RPM device supply, 30 days',medicare:56.24,medicaid:47.84},
+  {cpt:'99457',prog:'primary',desc:'RPM management, first 20 min',medicare:54.88,medicaid:50.76},
+  {cpt:'99458',prog:'primary',desc:"RPM management, add'l 20 min",medicare:43.72,medicaid:40.65},
+  {cpt:'90791',prog:'mindmood',desc:'Psychiatric diagnostic evaluation',medicare:179.7,medicaid:146.63},
+  {cpt:'90792',prog:'mindmood',desc:'Psych diagnostic eval w/ medical',medicare:210.88,medicaid:154.19},
+  {cpt:'90832',prog:'mindmood',desc:'Psychotherapy, 30 min',medicare:88.91,medicaid:66.72},
+  {cpt:'90833',prog:'mindmood',desc:'Psychotherapy 30 min w/ E/M',medicare:85.0,medicaid:68.89},
+  {cpt:'90834',prog:'mindmood',desc:'Psychotherapy, 45 min',medicare:118.03,medicaid:88.29},
+  {cpt:'90836',prog:'mindmood',desc:'Psychotherapy 45 min w/ E/M',medicare:107.58,medicaid:87.91},
+  {cpt:'90837',prog:'mindmood',desc:'Psychotherapy, 60 min',medicare:172.97,medicaid:132.66},
+  {cpt:'90838',prog:'mindmood',desc:'Psychotherapy 60 min w/ E/M',medicare:142.5,medicaid:115.06},
+  {cpt:'99492',prog:'mindmood',desc:'Initial CoCM, 70 min',medicare:170.06,medicaid:158.63},
+  {cpt:'99493',prog:'mindmood',desc:'Follow-up CoCM, 60 min',medicare:153.17,medicaid:145.53},
+  {cpt:'99494',prog:'mindmood',desc:"CoCM, add'l 30 min",medicare:65.03,medicaid:60.85},
+  {cpt:'96110',prog:'charmed',desc:'Developmental screening',medicare:null,medicaid:11.14},
+  {cpt:'96116',prog:'charmed',desc:'Neurobehavioral status exam, 1 hr',medicare:98.34,medicaid:72.68},
+  {cpt:'96125',prog:'charmed',desc:'Standardized cognitive test',medicare:107.9,medicaid:null},
+  {cpt:'96127',prog:'charmed',desc:'Emotional/behavioral assessment',medicare:5.46,medicaid:5.43},
+  {cpt:'96132',prog:'charmed',desc:'Neuropsych test eval, first hour',medicare:127.31,medicaid:112.81},
+  {cpt:'96133',prog:'charmed',desc:"Neuropsych test eval, add'l hour",medicare:101.89,medicaid:86.22},
+  {cpt:'96136',prog:'charmed',desc:'Psych/neuropsych test admin, 1st',medicare:46.24,medicaid:41.88},
+  {cpt:'96137',prog:'charmed',desc:"Psych/neuropsych test admin, add'l",medicare:39.1,medicaid:38.83},
+  {cpt:'96138',prog:'charmed',desc:'Test admin by technician, first',medicare:40.76,medicaid:35.01},
+  {cpt:'96139',prog:'charmed',desc:"Test admin by technician, add'l",medicare:38.18,medicaid:35.01},
+  {cpt:'96160',prog:'charmed',desc:'Health risk assessment',medicare:3.24,medicaid:3.23},
+  {cpt:'96161',prog:'charmed',desc:'Caregiver health risk assessment',medicare:3.6,medicaid:3.58},
+  {cpt:'97129',prog:'charmed',desc:'Cognitive tx, first 15 min',medicare:23.23,medicaid:21.6},
+  {cpt:'97130',prog:'charmed',desc:"Cognitive tx, add'l 15 min",medicare:21.77,medicaid:20.69},
+  {cpt:'93784',prog:'flow',desc:'Ambulatory BP monitoring, 24 hr',medicare:50.96,medicaid:48.63},
+  {cpt:'93922',prog:'flow',desc:'Limited extremity arterial study',medicare:89.5,medicaid:86.33},
+  {cpt:'93923',prog:'flow',desc:'Complete extremity arterial study',medicare:143.73,medicaid:136.4},
+  {cpt:'93925',prog:'flow',desc:'Lower extremity arterial duplex',medicare:255.2,medicaid:208.88},
+  {cpt:'93970',prog:'flow',desc:'Extremity venous duplex, bilateral',medicare:197.65,medicaid:159.23},
+  {cpt:'93971',prog:'flow',desc:'Extremity venous duplex, unilateral',medicare:124.78,medicaid:97.48},
+  {cpt:'99495',prog:'pophealth',desc:'Transitional care mgmt, moderate',medicare:233.08,medicaid:219.33},
+  {cpt:'99496',prog:'pophealth',desc:'Transitional care mgmt, high',medicare:316.07,medicaid:297.29},
+];
+function rateFees(){ try{ return JSON.parse(localStorage.getItem('rateFees')||'{}'); }catch(e){ return {}; } }
+function setRateFee(cpt,field,val){ const m=rateFees(); const n=Number(String(val).replace(/[^0-9.]/g,'')); m[cpt]=Object.assign({},m[cpt],{[field]: isNaN(n)?null:n}); try{localStorage.setItem('rateFees',JSON.stringify(m));}catch(e){} buildRateBench(); }
 function buildRateBench(){
-  let below=0, upside=0; const gapByPayer={};
-  const rows=DATA.rateBench.map(r=>{ const gap=r.market-r.your; if(gap>0){ below++; upside+=gap*(r.vol||0); gapByPayer[r.payer]=(gapByPayer[r.payer]||0)+gap*(r.vol||0);} return {...r,gap}; });
+  const ov=rateFees();
+  // claim volume per CPT from live claims
+  const vol={}; (DATA.claimsRaw||[]).forEach(r=>{ const c=String(r.cpt||'').match(/[0-9A-Z]{4,5}/); if(c){ vol[c[0]]=(vol[c[0]]||0)+1; } });
+  // program filter
+  const filt=(document.getElementById('rbProgFilter')||{}).value||'';
+  const fees=BHW_FEES.filter(f=>!filt||f.prog===filt);
+  let below=0, floor=0, upside=0, ratioSum=0, ratioN=0;
   const tb=document.querySelector('#tblRateBench tbody');
-  if(tb) tb.innerHTML=rows.map(r=>{
-    const flag=r.gap>0?'<span class="badge b-denied">Below market</span>':'<span class="badge b-paid">At / above</span>';
-    return `<tr><td><b>${r.cpt}</b></td><td>${r.desc}</td><td>${r.program.replace(/ .*/,'')}</td><td>${r.payer}</td>
-      <td class="num">$${r.your}</td><td class="num">$${r.medicare}</td><td class="num">$${r.market}</td>
-      <td class="num" style="color:${r.gap>0?'var(--denied)':'#4f7a4f'}">${r.gap>0?'-$'+r.gap:'$'+Math.abs(r.gap)}</td><td>${flag}</td></tr>`;
+  if(tb) tb.innerHTML=fees.map(f=>{
+    const o=ov[f.cpt]||{}; const your=o.your, mcr=(o.medicare!=null?o.medicare:f.medicare), mcd=f.medicaid, v=vol[f.cpt]||0;
+    const gap = (your!=null && mcr!=null) ? mcr-your : null;
+    if(your!=null && mcr!=null){ ratioSum+=your/mcr; ratioN++; if(your<mcr){ below++; upside+=(mcr-your)*v; } }
+    if(your!=null && mcd!=null && your<mcd) floor++;
+    let flag='<span class="mini">enter your rate</span>';
+    if(your!=null){ if(mcd!=null && your<mcd) flag='<span class="badge b-denied">Below Medicaid floor</span>'; else if(mcr!=null && your<mcr) flag='<span class="badge b-denied">Below Medicare</span>'; else if(mcr!=null) flag='<span class="badge b-paid">At / above Medicare</span>'; else flag='<span class="badge b-info">priced</span>'; }
+    const inp=(field,val)=>`<input type="text" value="${val!=null?val:''}" placeholder="—" onchange="setRateFee('${f.cpt}','${field}',this.value)" style="width:72px;font-size:12px;text-align:right">`;
+    const gapTxt = gap==null?'—':(gap>0?'<span style="color:var(--denied)">-$'+gap.toFixed(2)+'</span>':'<span style="color:#4f7a4f">+$'+Math.abs(gap).toFixed(2)+'</span>');
+    return `<tr><td><b>${f.cpt}</b></td><td>${f.desc}</td><td>${progName(f.prog).replace(/ \(.*/,'')}</td>
+      <td class="num">${v||'—'}</td><td>${inp('your',your)}</td><td>${inp('medicare',mcr)}</td>
+      <td class="num">${mcd!=null?'$'+mcd.toFixed(2):'<span class="mini">N.C.</span>'}</td>
+      <td class="num">${gapTxt}</td><td>${flag}</td></tr>`;
   }).join('');
-  const worst=Object.entries(gapByPayer).sort((a,b)=>b[1]-a[1])[0];
-  const avgVsMcr=rows.reduce((a,r)=>a+r.your/r.medicare,0)/(rows.length||1);
   const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
   set('rbBelow',below); set('rbUpside','$'+Math.round(upside).toLocaleString());
-  set('rbWorst',worst?worst[0]+' ($'+Math.round(worst[1]).toLocaleString()+')':'—');
-  set('rbVsMcr',(avgVsMcr*100).toFixed(0)+'% of MCR');
-  if(charts['chRateBench']){ charts['chRateBench'].data.labels=rows.map(r=>r.cpt); charts['chRateBench'].data.datasets[0].data=rows.map(r=>r.your); charts['chRateBench'].data.datasets[1].data=rows.map(r=>r.medicare); charts['chRateBench'].data.datasets[2].data=rows.map(r=>r.market); charts['chRateBench'].update(); }
+  set('rbFloor',floor); set('rbVsMcr', ratioN?Math.round(ratioSum/ratioN*100)+'% of MCR':'—');
+  // program filter options
+  const pf=document.getElementById('rbProgFilter');
+  if(pf && pf.options.length<=1){ [...new Set(BHW_FEES.map(f=>f.prog))].forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=progName(p).replace(/ \(.*/,''); pf.appendChild(o); }); }
+  // chart — Your / Medicare / Medicaid across the filtered codes (cap 20 for legibility)
+  if(charts['chRateBench']){
+    const show=fees.slice(0,20);
+    charts['chRateBench'].data.labels=show.map(f=>f.cpt);
+    charts['chRateBench'].data.datasets[0].data=show.map(f=>(ov[f.cpt]||{}).your ?? null);
+    charts['chRateBench'].data.datasets[1].data=show.map(f=>(ov[f.cpt]||{}).medicare ?? f.medicare);
+    charts['chRateBench'].data.datasets[2].data=show.map(f=>f.medicaid);
+    charts['chRateBench'].update();
+  }
+}
+/* ---- Revenue Opportunities — consolidates money-on-the-table signals ---- */
+const RECUR_CODES = [
+  {cpt:'G2211', why:"Add-on for visit complexity — bill it on nearly every established primary-care E/M. The single most under-captured code; it's almost never added when it should be."},
+  {cpt:'99457', why:"Remote patient monitoring, 20 min/month. Recurring monthly revenue per enrolled patient — easy to forget to bill each month."},
+  {cpt:'99458', why:"Each additional 20 min of RPM management — stacks on 99457 when you spend the time."},
+  {cpt:'99495', why:"Transitional care management after a hospital discharge — high value and time-sensitive (contact within 2 business days, visit within 14 days)."},
+  {cpt:'99496', why:"High-complexity TCM — the highest-paying office service you have. Capture on every eligible discharge."},
+  {cpt:'99493', why:"Monthly psychiatric collaborative care (CoCM) — recurring behavioral-health revenue that's frequently left unbilled."},
+  {cpt:'96127', why:"Brief emotional/behavioral screen — low dollar but high volume; bill at well visits and behavioral encounters."},
+  {cpt:'96160', why:"Health-risk assessment — quick to capture at AWVs and intake, routinely missed."},
+];
+// Companion/add-on codes that should ride along with a base service. `every:true`
+// means the add-on belongs on essentially every base claim; otherwise the gap is
+// the shortfall of companion vs base. Rates resolve from BHW_FEES (QPP), overridable.
+const CAPTURE_RULES = [
+  {code:'G2211', base:['99202','99203','99204','99205','99211','99212','99213','99214','99215'], every:true,
+   note:"Visit-complexity add-on — belongs on nearly every ongoing-care office visit. No extra work, just the code."},
+  {code:'99457', base:['99454'], every:true,
+   note:"RPM monthly management — every 30-day device period (99454) should have a 20-min management service billed."},
+  {code:'99458', base:['99457'], every:false,
+   note:"Additional 20 min of RPM management — stack on 99457 whenever you spend the extra time (not every month qualifies)."},
+  {code:'96137', base:['96136'], every:false,
+   note:"Each additional 30 min of test administration after the first (96136) — bill when testing runs long."},
+  {code:'99494', base:['99493'], every:false,
+   note:"Additional 30 min of CoCM in a month — add to 99493 when the psychiatric consult time runs over."},
+];
+function computeCaptureGaps(vol, ov){
+  const rate=code=>{ const o=ov[code]||{}; return (o.medicare!=null?o.medicare:(BHW_FEES.find(f=>f.cpt===code)||{}).medicare)||0; };
+  const desc=code=>(BHW_FEES.find(f=>f.cpt===code)||{}).desc||'';
+  return CAPTURE_RULES.map(r=>{
+    const eligible=r.base.reduce((a,c)=>a+(vol[c]||0),0);
+    const captured=vol[r.code]||0;
+    // For "every" rules the whole base is eligible; for optional ones we only flag
+    // the portion where the companion clearly lags its base (conservative).
+    const gap=r.every ? Math.max(0, eligible-captured) : Math.max(0, eligible-captured);
+    const rt=rate(r.code);
+    return {code:r.code, desc:desc(r.code), base:r.base, eligible, captured, gap,
+            missed: r.every ? gap*rt : 0, rate:rt, note:r.note, optional:!r.every};
+  });
+}
+function buildRevOpps(){
+  const money=n=>'$'+Math.round(n).toLocaleString();
+  const ov=rateFees();
+  const vol={}; (DATA.claimsRaw||[]).forEach(r=>{ const c=String(r.cpt||'').match(/[0-9A-Z]{4,5}/); if(c) vol[c[0]]=(vol[c[0]]||0)+1; });
+  let rateUpside=0, floorFix=0, floorCt=0;
+  BHW_FEES.forEach(f=>{ const o=ov[f.cpt]||{}; const your=o.your, mcr=(o.medicare!=null?o.medicare:f.medicare), v=vol[f.cpt]||0;
+    if(your!=null && mcr!=null && your<mcr) rateUpside += (mcr-your)*v;
+    if(your!=null && f.medicaid!=null && your<f.medicaid){ floorCt++; floorFix += (f.medicaid-your)*v; }
+  });
+  const claims=DATA.claimsRaw||[];
+  // Capture-gap engine: each rule = a companion/add-on code that should ride along
+  // with a base service. Gap = eligible base count − times the companion was billed.
+  const gapRules=computeCaptureGaps(vol, ov);
+  const gapMissed=gapRules.reduce((a,g)=>a+g.missed,0);
+  const denials$=claims.filter(r=>/deni|reject/i.test(r.status||'')).reduce((a,r)=>a+(Number(r.charge)||0),0);
+  const open$=claims.filter(r=>{ const s=(r.status||'').toLowerCase(); return /open|pending|submit|accept|process/.test(s)&&!/paid/.test(s); }).reduce((a,r)=>a+(Number(r.charge)||0),0);
+  let patientAR=0; (DATA.reconLedger||[]).forEach(r=>{ patientAR+=Math.max(0,(r.patientResp||0)-(r.patientPaid||0)); });
+  const opps=[
+    {cat:'Underpaid vs Medicare', amt:rateUpside, basis:'Contracted rates below Medicare × your claim volume', action:'Renegotiate the worst payer contracts — Rate Benchmarking shows the code-level gaps and your negotiation targets.'},
+    {cat:'Undercoded add-ons & companions', amt:gapMissed, basis: gapRules.some(g=>g.eligible>0)? gapRules.filter(g=>g.gap>0).map(g=>g.code+' ×'+g.gap).join(', ')||'no gaps — well captured' : 'No eligible base services loaded yet', action:'See the Capture Gaps table below — add the missing companion codes. Most need no extra work, just the code on the claim.'},
+    {cat:'Below Medicaid floor', amt:floorFix, basis:(floorCt||'No')+' code(s) paying under the Medicaid floor', action:'Escalate to the payer — you should never be paid below Medicaid. Confirm the fee schedule loaded correctly.', warn:true},
+    {cat:'Denials to rework', amt:denials$, basis:'Billed value of currently denied claims', action:'Appeal within the timely-filing window — work the Denials page by CARC reason.'},
+    {cat:'Patient balances to collect', amt:patientAR, basis:'Outstanding patient responsibility', action:'Send a Stripe invoice or collect at the next visit (require the next-appointment date).'},
+    {cat:'Open / unbilled claims', amt:open$, basis:'Charges still in open or pending status', action:'Submit and follow up — move each through the recovery timeline before timely-filing lapses.'},
+  ];
+  const total=opps.reduce((a,o)=>a+o.amt,0);
+  const recoverable=denials$+patientAR+open$; // already-earned, just uncollected
+  const biggest=opps.slice().sort((a,b)=>b.amt-a.amt)[0];
+  const active=opps.filter(o=>o.amt>0.5).length;
+  const roKpis=document.getElementById('roKpis');
+  if(roKpis) roKpis.innerHTML=[
+    kpiCard('var(--sage)','Total Identified',money(total),'annualizes as you add rates'),
+    kpiCard('var(--blue)','Already Earned',money(recoverable),'denials + balances + unbilled'),
+    kpiCard('var(--bronze)','Biggest Lever', total>0?biggest.cat:'—', total>0?money(biggest.amt):'add data to compute'),
+    kpiCard('var(--pending)','Active Levers', active, 'of '+opps.length+' tracked'),
+  ].join('');
+  const tb=document.querySelector('#tblRevOpps tbody');
+  if(tb) tb.innerHTML=opps.map(o=>`<tr>
+    <td><b>${o.cat}</b>${o.warn&&o.amt>0?' <span class="badge b-denied">urgent</span>':''}</td>
+    <td class="num" style="color:${o.amt>0?(o.warn?'var(--denied)':'#4f7a4f'):'var(--muted)'}">${o.amt>0?money(o.amt):'—'}</td>
+    <td class="mini">${o.basis}</td><td style="font-size:12.5px">${o.action}</td></tr>`).join('');
+  // Capture Gaps table
+  const gt=document.querySelector('#tblGaps tbody');
+  if(gt) gt.innerHTML = gapRules.some(g=>g.eligible>0)
+    ? gapRules.map(g=>`<tr>
+        <td><b>${g.code}</b></td><td>${g.desc}</td>
+        <td class="num">${g.captured}</td><td class="num">${g.eligible}</td>
+        <td class="num" style="color:${g.gap<=0?'#4f7a4f':(g.missed>0?'var(--denied)':'var(--pending)')}">${g.gap>0?g.gap+(g.optional?' review':''):'✓ 0'}</td>
+        <td class="num" style="color:${g.missed>0?'var(--denied)':'var(--muted)'}">${g.missed>0?money(g.missed):(g.optional&&g.gap>0?'if documented':'—')}</td>
+        <td style="font-size:12px">${g.note}</td></tr>`).join('')
+    : `<tr><td colspan="7" style="padding:14px;color:var(--muted);font-size:13px">No eligible base services in your claims yet. As office visits, RPM device periods, and test-administration claims post, any missed companion codes show here with the dollars.</td></tr>`;
+  const rt=document.querySelector('#tblRecur tbody');
+  if(rt) rt.innerHTML=RECUR_CODES.map(rc=>{ const f=BHW_FEES.find(x=>x.cpt===rc.cpt)||{}; const o=(ov[rc.cpt]||{});
+    const mcr=(o.medicare!=null?o.medicare:f.medicare);
+    return `<tr><td><b>${rc.cpt}</b></td><td>${f.desc||''}</td><td class="num">${mcr!=null?'$'+mcr.toFixed(2):'—'}</td><td style="font-size:12.5px">${rc.why}</td></tr>`;
+  }).join('');
+}
+/* ---- Industry benchmarks (NAICS 621111, physician practices under $5M) ---- */
+const BENCH = {
+  profit: { gross:79, operating:30, net:18 },
+  spend:  { rent:2, payroll:16, marketing:0 },
+  cash:   { daysToPay:21, currentRatio:1.2 },
+  ratings: [
+    {k:"Industry Risk", v:"4.2", d:"Stable / Satisfactory"},
+    {k:"Cycle Sensitivity", v:"4.0", d:"Low sensitivity"},
+    {k:"External Risk", v:"4.3", d:"Low"},
+    {k:"Financial Summary", v:"5.0", d:"High margins · low liquidity · high leverage"},
+  ],
+  key: [
+    {k:"Compound annual growth (forecast)", v:"5.45%", c:"vs 3.6% GDP — outpaces the economy"},
+    {k:"Business exit rate", v:"7.79%", c:"vs 9.0% all industries — more durable"},
+    {k:"SBA default (by $)", v:"1.31%", c:"vs 1.36% all industries"},
+    {k:"SBA default (by loans)", v:"3.17%", c:"vs 4.26% all industries — lower risk"},
+  ],
+  risks: [
+    {t:"Business-management skills", n:"Physicians rarely have formal business training and small practices can't afford a dedicated administrator. Your dashboard + Albert are meant to close exactly this gap — review the numbers weekly."},
+    {t:"High staff turnover", n:"Skilled staff (PAs, RNs) are in demand and can leave easily; turnover hurts morale and adds recruiting cost. Track provider profitability and keep comp competitive."},
+    {t:"Poorly implemented EHR", n:"A rushed EHR rollout costs money, productivity, and morale. Keep CharmHealth workflows tight and reconcile its exports to your books."},
+    {t:"Unclear exit strategy", n:"Group practices often lack a written plan for how partners join or leave. Document it in your partnership agreement / by-laws before you need it."},
+    {t:"Leverage & liquidity", n:"The industry runs high margins but low liquidity and high leverage. Keep your current ratio near the 1.2 benchmark and manage debt closely — watch the Forecast's ending-cash line."},
+    {t:"Healthcare-reform uncertainty", n:"Reimbursement policy (ACA, CMS rules) shifts under primary care. Diversify payer mix and non-claim revenue so no single policy change sinks you."},
+  ],
+};
+function practiceActuals(){
+  const rev=REVENUE_STREAMS.reduce((a,s)=>a+(DATA.programRevenue[s.id]||0),0);
+  const pe=programExpenses(); const directTot=Object.values(pe.direct).reduce((a,b)=>a+b,0), overhead=pe.overhead;
+  const gross=rev-directTot, op=gross-overhead;
+  const items=DATA.expenseItems||[];
+  const sum=re=>items.filter(e=>re.test(String(e[1])||'')).reduce((a,e)=>a+(Number(e[2])||0),0);
+  const payroll=sum(/payroll/i), rent=sum(/rent|facilit/i), mkt=sum(/marketing/i);
+  const pctOf=x=>rev>0?x/rev*100:null;
+  return { rev, grossM:rev>0?gross/rev*100:null, opM:rev>0?op/rev*100:null, netM:rev>0?op/rev*100:null,
+           rentP:pctOf(rent), payrollP:pctOf(payroll), mktP:pctOf(mkt) };
+}
+function benchRow(label, bench, actual, higherBetter, unit){
+  const u=unit||'%';
+  const a = actual==null ? null : Math.round(actual*10)/10;
+  const benchTxt=bench+u, yourTxt = a==null?'—':a+u;
+  let verdict='<span class="mini">no data yet</span>', barColor='#b9b2a7';
+  if(a!=null){
+    const good = higherBetter ? a>=bench : a<=bench;
+    verdict = good ? '<span class="badge b-paid">ahead of benchmark</span>' : '<span class="badge b-denied">behind benchmark</span>';
+    barColor = good ? '#a8b59a' : '#c0503f';
+  }
+  const scaleMax=Math.max(bench, a||0, 1)*1.15;
+  const bw=Math.min(100,(bench/scaleMax)*100), aw=a==null?0:Math.min(100,(a/scaleMax)*100);
+  return `<div style="margin:0 0 15px">
+    <div class="split" style="font-size:12.5px;margin-bottom:5px"><span><b>${label}</b></span><span>You <b>${yourTxt}</b> · Benchmark ${benchTxt}</span></div>
+    <div style="position:relative;height:11px;background:rgba(128,128,128,.15);border-radius:6px">
+      <div style="position:absolute;left:${bw}%;top:-3px;height:17px;width:2px;background:var(--ink,#5b686d)" title="Benchmark ${benchTxt}"></div>
+      <div style="height:100%;width:${aw}%;background:${barColor};border-radius:6px;transition:width .3s"></div>
+    </div>
+    <div class="split" style="margin-top:4px">${verdict}<span class="mini">▎ marks the industry benchmark</span></div>
+  </div>`;
+}
+function buildBenchmarks(){
+  const A=practiceActuals();
+  const rt=document.getElementById('bmRatings');
+  if(rt) rt.innerHTML=BENCH.ratings.map(r=>kpiCard('var(--blue)',r.k,r.v+' / 5',r.d)).join('');
+  const pf=document.getElementById('bmProfit');
+  if(pf) pf.innerHTML = benchRow('Gross margin',BENCH.profit.gross,A.grossM,true)
+    + benchRow('Operating margin',BENCH.profit.operating,A.opM,true)
+    + benchRow('Net profit margin',BENCH.profit.net,A.netM,true)
+    + `<div class="mini" style="margin-top:2px">Net ≈ operating here until interest &amp; taxes are booked. Physician practices run high margins — the 18% net benchmark is your floor, not your ceiling.</div>`;
+  const sp=document.getElementById('bmSpend');
+  if(sp) sp.innerHTML = benchRow('Payroll',BENCH.spend.payroll,A.payrollP,false)
+    + benchRow('Rent / facilities',BENCH.spend.rent,A.rentP,false)
+    + benchRow('Marketing',BENCH.spend.marketing,A.mktP,false)
+    + `<div class="mini" style="margin-top:2px">Benchmark payroll is only 16% of revenue — clinical practices that run lean here throw off the most profit. Watch this as you add providers.</div>`;
+  const kb=document.querySelector('#tblBmKey tbody');
+  if(kb) kb.innerHTML=BENCH.key.map(m=>`<tr><td>${m.k}</td><td class="num"><b>${m.v}</b></td><td class="mini">${m.c}</td></tr>`).join('');
+  const cash=document.getElementById('bmCash');
+  if(cash) cash.innerHTML=`
+    <div class="split" style="padding:8px 0;border-bottom:1px solid var(--line,#eee)"><span>Current ratio (benchmark)</span><b>${BENCH.cash.currentRatio}</b></div>
+    <div class="split" style="padding:8px 0;border-bottom:1px solid var(--line,#eee)"><span>Average days to pay vendors</span><b>${BENCH.cash.daysToPay} days</b></div>
+    <div class="mini" style="margin-top:10px">The industry runs <b>low liquidity + high leverage</b>. Keep current ratio near 1.2 and don't let cash dip — your Forecast page tracks the 12-month cash line. Days-to-get-paid (your A/R days) is the lever you control most; keep it under 35.</div>`;
+  const rk=document.getElementById('bmRisks');
+  if(rk) rk.innerHTML=BENCH.risks.map(r=>`<div style="border-left:3px solid var(--bronze);padding-left:12px"><b>${r.t}</b><div style="font-size:12.5px;margin-top:2px">${r.n}</div></div>`).join('');
 }
 /* ---- Tax planning lever library + estimator ---- */
+// Directional S-corp SE-tax reduction on distributions above a reasonable salary.
+function estSCorpSavings(net){
+  if(net<=50000) return {salary:0,dist:0,save:0};
+  const salary=Math.min(Math.max(Math.round(net*0.4), 60000), 185000); // reasonable-comp band
+  const dist=Math.max(0, net-salary);
+  const wageBase=176100;                                   // 2026 SS wage base (approx)
+  const under=Math.min(dist, Math.max(0, wageBase-salary));
+  const over=dist-under;
+  return {salary, dist, save:Math.round(under*0.153 + over*0.029)};
+}
 function buildTaxPlan(){
-  const inc=Number((document.getElementById('txIncome')||{}).value||225000);
-  const gap = inc<150000?5000 : inc<300000?9000 : inc<500000?18000 : 28000;
+  const money=n=>'$'+Math.round(n).toLocaleString();
+  // Prefer ACTUAL net income from the P&L; fall back to the range selector.
+  const rev=REVENUE_STREAMS.reduce((a,s)=>a+(DATA.programRevenue[s.id]||0),0);
+  const pe=programExpenses(); const cost=Object.values(pe.direct).reduce((a,b)=>a+b,0)+pe.overhead;
+  const actualNet=rev-cost;
+  const usingActual = rev>0;
+  const inc = usingActual ? Math.max(0,actualNet) : Number((document.getElementById('txIncome')||{}).value||225000);
+  const sc=estSCorpSavings(inc);
+  const rangeGap = inc<150000?5000 : inc<300000?9000 : inc<500000?18000 : 28000;
+  const gap = sc.save>0 ? sc.save : rangeGap;
   const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
   set('txGap','$'+gap.toLocaleString()); set('txCount',DATA.taxLevers.length);
+  // Live calculator panel
+  const calc=document.getElementById('txCalc');
+  if(calc){
+    const blended=0.27; // rough blended fed+MD effective rate for planning
+    const estTax=Math.round(Math.max(0,inc)*blended), quarterly=Math.round(estTax/4);
+    calc.innerHTML=`
+      <div class="card-head split"><div><h3>Your numbers</h3><div class="card-sub">${usingActual?'From your live P&L (net income = revenue − direct − overhead).':'No P&L data yet — using the income range above. Post revenue and expenses to make this exact.'}</div></div></div>
+      <div class="grid g4" style="gap:12px">
+        ${kpiCard('var(--blue)','Net Income (basis)', money(inc), usingActual?'live from P&L':'from range selector')}
+        ${kpiCard('var(--sage)','Est. S-corp SE-tax Saved', money(sc.save), sc.save?('salary '+money(sc.salary)+' + dist '+money(sc.dist)):'need ~$50K+ net')}
+        ${kpiCard('var(--bronze)','Est. Annual Tax', money(estTax), '~'+Math.round(blended*100)+'% blended')}
+        ${kpiCard('var(--pending)','Quarterly Estimate', money(quarterly), 'set aside each quarter')}
+      </div>
+      <div class="mini" style="margin-top:10px">Estimated payment due dates: <b>Apr 15, Jun 15, Sep 15, Jan 15</b>. Set aside the quarterly amount from every deposit so it's there when due. The S-corp figure is the SE-tax you avoid on distributions once you pay yourself a reasonable W-2 salary — the single biggest lever below. Directional only; confirm the salary split and exact rate with your CPA.</div>`;
+  }
   const host=document.getElementById('taxLevers'); if(!host) return;
   const tiers=[...new Set(DATA.taxLevers.map(l=>l.tier))];
   host.innerHTML=tiers.map(t=>{
@@ -2386,9 +3119,9 @@ function buildAiCfo(){
   set('cfoRev','$'+Math.round(totRev).toLocaleString());
   const topPayer=(DATA.payer&&DATA.payer.labels.length)?DATA.payer.labels[DATA.payer.values.indexOf(Math.max(...DATA.payer.values))]:'—';
   set('cfoPayer',topPayer);
-  const clinical=DATA.providerFin.reduce((a,p)=>a+p.comp,0);
-  const admin=DATA.expenseItems.filter(e=>/admin/i.test(e[0])).reduce((a,e)=>a+e[2],0)||1;
-  set('cfoRatio',(clinical/admin).toFixed(1)+' : 1');
+  const clinical=Object.values(provCompMap()).reduce((a,c)=>a+(Number(c)||0),0);
+  const admin=(DATA.expenseItems||[]).filter(e=>/admin/i.test(String(e[0]))||/admin/i.test(String(e[1]))).reduce((a,e)=>a+(Number(e[2])||0),0)||1;
+  set('cfoRatio', clinical?(clinical/admin).toFixed(1)+' : 1':'—');
 }
 
 // Populate every program/provider dropdown from the canonical lists.
@@ -2401,10 +3134,38 @@ function fillProgramSelects(){
     else if(kind==='providers') el.innerHTML=providerOptions('');
   });
 }
+// Dynamic weekly scoreboard — computed live from claims, collections, and denials
+// for the trailing 7 days. Wins/watch-list are generated from the actual numbers.
 function applyWeekly(){
-  const w=DATA.weekly; const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
-  set('wkRange',w.range); set('wkClaims',w.claimsSubmitted); set('wkVisits',w.officeVisits);
-  set('wkDenials',w.denials); set('wkApcm',w.apcm); set('wkRpm',w.rpm); set('wkCharm',w.charmEd);
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  const money=n=>'$'+Math.round(n).toLocaleString();
+  const now=new Date(), weekAgo=new Date(now.getTime()-7*864e5);
+  const inWk=d=>{ if(!d) return false; const t=new Date(d); return !isNaN(t) && t>=weekAgo && t<=now; };
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  set('wkRange', fmt(weekAgo)+' – '+fmt(now)+', '+now.getFullYear());
+  const claims=DATA.claimsRaw||[];
+  const wkClaims=claims.filter(r=>inWk(r.submitted)||inWk(r.paymentDate));
+  const wkCharge=wkClaims.reduce((a,r)=>a+(Number(r.charge)||0),0);
+  const openDen=claims.filter(r=>/deni|reject/i.test(r.status||'')).length;
+  const wkColl=(DATA.collections||[]).filter(c=>!c.dup && inWk(c.date)).reduce((a,c)=>a+(Number(c.amount)||0),0);
+  set('wkClaims', wkClaims.length); set('wkClaimsSub', claims.length? 'of '+claims.length+' total open':'submitted / dated');
+  set('wkVisits', money(wkColl)); set('wkDenials', openDen); set('wkCharges', money(wkCharge));
+  // Data-driven wins & watch list
+  const wins=[], watch=[];
+  if(wkClaims.length) wins.push(`${wkClaims.length} claims submitted this week (${money(wkCharge)} billed).`);
+  if(wkColl>0) wins.push(`${money(wkColl)} collected and posted this week.`);
+  const done=(typeof reconDoneSet==='function')?reconDoneSet():new Set();
+  const reconciledCt=(DATA.reconLedger||[]).filter(r=>done.has&&done.has(r.claim)).length;
+  if(reconciledCt) wins.push(`${reconciledCt} claim${reconciledCt>1?'s':''} reconciled and closed.`);
+  if(openDen>0) watch.push(`${openDen} open denial${openDen>1?'s':''} to work — see the Denials page.`);
+  const unmatched=(DATA.collections||[]).length ? 0 : 0; // deposits reviewed in The Books
+  const ptAR=(DATA.reconLedger||[]).reduce((a,r)=>a+Math.max(0,(r.patientResp||0)-(r.patientPaid||0)),0);
+  if(ptAR>0) watch.push(`${money(ptAR)} in patient balances outstanding — invoice or collect at next visit.`);
+  const openClaims=claims.filter(r=>/open|pending|submit/i.test(r.status||'')).length;
+  if(openClaims>0) watch.push(`${openClaims} claim${openClaims>1?'s':''} still open/pending — keep them moving through the recovery timeline.`);
+  const winEl=document.getElementById('wkWins'), watchEl=document.getElementById('wkWatch');
+  if(winEl) winEl.innerHTML = wins.length ? wins.map(w=>`<li>✅ ${w}</li>`).join('') : '<li class="mini">No activity recorded this week yet — as claims and payments post, wins show here.</li>';
+  if(watchEl) watchEl.innerHTML = watch.length ? watch.map(w=>`<li>⚠ ${w}</li>`).join('') : '<li class="mini">Nothing flagged. Clean week.</li>';
 }
 /* ---- Stedi & Pop-Health custom builders ---- */
 function buildDowncode(){
@@ -2479,6 +3240,16 @@ function refreshMoney(){
   computeDashboardKpis(DATA.claimsRaw||[]);
   buildPayments();
   buildMonthClose();
+  buildBanking();   // re-run deposit auto-match against the refreshed collections
+  buildFinHealth(); // refresh payer mix + financial-health KPIs
+  buildProvPerf();  // provider revenue rebuilds from claims
+  applyWeekly();    // live weekly scoreboard
+  buildDataCharts();// recompute dashboard/denial/payment charts from real data
+  buildTaxPlan();   // tax estimate off actual net income
+  buildBenchmarks();// benchmark actuals off the P&L
+  buildAiCfo();     // CFO KPI tiles
+  buildRateBench(); // refresh per-CPT claim volume
+  buildRevOpps();   // recompute revenue opportunities
 }
 /* ---- Dashboard KPI tiles computed from live claims (honest — blanks what the
        data can't support, e.g. A/R Days needs claim dates) ---- */
@@ -2868,6 +3639,50 @@ const noLegend={plugins:{legend:{display:false}}};
 const rightLegend={plugins:{legend:{position:'right',labels:{boxWidth:12,padding:12}}}};
 const bottomLegend={plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12}}}};
 
+// Recompute every "sample" chart from real data (claims / collections / denials).
+// Only touches charts that already exist, so it's safe to call anytime.
+function buildDataCharts(){
+  const claims=DATA.claimsRaw||[], coll=(DATA.collections||[]).filter(c=>!c.dup);
+  const upd=(id,labels,data)=>{ if(charts[id]){ charts[id].data.labels=labels; charts[id].data.datasets[0].data=data; charts[id].update(); } };
+  // Claim status doughnut
+  if(charts['chStatus']){
+    const sc={Paid:0,Pending:0,Denied:0,Open:0};
+    claims.forEach(r=>{ const s=(r.status||'').toLowerCase(); if(/paid|partial/.test(s))sc.Paid++; else if(/deni|reject/.test(s))sc.Denied++; else if(/pending|submit|process|accept/.test(s))sc.Pending++; else sc.Open++; });
+    upd('chStatus',Object.keys(sc),Object.values(sc));
+  }
+  // A/R aging by DOS age (unpaid charges)
+  if(charts['chAging']){
+    const b={'0–30':0,'31–60':0,'61–90':0,'90+':0}, now=Date.now();
+    claims.forEach(r=>{ if(/paid/.test((r.status||'').toLowerCase()))return; const d=r.paymentDate&&new Date(r.paymentDate); if(!d||isNaN(d))return; const age=(now-d)/864e5, amt=Number(r.charge)||0; if(age<=30)b['0–30']+=amt; else if(age<=60)b['31–60']+=amt; else if(age<=90)b['61–90']+=amt; else b['90+']+=amt; });
+    upd('chAging',Object.keys(b),Object.values(b).map(x=>Math.round(x)));
+  }
+  // Charges vs collected, last 6 months
+  const months=[]; { const now=new Date(); for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); months.push({key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),label:d.toLocaleDateString('en-US',{month:'short'})}); } }
+  const chargeBy={}, collBy={};
+  claims.forEach(r=>{ const k=(r.paymentDate||'').slice(0,7); if(k)chargeBy[k]=(chargeBy[k]||0)+(Number(r.charge)||0); });
+  coll.forEach(c=>{ const k=(c.date||'').slice(0,7); if(k)collBy[k]=(collBy[k]||0)+(Number(c.amount)||0); });
+  const chg=months.map(m=>Math.round((chargeBy[m.key]||0)/1000)), col=months.map(m=>Math.round((collBy[m.key]||0)/1000));
+  if(charts['chTrend']){ charts['chTrend'].data.labels=months.map(m=>m.label); charts['chTrend'].data.datasets[0].data=chg; charts['chTrend'].data.datasets[1].data=col; charts['chTrend'].update(); }
+  if(charts['chPayTrend']){ charts['chPayTrend'].data.labels=months.map(m=>m.label); charts['chPayTrend'].data.datasets[0].data=col; charts['chPayTrend'].update(); }
+  // Payment source split
+  if(charts['chPaySource']){
+    const src={Insurance:0,'Patient card':0,'Patient check/cash':0};
+    coll.forEach(c=>{ const s=(c.source||'').toLowerCase(), meth=(c.method||'').toLowerCase(), amt=Number(c.amount)||0; if(/835|era|insur|remit|payer/.test(s))src.Insurance+=amt; else if(/card|digital/.test(meth))src['Patient card']+=amt; else src['Patient check/cash']+=amt; });
+    upd('chPaySource',Object.keys(src),Object.values(src).map(x=>Math.round(x)));
+  }
+  // Denials by reason / payer
+  const den=claims.filter(r=>/deni|reject/i.test(r.status||'')||r.denialReason);
+  if(charts['chDenReason']){ const by={}; den.forEach(r=>{ const k=r.denialReason||'Other'; by[k]=(by[k]||0)+1; }); const e=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,6); upd('chDenReason',e.map(x=>x[0]),e.map(x=>x[1])); }
+  if(charts['chDenPayer']){ const by={}; den.forEach(r=>{ const k=r.payer||'Unknown'; by[k]=(by[k]||0)+1; }); const e=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,6); upd('chDenPayer',e.map(x=>x[0]),e.map(x=>x[1])); }
+  // Weekly billing pace (Mon–Fri, this week)
+  if(charts['chPace']){
+    const now=new Date(), day=(now.getDay()+6)%7, mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-day);
+    const days=['Mon','Tue','Wed','Thu','Fri'], vals=[0,0,0,0,0];
+    claims.forEach(r=>{ const d=r.paymentDate&&new Date(r.paymentDate); if(!d||isNaN(d))return; const idx=Math.floor((d-mon)/864e5); if(idx>=0&&idx<5)vals[idx]+=(Number(r.charge)||0); });
+    charts['chPace'].data.labels=days; charts['chPace'].data.datasets[0].data=vals.map(x=>Math.round(x)); charts['chPace'].update();
+  }
+}
+
 function renderCharts(id){
   if(id==='dashboard'){
     mk('chTrend',{type:'line',data:{labels:DATA.trend.labels,datasets:[
@@ -2876,21 +3691,24 @@ function renderCharts(id){
     ]},options:{maintainAspectRatio:false,...bottomLegend}});
     mk('chStatus',{type:'doughnut',data:{labels:DATA.status.labels,datasets:[{data:DATA.status.values,backgroundColor:[C.sage,C.pending,C.denied,C.billed],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'62%',...bottomLegend}});
     mk('chAging',{type:'bar',data:{labels:DATA.aging.labels,datasets:[{data:DATA.aging.values,backgroundColor:[C.sage,C.blue,C.pending,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
-    mk('chPayer',{type:'bar',data:{labels:DATA.payer.labels,datasets:[{data:DATA.payer.values,backgroundColor:C.blue,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
+    mk('chPayer',{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:C.blue,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
+    buildDataCharts(); buildPayerMix();
   }
   if(id==='payments'){
-    mk('chPayTrend',{type:'line',data:{labels:DATA.trend.labels,datasets:[{label:'Collected ($K)',data:DATA.trend.collected,borderColor:C.sage,backgroundColor:'rgba(168,181,154,.15)',fill:true,tension:.35}]},options:{maintainAspectRatio:false,...noLegend}});
-    mk('chPaySource',{type:'doughnut',data:{labels:['Insurance ERA','Patient card','Patient check'],datasets:[{data:[209,18,7],backgroundColor:[C.blue,C.bronze,C.neutral],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'62%',...bottomLegend}});
+    mk('chPayTrend',{type:'line',data:{labels:[],datasets:[{label:'Collected ($K)',data:[],borderColor:C.sage,backgroundColor:'rgba(168,181,154,.15)',fill:true,tension:.35}]},options:{maintainAspectRatio:false,...noLegend}});
+    mk('chPaySource',{type:'doughnut',data:{labels:['Insurance','Patient card','Patient check/cash'],datasets:[{data:[0,0,0],backgroundColor:[C.blue,C.bronze,C.neutral],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'62%',...bottomLegend}});
+    buildDataCharts();
   }
   if(id==='denials'){
-    mk('chDenReason',{type:'bar',data:{labels:['EOB 439','EOB 323','EOB 539','EOB 528','Other'],datasets:[{data:[12,9,6,5,5],backgroundColor:[C.denied,C.bronze,C.pending,C.blue,C.neutral],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
-    mk('chDenPayer',{type:'doughnut',data:{labels:['BCBS MD','Aetna','Medicare','MD Medicaid MCO'],datasets:[{data:[14,10,7,6],backgroundColor:[C.blue,C.bronze,C.pending,C.sage],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}});
+    mk('chDenReason',{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:[C.denied,C.bronze,C.pending,C.blue,C.neutral,C.sage],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
+    mk('chDenPayer',{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:[C.blue,C.bronze,C.pending,C.sage,C.neutral,C.billed],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}});
+    buildDataCharts();
   }
   if(id==='goals'){
     mk('chPace',{type:'bar',data:{labels:['Mon','Tue','Wed','Thu','Fri'],datasets:[
-      {label:'Billed',data:[13200,12800,11900,13400,10040],backgroundColor:C.blue,borderRadius:5},
-      {label:'Goal',data:[13000,13000,13000,13000,13000],type:'line',borderColor:C.bronze,borderDash:[6,4],pointRadius:0}
-    ]},options:{maintainAspectRatio:false,...bottomLegend}});
+      {label:'Billed',data:[0,0,0,0,0],backgroundColor:C.blue,borderRadius:5}
+    ]},options:{maintainAspectRatio:false,...noLegend}});
+    buildDataCharts();
   }
   if(id==='cpt'){
     mk('chProgRev',{type:'doughnut',data:{labels:DATA.progRev.labels,datasets:[{data:DATA.progRev.values,backgroundColor:[C.blue,C.bronze,C.sage,C.pending],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}});
@@ -2906,7 +3724,8 @@ function renderCharts(id){
     buildPnl();
   }
   if(id==='expenses'){
-    mk('chExp',{type:'doughnut',data:{labels:['Payroll','Facilities','Software/EHR','Clearinghouse','Marketing','Supplies'],datasets:[{data:[298400,58200,42100,31750,31550,24900],backgroundColor:[C.blue,C.bronze,C.sage,C.pending,C.neutral,C.billed],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'58%',...rightLegend}});
+    mk('chExp',{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:[C.blue,C.bronze,C.sage,C.pending,C.neutral,C.billed],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'58%',...rightLegend}});
+    buildExpenses();
   }
   if(id==='edumedia'){
     mk('chEdu',{type:'bar',data:{labels:DATA.eduType.labels,datasets:[{data:DATA.eduType.values,backgroundColor:[C.bronze,C.blue,C.sage,C.pending],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
@@ -2916,17 +3735,17 @@ function renderCharts(id){
     buildFinHealth();
   }
   if(id==='provperf'){
-    mk('chProvPerf',{type:'bar',data:{labels:DATA.providerFin.map(p=>p.name),datasets:[
-      {label:'Revenue',data:DATA.providerFin.map(p=>p.revenue),backgroundColor:C.blue,borderRadius:5},
-      {label:'Comp',data:DATA.providerFin.map(p=>p.comp),backgroundColor:C.bronze,borderRadius:5}
+    mk('chProvPerf',{type:'bar',data:{labels:[],datasets:[
+      {label:'Revenue',data:[],backgroundColor:C.blue,borderRadius:5},
+      {label:'Comp',data:[],backgroundColor:C.bronze,borderRadius:5}
     ]},options:{maintainAspectRatio:false,...bottomLegend}});
     buildProvPerf();
   }
   if(id==='ratebench'){
-    mk('chRateBench',{type:'bar',data:{labels:DATA.rateBench.map(r=>r.cpt),datasets:[
-      {label:'Your allowed',data:DATA.rateBench.map(r=>r.your),backgroundColor:C.blue,borderRadius:4},
-      {label:'Medicare',data:DATA.rateBench.map(r=>r.medicare),backgroundColor:C.neutral,borderRadius:4},
-      {label:'Market median',data:DATA.rateBench.map(r=>r.market),backgroundColor:C.sage,borderRadius:4}
+    mk('chRateBench',{type:'bar',data:{labels:[],datasets:[
+      {label:'Your allowed',data:[],backgroundColor:C.blue,borderRadius:4},
+      {label:'Medicare',data:[],backgroundColor:C.neutral,borderRadius:4},
+      {label:'MD Medicaid',data:[],backgroundColor:C.sage,borderRadius:4}
     ]},options:{maintainAspectRatio:false,...bottomLegend}});
     buildRateBench();
   }
@@ -3075,10 +3894,10 @@ function applyNotionRows(db, rows){
   const m = v => (v==null||v==='') ? '' : v;
   const dollars = v => (v==null||v==='') ? '' : '$'+Number(v).toLocaleString();
   if(db==='claims'){
-    DATA.claims = rows.map(r=>[m(r.ctlNo)||'—', m(r.patient), m(r.program), m(r.cpt),
-      dollars(r.charge), m(r.payer), (r.paymentDate||'').slice(5), (r.status||'').toLowerCase()]);
-    fillTable('tblClaims', DATA.claims, 7);
-    fillTable('tblClaimsLog', DATA.claims.map(r=>[r[6],r[0],r[1],r[2],r[3],r[4],r[5],r[7],r[8]]), 7);
+    DATA.claims = rows.map(r=>[m(r.ctlNo)||'—', m(r.patient), m(r.patientId)||'—', (r.paymentDate||'').slice(5),
+      m(r.payer), m(r.program), m(r.cpt), dollars(r.charge), m(r.provider)||'—', (r.statusRaw||r.status||'')]);
+    fillTable('tblClaims', DATA.claims, 9);
+    fillTable('tblClaimsLog', DATA.claims.map(r=>[r[3],r[0],r[1],r[5],r[6],r[7],r[4],r[9],r[8]]), 7);
     const den = rows.filter(r=>/deni/i.test(r.status||'')||r.denialReason);
     DATA.denials = den.map(r=>[m(r.ctlNo)||'—', m(r.patient), m(r.payer), 'EOB '+m(r.denialReason||'—'),
       dollars(r.charge), '—', (r.status||'').toLowerCase()]);
@@ -3091,7 +3910,7 @@ function applyNotionRows(db, rows){
     DATA.paymentsRaw = rows;       // adjudication / payment detail from Notion
     refreshMoney();
   }
-  if(db==='deposits'){ DATA.depositsRaw = rows; }   // bank deposits (reconciliation)
+  if(db==='deposits'){ DATA.depositsRaw = rows; buildBanking(); }   // bank deposits → The Books ledger
   if(db==='chargeMaster'){
     DATA.cdm = rows.map(r=>[m(r.code), m(r.description), m(r.program), r.standardCharge, r.medicare, r.bcbsMd]);
     buildCDM();
@@ -3223,28 +4042,64 @@ function setPayType(mode, btn){
   m.innerHTML = list.map(x=>`<option>${x}</option>`).join('');
 }
 function pmFmtDate(iso){ if(!iso) return ''; const p=iso.split('-'); return p.length===3 ? p[1]+'/'+p[2] : iso; }
+/* ---- Patient responsibility → invoice (Stripe) or collect in office ---- */
+function patientBalanceFlag(rec){
+  const box=document.getElementById('pmBalanceFlag'); if(!box) return;
+  if(!(rec.patientResp>0)){ box.innerHTML=''; return; }
+  DATA.patientBalances = DATA.patientBalances || [];
+  DATA.patientBalances.unshift({ patient:rec.patient, patientId:rec.patientId, amount:rec.patientResp,
+    claim:rec.claim, dos:rec.dos, nextAppt:rec.nextAppt });
+  const i = 0, money='$'+Math.round(rec.patientResp).toLocaleString();
+  box.innerHTML =
+    `<div style="margin-top:12px;padding:12px 14px;border:1px solid var(--bronze);border-radius:10px">
+      <b>⚑ Patient responsibility due: ${money}</b> — ${rec.patient}${rec.patientId?(' ('+rec.patientId+')'):''}
+      <div class="btn-row" style="margin-top:8px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="sendStripeInvoice(${i})">Send Stripe invoice</button>
+        <button class="btn btn-ghost btn-sm" onclick="collectInOffice(${i})">Collect in office</button>
+        <span class="mini" id="pmBalanceMsg"></span>
+      </div>
+    </div>`;
+}
+function sendStripeInvoice(i){
+  const b=(DATA.patientBalances||[])[i], m=document.getElementById('pmBalanceMsg'); if(!b||!m) return;
+  m.style.color='var(--ink-soft)';
+  m.textContent='Flagged for a Stripe invoice ($'+Math.round(b.amount).toLocaleString()+'). Live sending turns on when Stripe is connected (needs the patient email on file).';
+}
+function collectInOffice(i){
+  const b=(DATA.patientBalances||[])[i], m=document.getElementById('pmBalanceMsg'); if(!b||!m) return;
+  if(!b.nextAppt){ m.style.color='var(--denied)'; m.textContent='Enter the "Next appt" date on the form first, then re-post — in-office collection needs a next visit scheduled.'; return; }
+  m.style.color='var(--ink-soft)';
+  m.textContent='Flagged to collect $'+Math.round(b.amount).toLocaleString()+' in office at the next appt ('+b.nextAppt+').';
+}
 async function postPayment(btn){
-  const v=id=>document.getElementById(id).value.trim();
-  const num=id=>parseFloat(document.getElementById(id).value||'0')||0;
+  const v=id=>{const el=document.getElementById(id); return el?el.value.trim():'';};
+  const num=id=>{const el=document.getElementById(id); return el?(parseFloat(el.value||'0')||0):0;};
   const mode=PAY_TYPE, msg=document.getElementById('pmMsg');
-  const patient=v('pmPatient'), method=v('pmMethod'), ref=v('pmRef'), claim=v('pmClaim');
+  const patient=v('pmPatient'), patientId=v('pmPatientId'), method=v('pmMethod'), ref=v('pmRef'), claim=v('pmClaim'), cpt=v('pmCpt');
   const date=v('pmDate')||new Date().toISOString().slice(0,10);
+  const dos=v('pmDos'), nextAppt=v('pmNextAppt'), payType=v('pmType')||'Primary';
   const paid=num('pmPaid');
+  const patientResp=num('pmPatResp')||(num('pmCoins')+num('pmCopay')+num('pmDeduct')+num('pmNotCov'));
   if(!patient){ msg.style.color='var(--denied)'; msg.textContent='Enter a patient name.'; return; }
-  if(!paid){ msg.style.color='var(--denied)'; msg.textContent='Enter the paid amount.'; return; }
+  if(!paid && !patientResp){ msg.style.color='var(--denied)'; msg.textContent='Enter a paid amount or a patient balance.'; return; }
   const rec={
-    type:mode, date, patient, method, ref, claim, paid,
+    type:mode, date, dos, patient, patientId, method, ref, claim, cpt, paid, payType, nextAppt,
     payer: mode==='eob' ? (v('pmPayer')||'Payer') : 'Patient ('+method.toLowerCase()+')',
-    billed:num('pmBilled'), allowed:num('pmAllowed'), patientResp:num('pmPatResp'), reason:v('pmReason')
+    billed:num('pmBilled'), allowed:num('pmAllowed'), patientResp,
+    coinsurance:num('pmCoins'), copay:num('pmCopay'), deductible:num('pmDeduct'), notCovered:num('pmNotCov'),
+    reason:v('pmReason')
   };
   // optimistic: show it in the unified collections ledger immediately (dedup handles
   // the case where the same payment also arrives as a Stedi 835).
   DATA.paymentsRaw = DATA.paymentsRaw || [];
-  DATA.paymentsRaw.unshift({ patient, payer:rec.payer, type:mode==='eob'?'Paper EOB':'Patient payment', method, check:ref, claim, date, amount:paid });
+  DATA.paymentsRaw.unshift({ patient, patientId, payer:rec.payer, type:mode==='eob'?'Paper EOB':'Patient payment',
+    method, check:ref, claim, cpt, dos, date, amount:paid, billed:rec.billed, allowed:rec.allowed, patientResp,
+    coinsurance:rec.coinsurance, copay:rec.copay, deductible:rec.deductible, notCovered:rec.notCovered, denial:rec.reason });
   refreshMoney();
   // claim-level reconciliation: link the payment to its claim
   let reconNote='';
   if(claim){ const st=reconcileClaim(rec); reconNote=' · reconciled '+claim+' → '+st; }
+  patientBalanceFlag(rec);   // patient responsibility → invoice / in-office
   msg.style.color='var(--ink-soft)'; msg.textContent='Posting…'+reconNote;
   if(btn) btn.disabled=true;
   try{
@@ -3255,7 +4110,7 @@ async function postPayment(btn){
       : 'Added to the ledger (sample mode — set NOTION_PAYMENTS_DB to persist)') + reconNote;
   }catch(e){ msg.textContent='Added to the ledger (offline — will persist to Notion once deployed)'+reconNote; }
   if(btn) btn.disabled=false;
-  ['pmPatient','pmRef','pmClaim','pmBilled','pmAllowed','pmPaid','pmPatResp','pmReason'].forEach(id=>document.getElementById(id).value='');
+  ['pmPatient','pmPatientId','pmRef','pmClaim','pmCpt','pmBilled','pmAllowed','pmPaid','pmPatResp','pmCoins','pmCopay','pmDeduct','pmNotCov','pmReason','pmDos','pmNextAppt'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
 }
 
 /* ============================================================
@@ -3306,7 +4161,25 @@ function exportPanel(){
 /* ============================================================
    INIT
    ============================================================ */
+// Start with a clean slate — every RCM/billing table fills from your live
+// Notion + Stedi data. No sample rows. (Financial charts get their own cleanup
+// when those pages are rebuilt.)
+function clearSampleData(){
+  ['claims','payments','eraList','reconLedger','denials','claimStatus','discovery','verify','cpt','recon',
+   'expenseItems','nonClaimRevenue','refunds','providerFin']
+    .forEach(k=>{ if(Array.isArray(DATA[k])) DATA[k]=[]; });
+  DATA.claimsRaw=[]; DATA.paymentsRaw=[]; DATA.depositsRaw=[]; DATA.collections=[]; DATA.patientBalances=[];
+  // Program revenue starts at zero — it accrues as you tag claims to programs on
+  // Reconciliation, post non-claim revenue, and split deposits in The Books.
+  DATA.programRevenue = {};
+  [...PROGRAMS, ...EXTRA_STREAMS].forEach(p=>{ DATA.programRevenue[p.id]=0; });
+  // Dashboard chart sources start empty too — buildDataCharts fills them live.
+  DATA.trend={labels:[],charges:[],collected:[]}; DATA.status={labels:[],values:[]};
+  DATA.aging={labels:[],values:[]}; DATA.payer={labels:[],values:[]};
+}
 document.addEventListener('DOMContentLoaded', async ()=>{
+  clearSampleData();
+  fillProgramNav();
   buildTables();
   renderCharts('dashboard');
   rendered['dashboard']=true;
