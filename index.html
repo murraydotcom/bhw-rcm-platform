@@ -1319,7 +1319,10 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
 
         <div class="card" style="margin-bottom:16px">
-          <div class="card-head"><div><h3>Pre-Bill Scrub Queue</h3><div class="card-sub" id="thQueueSummary">&nbsp;</div></div><span class="tag">worklist · sorted by severity</span></div>
+          <div class="card-head split"><div><h3>Pre-Bill Scrub Queue</h3><div class="card-sub" id="thQueueSummary">&nbsp;</div></div>
+            <div class="btn-row"><button class="btn btn-sm btn-primary" data-scrubsrc="sample" onclick="setScrubSource('sample')">Sample</button><button class="btn btn-sm" data-scrubsrc="live" onclick="setScrubSource('live')">Live claims</button></div>
+          </div>
+          <div class="note" id="thLiveNote" style="display:none;margin:0 0 12px">Running on your <b>live Notion claims</b> — this feed carries payer, code &amp; charge, so payer-behavior, high-level-E/M, add-on and coding rules apply. Line-level <b>modifiers, POS, units and visit history</b> aren&rsquo;t in the claims feed yet, so bundling / MUE / frequency / modifier-25 checks stay limited until claim-line detail is added.</div>
           <div class="table-scroll"><table id="tblScrubQueue">
             <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>E/M</th><th>Findings</th><th>Top fix</th><th class="num">Charge</th><th>Status</th></tr></thead>
             <tbody></tbody>
@@ -3890,8 +3893,38 @@ function thStatus(f){
   const worst=f.reduce((a,x)=>Math.min(a,(TH_SEV[x.sev]||{rank:3}).rank),3);
   return worst===0?{cls:'b-denied',label:'Block'}:worst===1?{cls:'b-pending',label:'Flagged'}:{cls:'b-info',label:'Note'};
 }
+/* ---- Live-claims wiring: run the scrub over the real Notion claims feed ---- */
+let SCRUB_SOURCE='sample';
+// Extract fields from a claims row by CONTENT (handles seeded and live column orders).
+function claimField(row){
+  const o={claim:null,patient:null,payer:null,program:null,cpt:null,charge:null};
+  (row||[]).forEach(c=>{
+    const s=String(c==null?'':c).trim();
+    if(!o.claim && /^CLM/i.test(s)) o.claim=s;
+    else if(!o.cpt && /^(9\d{4}|G\d{4}|\d{4}[A-Z]|[A-Z]\d{4}|0\d{3}[TF])$/.test(s)) o.cpt=s;
+    else if(!o.charge && (/^\$/.test(s) || /^[\d,]+\.\d{2}$/.test(s))) o.charge=s;
+    else if(!o.payer && /Aetna|Cigna|UnitedHealth|UHC|BCBS|CareFirst|Blue Cross|Medicare|Medicaid|Alterwood|Humana|Curative/i.test(s)) o.payer=s;
+    else if(!o.program && /Primary Care|Mind & Mood|Population Health|CharmEd|Flow Vascular|EduMedia|ELVT|Foundation/i.test(s)) o.program=s;
+    else if(!o.patient && /[A-Za-z]+,\s*[A-Za-z]/.test(s)) o.patient=s;
+  });
+  return o;
+}
+function deriveScrubFromClaims(){
+  return (DATA.claims||[]).map(r=>{
+    const f=claimField(r);
+    return {id:f.claim||'—', patient:f.patient||'—', payer:f.payer||'—', program:f.program||'—',
+      em:f.cpt||'', newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null,
+      timeDoc:true, emCount:1, charge:Number(String(f.charge||'').replace(/[^0-9.]/g,''))||0};
+  }).filter(c=>c.em);
+}
+function currentScrubSet(){ return (SCRUB_SOURCE==='live') ? deriveScrubFromClaims() : (DATA.scrubQueue||[]); }
+function setScrubSource(src){
+  SCRUB_SOURCE=src; buildThemis(); renderThemisCharts(false);
+  document.querySelectorAll('[data-scrubsrc]').forEach(b=>b.classList.toggle('btn-primary', b.getAttribute('data-scrubsrc')===src));
+  const n=document.getElementById('thLiveNote'); if(n) n.style.display = (src==='live')?'block':'none';
+}
 function buildThemis(){
-  const rows=(DATA.scrubQueue||[]).map(c=>{ const f=scrubClaim(c); return {c, f, st:thStatus(f)}; });
+  const rows=currentScrubSet().map(c=>{ const f=scrubClaim(c); return {c, f, st:thStatus(f)}; });
   const stRank={Block:0,Flagged:1,Note:2,Clean:3};
   rows.sort((a,b)=> (stRank[a.st.label]-stRank[b.st.label]) || ((b.c.charge||0)-(a.c.charge||0)));  // work-needed first, then $ desc
   const blocked = rows.filter(r=>r.f.some(x=>x.sev==='block')).length;
@@ -3930,10 +3963,26 @@ function buildThemis(){
   }).join('');
   const sug=document.getElementById('thSuggest');
   if(sug){
-    const byPayer={}; (DATA.downcode||[]).forEach(r=>{ byPayer[r[1]]=(byPayer[r[1]]||0)+1; });
-    const items = Object.keys(byPayer).map(p=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${p}</b> downcoded ${byPayer[p]}× recently → <span class="badge b-pending">rule active</span> <span style="color:var(--muted)">document time / appeal</span></div>`);
-    sug.innerHTML = (items.join('')||'<div style="color:var(--muted)">No new patterns — the feedback loop is quiet.</div>')
-      + '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Sourced from the 835 Downcoding Watch. Confirmed patterns become payer-custom rules above.</div>';
+    // Feedback loop: learn recurring payer behavior from the live 835 remittances.
+    const pats={};
+    (DATA.eraList||[]).forEach(e=>(e.claims||[]).forEach(cl=>(cl.services||[]).forEach(s=>{
+      const adj=(s.adjCode||''), d=(s.adjDesc||'');
+      let type=null;
+      if(/procedure code changed|downcod/i.test(d)||adj==='CO-59') type='downcode';
+      else if(adj==='CO-197'||/auth|precert/i.test(d)) type='no-auth';
+      else if(adj==='CO-96'||/non-?covered/i.test(d)) type='non-covered';
+      if(!type) return;
+      const k=e.payer+'||'+type+'||'+(s.cpt||'');
+      (pats[k]=pats[k]||{payer:e.payer,type,cpt:s.cpt,n:0,lost:0}).n++;
+      pats[k].lost += Math.max(0,(s.billed||0)-(s.paid||0));
+    })));
+    (DATA.downcode||[]).forEach(r=>{ const k=r[1]+'||downcode||'+r[2];
+      (pats[k]=pats[k]||{payer:r[1],type:'downcode',cpt:r[2],n:0,lost:0}); pats[k].n++; pats[k].lost+=Number(r[5])||0; });
+    const label={downcode:'downcoding',['no-auth']:'no-auth denials',['non-covered']:'non-covered denials'};
+    const arr=Object.values(pats).sort((a,b)=>b.lost-a.lost || b.n-a.n).slice(0,6);
+    const items=arr.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${p.payer}</b> — ${label[p.type]} on <b>${p.cpt||'E/M'}</b> · ${p.n}×${p.lost?(' · $'+Math.round(p.lost)+' at risk'):''} <span class="badge b-pending">promote to rule</span></div>`);
+    sug.innerHTML = (items.join('')||'<div style="color:var(--muted)">No recurring patterns in the 835 feed yet.</div>')
+      + '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Learned live from your 835 remittances (downcodes, no-auth &amp; non-covered denials). Confirm a pattern to promote it into a payer-custom rule above.</div>';
   }
   const fq=document.querySelector('#tblFreq tbody');
   if(fq) fq.innerHTML = Object.keys(DATA.freq||{}).map(code=>{
@@ -3943,7 +3992,7 @@ function buildThemis(){
   renderThemisCharts(false);
 }
 function renderThemisCharts(create){
-  const rows=(DATA.scrubQueue||[]).map(c=>({c, f:scrubClaim(c)}));
+  const rows=currentScrubSet().map(c=>({c, f:scrubClaim(c)}));
   const sev={block:0,warn:0,info:0,clean:0}, byPayer={};
   rows.forEach(r=>{
     const hasB=r.f.some(x=>x.sev==='block'), hasW=r.f.some(x=>x.sev==='warn'), hasI=r.f.some(x=>x.sev==='info');
