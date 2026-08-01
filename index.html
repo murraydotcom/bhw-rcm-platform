@@ -540,8 +540,8 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
       <!-- ==================== RCM: CHARGE MASTER ==================== -->
       <section class="view" id="chargemaster">
-        <div class="page-head"><h2>Charge Master (CDM)</h2><p>71 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0, until the fee schedule is filled.</p></div>
-        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — they&rsquo;ll populate here automatically as Amaris/Shadé complete the fee schedule, no rebuild needed. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes and aren&rsquo;t listed here.</div>
+        <div class="page-head"><h2>Charge Master (CDM)</h2><p>96 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Reflects actual BHW services: EKG, PFTs &amp; inhaler training, SBIRT screenings, developmental screenings, <b>APCM</b> for chronic care, <b>CoCM</b> for behavioral health, and Flow&rsquo;s ABPM / autonomic-sudomotor / ABI-TBI / tilt testing. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0.</p></div>
+        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — they&rsquo;ll populate here automatically, no rebuild needed. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes. Diabetes Prevention Program is listed under Population Health for now — flag if it should move.</div>
         <div class="section-tools">
           <input type="text" placeholder="Search CPT / description…" style="flex:1;min-width:200px">
           <select data-progfill="all"></select>
@@ -1936,8 +1936,21 @@ const DATA = {
     ["90471","Immunization admin, first","Primary Care (BHW)",null,null,null],
     ["90472","Immunization admin, each add'l","Primary Care (BHW)",null,null,null],
     ["90460","Immunization admin w/ counsel, first","Primary Care (BHW)",null,null,null],
-    ["36415","Venipuncture","Primary Care (BHW)",null,null,null],
-    ["20610","Arthrocentesis/injection, major joint","Primary Care (BHW)",null,null,null],
+    ["93000","ECG, 12-lead, w/ interpretation & report","Primary Care (BHW)",null,null,null],
+    ["94010","Spirometry","Primary Care (BHW)",null,null,null],
+    ["94060","Spirometry, pre/post bronchodilator","Primary Care (BHW)",null,null,null],
+    ["94070","Bronchospasm provocation evaluation","Primary Care (BHW)",null,null,null],
+    ["94640","Nebulizer / inhalation treatment","Primary Care (BHW)",null,null,null],
+    ["94664","Inhaler / nebulizer use training","Primary Care (BHW)",null,null,null],
+    ["G0442","Annual alcohol misuse screening","Primary Care (BHW)",null,null,null],
+    ["G0443","Brief alcohol misuse counseling","Primary Care (BHW)",null,null,null],
+    ["99406","Tobacco cessation counseling, 3–10 min","Primary Care (BHW)",null,null,null],
+    ["99407","Tobacco cessation counseling, >10 min","Primary Care (BHW)",null,null,null],
+    ["99408","Alcohol/substance screen & intervention, 15–30 min","Primary Care (BHW)",null,null,null],
+    ["99409","Alcohol/substance screen & intervention, >30 min","Primary Care (BHW)",null,null,null],
+    ["96110","Developmental screening","Primary Care (BHW)",null,null,null],
+    ["96112","Developmental test administration, first hr","Primary Care (BHW)",null,null,null],
+    ["96113","Developmental test administration, add'l 30 min","Primary Care (BHW)",null,null,null],
     // ---- Mind & Mood (behavioral health) ----
     ["90791","Psychiatric diagnostic eval","Mind & Mood",null,null,null],
     ["90792","Psychiatric diagnostic eval w/ medical","Mind & Mood",null,null,null],
@@ -1954,13 +1967,17 @@ const DATA = {
     ["96127","Brief emotional/behavioral assessment","Mind & Mood",null,null,null],
     ["96130","Psychological testing eval, first hr","Mind & Mood",null,null,null],
     ["96131","Psychological testing eval, add'l hr","Mind & Mood",null,null,null],
-    ["99484","Behavioral health care mgmt","Mind & Mood",100,null,null],
-    // ---- Population Health (CCM / RPM / TCM) ----
+    ["99484","Behavioral health care mgmt (BHI)","Mind & Mood",100,null,null],
+    ["99492","Collaborative care mgmt (CoCM), initial 70 min","Mind & Mood",null,null,null],
+    ["99493","Collaborative care mgmt (CoCM), subsequent 60 min","Mind & Mood",null,null,null],
+    ["99494","Collaborative care mgmt (CoCM), add'l 30 min","Mind & Mood",null,null,null],
+    ["G2214","Collaborative care mgmt (CoCM), 30 min","Mind & Mood",null,null,null],
+    // ---- Population Health (CCM / APCM / RPM / TCM) ----
     ["99490","Chronic care mgmt, 20 min","Population Health (CCM)",null,null,null],
     ["99439","Chronic care mgmt, add'l 20 min","Population Health (CCM)",null,null,null],
     ["99491","Chronic care mgmt, physician 30 min","Population Health (CCM)",null,null,null],
     ["99437","Chronic care mgmt, physician add'l 30 min","Population Health (CCM)",null,null,null],
-    ["G0557","Chronic care mgmt, add'l 20 min","Population Health (CCM)",125,null,null],
+    ["G0557","APCM, level 2 (2+ chronic conditions)","Population Health (CCM)",125,null,null],
     ["99487","Complex chronic care mgmt, 60 min","Population Health (CCM)",null,null,null],
     ["99489","Complex chronic care mgmt, add'l 30 min","Population Health (CCM)",null,null,null],
     ["99424","Principal care mgmt, physician 30 min","Population Health (CCM)",null,null,null],
@@ -1974,19 +1991,27 @@ const DATA = {
     ["99091","Collection/interpretation of physiologic data","Population Health (CCM)",null,null,null],
     ["99495","Transitional care mgmt, moderate","Population Health (CCM)",null,null,null],
     ["99496","Transitional care mgmt, high","Population Health (CCM)",null,null,null],
+    ["G0556","APCM, level 1 (1 chronic condition)","Population Health (CCM)",null,null,null],
+    ["G0558","APCM, level 3 (complex / QMB)","Population Health (CCM)",null,null,null],
+    ["0403T","Diabetes Prevention Program, group, per 30 min","Population Health (CCM)",null,null,null],
     // ---- CharmEd Minds (cognitive / memory) ----
     ["99483","Cognitive assessment & care plan","CharmEd Minds",null,null,null],
     ["96116","Neurobehavioral status exam, first hr","CharmEd Minds",null,null,null],
     ["96121","Neurobehavioral status exam, add'l hr","CharmEd Minds",null,null,null],
     ["96125","Standardized cognitive performance testing","CharmEd Minds",null,null,null],
     ["99498","Advance care planning, add'l 30 min","CharmEd Minds",null,null,null],
-    // ---- Flow Vascular Stabilization (vascular studies) ----
-    ["93922","Limited bilateral noninvasive extremity study","Flow Vascular Stabilization",null,null,null],
-    ["93923","Complete bilateral extremity study","Flow Vascular Stabilization",null,null,null],
-    ["93925","Lower extremity arterial duplex, complete","Flow Vascular Stabilization",null,null,null],
-    ["93926","Lower extremity arterial duplex, limited","Flow Vascular Stabilization",null,null,null],
-    ["93970","Extremity venous duplex, complete","Flow Vascular Stabilization",null,null,null],
-    ["93971","Extremity venous duplex, limited","Flow Vascular Stabilization",null,null,null]
+    // ---- Flow Vascular Stabilization (physiologic / autonomic testing) ----
+    ["93922","ABI/TBI — limited bilateral physiologic study","Flow Vascular Stabilization",null,null,null],
+    ["93923","ABI/TBI — complete bilateral physiologic study","Flow Vascular Stabilization",null,null,null],
+    ["93784","ABPM, 24 hr, incl interpretation & report","Flow Vascular Stabilization",null,null,null],
+    ["93786","ABPM, recording only","Flow Vascular Stabilization",null,null,null],
+    ["93788","ABPM, scanning analysis","Flow Vascular Stabilization",null,null,null],
+    ["93790","ABPM, interpretation & report","Flow Vascular Stabilization",null,null,null],
+    ["95921","Autonomic function test, cardiovagal","Flow Vascular Stabilization",null,null,null],
+    ["95922","Autonomic function test, vasomotor adrenergic","Flow Vascular Stabilization",null,null,null],
+    ["95923","Autonomic function test, sudomotor (QSART)","Flow Vascular Stabilization",null,null,null],
+    ["95924","Autonomic function test, combined para/sympathetic","Flow Vascular Stabilization",null,null,null],
+    ["93660","Tilt table evaluation","Flow Vascular Stabilization",null,null,null]
   ],
   cpt: [
     ["99214","Office visit, moderate","Primary Care (BHW)",412,"$76,632","$154"],
@@ -2205,7 +2230,7 @@ const DATA = {
   ],
   // Pre-bill claims waiting to go out — each is run through scrubClaim() live.
   scrubQueue: [
-    {id:"CLM-24210", patient:"Nguyen, T.", payer:"Aetna",              program:"Primary Care", dos:"07/28", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:"20610", awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:212},
+    {id:"CLM-24210", patient:"Nguyen, T.", payer:"Aetna",              program:"Primary Care", dos:"07/28", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:"94640", awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:212},
     {id:"CLM-24211", patient:"Okafor, C.", payer:"Cigna",              program:"Mind & Mood",  dos:"07/28", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:1, charge:245},
     {id:"CLM-24212", patient:"Ellis, D.",  payer:"UnitedHealthcare",    program:"Primary Care", dos:"07/29", em:"99204", newPt:true,  seenWithin3y:true,  mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:198},
     {id:"CLM-24213", patient:"Reyes, P.",  payer:"Medicare",            program:"Primary Care", dos:"07/29", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:"G0439", telePOS:null, timeDoc:true,  emCount:1, charge:274},
