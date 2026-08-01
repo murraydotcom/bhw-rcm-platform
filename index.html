@@ -1319,7 +1319,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
 
         <div class="card" style="margin-bottom:16px">
-          <div class="card-head"><h3>Pre-Bill Scrub Queue</h3><span class="tag">claims run through Themis</span></div>
+          <div class="card-head"><div><h3>Pre-Bill Scrub Queue</h3><div class="card-sub" id="thQueueSummary">&nbsp;</div></div><span class="tag">worklist · sorted by severity</span></div>
           <div class="table-scroll"><table id="tblScrubQueue">
             <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>E/M</th><th>Findings</th><th>Top fix</th><th class="num">Charge</th><th>Status</th></tr></thead>
             <tbody></tbody>
@@ -2259,6 +2259,10 @@ const DATA = {
     {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
     {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
     {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."},
+    {id:"g2211-25",   type:"payer-custom",scope:"payer", payer:"Medicare", label:"G2211 not payable when the same-day E/M carries modifier 25", sev:"block", source:"CMS G2211 policy", fix:"When you append modifier 25 to the E/M for a same-day procedure or AWV, drop G2211 — it will deny that day."},
+    {id:"g2211-comm", type:"payer-custom",scope:"payer", payer:"Commercial", label:"G2211 frequently not reimbursed by commercial payers", sev:"info", source:"BHW custom (payer behavior)", fix:"Confirm the commercial plan pays G2211; many recognize it for Medicare only. Track denials to firm this up."},
+    {id:"cigna-testauth", type:"payer-custom",scope:"payer", payer:"Cigna", label:"Cigna/Evernorth may require prior auth for psych/neuro testing", sev:"info", source:"Cigna behavioral policy", fix:"Verify prior authorization for 96130/96131/96116/96121/96125 before testing to avoid a no-auth denial."},
+    {id:"tele-audio", type:"payer-custom",scope:"payer", payer:"Medicare", label:"Audio-only telehealth needs modifier 93", sev:"warn", source:"CMS 2025 telehealth", fix:"If the telehealth visit was audio-only, append modifier 93 (in addition to 95/POS) or it may deny."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP Practitioner — Medicare + Medicaid (eff 07/01/2026)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
@@ -2274,7 +2278,8 @@ const DATA = {
     {id:"CLM-24216", patient:"Harper, S.", payer:"BCBS MD",             program:"Primary Care", dos:"07/30", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:150},
     {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245},
     {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120},
-    {id:"CLM-24219", patient:"Cole, R.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"G0439", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, priorDays:200, charge:130}
+    {id:"CLM-24219", patient:"Cole, R.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"G0439", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, priorDays:200, charge:130},
+    {id:"CLM-24220", patient:"Frey, A.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"99214", newPt:false, seenWithin3y:false, mods:["25"], sameDayProc:"94640", awv:null, telePOS:null, timeDoc:true, emCount:1, g2211:true, charge:224}
   ],
   // Medicare Practitioner Services MUE (eff 07/01/2026), filtered to the charge master.
   // code -> [ MUE unit cap, MAI ] · MAI 2 = absolute (no appeal), MAI 3 = clinical (bypassable) · cap 0 = no published MUE.
@@ -3813,6 +3818,13 @@ function scrubClaim(c){
   if(/CareFirst Community/.test(p))              add('cfc-note');
   if(/UHC Community Plan/.test(p))               add('uhccp-freq');
   if(/Alterwood/.test(p))                        add('alterwood');
+  // G2211 visit-complexity add-on quirks
+  if(c.g2211){
+    if(has('25') || c.sameDayProc || c.awv)      add('g2211-25');
+    if(/^(Aetna|Cigna|UnitedHealthcare|BCBS MD)$/.test(p)) add('g2211-comm');
+  }
+  if(p==='Cigna' && /^(96130|96131|96116|96121|96125)$/.test(c.em)) add('cigna-testauth');
+  if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   // MUE unit cap — payer-aware: Medicaid table for Medicaid/MCO payers (no MAI),
   // otherwise the Medicare table (with MAI driving block vs warn).
   const units = c.units || 1;
@@ -3847,9 +3859,16 @@ function thStatus(f){
 }
 function buildThemis(){
   const rows=(DATA.scrubQueue||[]).map(c=>{ const f=scrubClaim(c); return {c, f, st:thStatus(f)}; });
+  const stRank={Block:0,Flagged:1,Note:2,Clean:3};
+  rows.sort((a,b)=> (stRank[a.st.label]-stRank[b.st.label]) || ((b.c.charge||0)-(a.c.charge||0)));  // work-needed first, then $ desc
   const blocked = rows.filter(r=>r.f.some(x=>x.sev==='block')).length;
   const flagged = rows.filter(r=>r.f.some(x=>x.sev==='block'||x.sev==='warn')).length;
+  const cleanCt = rows.filter(r=>r.st.label==='Clean').length;
   const atRisk  = rows.filter(r=>r.f.some(x=>x.sev==='block'||x.sev==='warn')).reduce((s,r)=>s+(r.c.charge||0),0);
+  const sumEl=document.getElementById('thQueueSummary');
+  if(sumEl) sumEl.innerHTML = flagged
+    ? `<b style="color:var(--denied)">${flagged}</b> of ${rows.length} need work — ${blocked} will deny, ${flagged-blocked} downcode/underpay risk · <b style="color:var(--sage)">${cleanCt}</b> clean &amp; ready to submit`
+    : `All ${rows.length} clean &amp; ready to submit`;
   const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
   set('thRules',(DATA.scrubRules||[]).length); set('thQueued',rows.length);
   set('thBlocked',blocked); set('thFlagged',flagged); set('thProtected','$'+atRisk.toLocaleString());
