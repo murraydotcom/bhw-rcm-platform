@@ -1294,7 +1294,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <div class="page-head split">
           <div><h2>Watchdog &nbsp;<span class="tag">277A → 835</span></h2><p>The claims the payer <b>acknowledged</b> (277/277A) but for which <b>no 835 remittance has ever come back</b>. Money that would otherwise die quietly against the timely-filing clock — surfaced here <b>before</b> the deadline, ranked by days left to file.</p></div>
           <div class="btn-row" style="align-items:center">
-            <span class="pill live">● Stedi · sample</span>
+            <span class="pill live" id="wdMode">● Stedi · sample</span>
             <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Work the Watchdog queue: for the claims the payer acknowledged via 277/277A with no 835 received, tell me which are closest to their timely-filing deadline, the total dollars at risk, and draft a status-inquiry plus proof-of-timely-filing follow-up for the single most urgent claim.','Watchdog')">Work the queue</button>
           </div>
         </div>
@@ -3237,9 +3237,45 @@ function buildDowncode(){
     <td>${r[6]}</td></tr>`).join('');
 }
 /* ---- Watchdog: acknowledged (277/277A) with no 835, ranked by days to filing deadline ---- */
+let wdLive = false;   // flips true once the live 277 feed drives the queue
+// Timely-filing limit per payer. Exact match wins; otherwise fall back to a
+// keyword match so live payer-name variants (e.g. "Medicare (CMS)",
+// "CareFirst BCBS Maryland") still resolve to the right limit.
+function filingLimit(payer){
+  if(DATA.wdFiling[payer]!=null) return DATA.wdFiling[payer];
+  const p=String(payer||'').toLowerCase();
+  if(/medicare/.test(p)) return 365;
+  if(/medicaid/.test(p)) return 365;
+  if(/cigna/.test(p)) return 90;
+  if(/united|uhc/.test(p)) return 90;
+  if(/aetna/.test(p)) return 120;
+  if(/bcbs|blue cross|carefirst/.test(p)) return 180;
+  return 180;
+}
+// Derive the watchdog queue from the live feeds: every claim the payer
+// ACKNOWLEDGED on the 277 (DATA.claimStatus) that has NO matching 835 in the
+// remittance feed (DATA.eraList). This is the 277→835 join, computed client-side.
+function deriveWatchdog(){
+  const norm = c => String(c||'').replace(/[a-z]+$/,'');   // strip the lowercase secondary-claim suffix (e.g. "…191b")
+  const remitted = new Set();
+  (DATA.eraList||[]).forEach(e=>(e.claims||[]).forEach(c=>{
+    const id=String(c.claim||''); if(!id) return;
+    remitted.add(id); remitted.add(norm(id));
+  }));
+  const num = v => Number(String(v).replace(/[^0-9.]/g,''))||0;
+  return (DATA.claimStatus||[]).filter(r=>{
+    const cat=String(r[7]||'').toLowerCase();
+    if(/paid|denied|partial/.test(cat)) return false;        // finalized → not watched
+    const claim=String(r[0]||'');
+    return !(remitted.has(claim) || remitted.has(norm(claim))); // no 835 yet
+  }).map(r=>({
+    claim:r[0], patient:r[1], payer:r[2], sub:r[3],
+    days: Number(r[6])||0, charge: num(r[5]), ack: r[4] || '277 · acknowledged'
+  }));
+}
 function wdRows(){
   return (DATA.watchdog||[]).map(r=>{
-    const limit = DATA.wdFiling[r.payer] || 180;
+    const limit = filingLimit(r.payer);
     const left = limit - r.days;                 // calendar days remaining to file
     let pr;
     if(left <= 0)      pr = {cls:'b-denied',  label:'Past deadline'};
@@ -3248,6 +3284,29 @@ function wdRows(){
     else               pr = {cls:'b-paid',    label:'Tracking'};
     return {...r, limit, left, pr};
   }).sort((a,b)=> a.left - b.left);              // most urgent first
+}
+// Create-or-update the two Watchdog charts. Pass create=true only from the
+// first render (renderCharts); live-feed refreshes update existing charts only.
+function renderWatchdogCharts(create){
+  const wd=DATA.watchdog||[];
+  const byP={}; wd.forEach(r=>{ byP[r.payer]=(byP[r.payer]||0)+r.charge; });
+  const pLabels=Object.keys(byP), pVals=pLabels.map(k=>byP[k]);
+  const b=[0,0,0,0]; // past · ≤14 · ≤45 · >45
+  wd.forEach(r=>{ const left=filingLimit(r.payer)-r.days;
+    if(left<=0)b[0]++; else if(left<=14)b[1]++; else if(left<=45)b[2]++; else b[3]++; });
+  if(charts['chWdPayer']){ charts['chWdPayer'].data.labels=pLabels; charts['chWdPayer'].data.datasets[0].data=pVals; charts['chWdPayer'].update(); }
+  else if(create){ mk('chWdPayer',{type:'bar',data:{labels:pLabels,datasets:[{data:pVals,backgroundColor:C.bronze,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}}); }
+  if(charts['chWdBuckets']){ charts['chWdBuckets'].data.datasets[0].data=b; charts['chWdBuckets'].update(); }
+  else if(create){ mk('chWdBuckets',{type:'doughnut',data:{labels:['Past deadline','Due ≤14d','Monitor','Tracking'],datasets:[{data:b,backgroundColor:[C.denied,C.pending,C.blue,C.sage],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}}); }
+}
+// Re-derive the queue from live feeds and repaint table + KPIs + charts.
+function refreshWatchdog(){
+  DATA.watchdog = deriveWatchdog();
+  wdLive = true;
+  buildWatchdog();
+  renderWatchdogCharts(false);
+  const el=document.getElementById('wdMode');
+  if(el) el.textContent='● Stedi · live · derived from 277 + 835';
 }
 function buildWatchdog(){
   const rows = wdRows();
@@ -3872,14 +3931,7 @@ function renderCharts(id){
     mk('chEraReason',{type:'bar',data:{labels:DATA.eraReason.labels,datasets:[{data:DATA.eraReason.values,backgroundColor:[C.blue,C.bronze,C.pending,C.neutral,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
   }
   if(id==='watchdog'){
-    const wd = DATA.watchdog||[];
-    const byP={}; wd.forEach(r=>{ byP[r.payer]=(byP[r.payer]||0)+r.charge; });
-    const pLabels=Object.keys(byP), pVals=pLabels.map(k=>byP[k]);
-    mk('chWdPayer',{type:'bar',data:{labels:pLabels,datasets:[{data:pVals,backgroundColor:C.bronze,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
-    const b=[0,0,0,0]; // past · ≤14 · ≤45 · >45
-    wd.forEach(r=>{ const left=(DATA.wdFiling[r.payer]||180)-r.days;
-      if(left<=0)b[0]++; else if(left<=14)b[1]++; else if(left<=45)b[2]++; else b[3]++; });
-    mk('chWdBuckets',{type:'doughnut',data:{labels:['Past deadline','Due ≤14d','Monitor','Tracking'],datasets:[{data:b,backgroundColor:[C.denied,C.pending,C.blue,C.sage],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}});
+    renderWatchdogCharts(true);
   }
   if(id==='pophealth'){
     mk('chRisk',{type:'bar',data:{labels:DATA.risk.labels,datasets:[{data:DATA.risk.values,backgroundColor:[C.sage,C.pending,C.bronze,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
@@ -4100,6 +4152,7 @@ function applyStediFeed(feed, rows){
       s(r.status), s(r.charge), String(r.age??''), (r.category||'pending').toLowerCase()]);
     fillTable('tblClaimStatus', DATA.claimStatus, 7);
     setPill('csMode','● Stedi · live');
+    refreshWatchdog();   // live 277 drives the Watchdog 277→835 join
   }
   if(feed==='discovery'){
     DATA.discovery = rows.map(r=>[s(r.patient), s(r.dob), s(r.payer)||'—', s(r.memberId)||'—',
@@ -4118,6 +4171,7 @@ function applyStediFeed(feed, rows){
     buildEra();
     refreshMoney();   // ERA remittances flow into the unified, deduped collections ledger
     setPill('eraMode','● Stedi · live');
+    if(wdLive) refreshWatchdog();   // new 835s can clear items off the queue
   }
   if(feed==='payers'){
     DATA.payersList = rows.map(r=>[s(r.payer), s(r.payerId), r.eligibility||'n', r.claims||'n', r.era||'n', (r.status||'live')]);
