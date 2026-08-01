@@ -66,6 +66,8 @@ a{color:inherit}
 .nav-item:hover{background:var(--sidebar-2); color:#fff}
 .nav-item.active{background:var(--blue); color:#fff; font-weight:600}
 .nav-item .ic{width:18px; text-align:center; font-size:15px; opacity:.9}
+.nav-count{margin-left:auto; font-size:10px; font-weight:800; min-width:18px; text-align:center; padding:1px 6px; border-radius:20px; background:var(--denied); color:#fff; line-height:1.5}
+.nav-count:empty{display:none}
 .sidebar-foot{margin-top:auto; padding:16px 20px; font-size:10.5px; color:#6f8792; border-top:1px solid rgba(255,255,255,.07)}
 
 .main{flex:1; min-width:0; display:flex; flex-direction:column}
@@ -243,6 +245,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('discovery',this)"><span class="ic">⌕</span> Insurance Discovery</div>
       <div class="nav-item" onclick="go('claimstatus',this)"><span class="ic">◱</span> Claim Status (276/277)</div>
       <div class="nav-item" onclick="go('remittance',this)"><span class="ic">▤</span> Remittance / ERA (835)</div>
+      <div class="nav-item" onclick="go('watchdog',this)"><span class="ic">🛡</span> Watchdog <span class="nav-count" id="wdNavCount"></span></div>
       <div class="nav-item" onclick="go('payers',this)"><span class="ic">⌁</span> Payers &amp; Enrollment</div>
     </nav>
 
@@ -1286,6 +1289,46 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
       </section>
 
+      <!-- ==================== STEDI: WATCHDOG (277A -> 835 reconciliation) ==================== -->
+      <section class="view" id="watchdog">
+        <div class="page-head split">
+          <div><h2>Watchdog &nbsp;<span class="tag">277A → 835</span></h2><p>The claims the payer <b>acknowledged</b> (277/277A) but for which <b>no 835 remittance has ever come back</b>. Money that would otherwise die quietly against the timely-filing clock — surfaced here <b>before</b> the deadline, ranked by days left to file.</p></div>
+          <div class="btn-row" style="align-items:center">
+            <span class="pill live">● Stedi · sample</span>
+            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Work the Watchdog queue: for the claims the payer acknowledged via 277/277A with no 835 received, tell me which are closest to their timely-filing deadline, the total dollars at risk, and draft a status-inquiry plus proof-of-timely-filing follow-up for the single most urgent claim.','Watchdog')">Work the queue</button>
+          </div>
+        </div>
+
+        <!-- Signature callout: the 277A -> missing-835 cross-check -->
+        <div class="card" style="border-left:4px solid var(--pending);margin-bottom:16px">
+          <div class="card-head split">
+            <div><h3>⏱ Acknowledged, never remitted</h3><div class="card-sub">The one thing the 277 feed and the 835 feed can&rsquo;t tell you apart — <b>joined</b>.</div></div>
+          </div>
+          <div class="note" style="margin-bottom:0">A claim that was <b>accepted</b> on the 277A but has produced <b>no 835</b> is not &ldquo;in process&rdquo; — it is at risk of aging past the payer&rsquo;s filing limit with nothing to appeal against. Watchdog matches every acknowledged claim to the remittance feed, and for anything still unmatched it counts down to that payer&rsquo;s <b>timely-filing deadline</b>. Anything <span class="badge b-pending">Due ≤14d</span> or <span class="badge b-denied">Past deadline</span> is worked first — a status inquiry now (or a good-cause/proof-of-timely-filing packet) is the difference between getting paid and writing it off.</div>
+        </div>
+
+        <div class="grid g5" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Claims Watched</div><div class="k-val" id="wdCount">0</div><div class="mini">acknowledged · no 835</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">$ at Risk</div><div class="k-val" id="wdAtRisk">$0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Due ≤14 days</div><div class="k-val" id="wdUrgent" style="color:var(--pending)">0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Past Deadline</div><div class="k-val" id="wdOverdue" style="color:var(--denied)">0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">Avg Days Open</div><div class="k-val" id="wdAvgAge">0</div></div>
+        </div>
+
+        <div class="grid g3" style="margin-bottom:16px">
+          <div class="card" style="grid-column:span 2"><div class="card-head"><div><h3>$ at Risk by Payer</h3><div class="card-sub">Unremitted, acknowledged claims — where the exposure sits</div></div></div><div class="chart-wrap sm"><canvas id="chWdPayer"></canvas></div></div>
+          <div class="card"><div class="card-head"><div><h3>Deadline Buckets</h3><div class="card-sub">Days left to file</div></div></div><div class="chart-wrap sm"><canvas id="chWdBuckets"></canvas></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Watchdog Worklist</h3><span class="tag">acknowledged · no 835 · sorted by days left</span></div>
+          <div class="table-scroll"><table id="tblWatchdog">
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>Acknowledged (277)</th><th class="num">Days No-835</th><th class="num">Filing Limit</th><th class="num">Days Left</th><th class="num">$ at Risk</th><th>Priority</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </section>
+
       <!-- ==================== STEDI: REMITTANCE / ERA (835) ==================== -->
       <section class="view" id="remittance">
         <div class="page-head split">
@@ -2005,6 +2048,21 @@ const DATA = {
     ["CLM-24131","Cigna","90837","90834","Behavioral Health",57,"emerging"],
     ["CLM-24119","Aetna","99204","99203","Primary Care",62,"3rd this month"]
   ],
+  // ---- WATCHDOG: claims acknowledged on the 277/277A with NO 835 received. ----
+  // days = calendar days since submission (== days with no remittance). charge = $ at risk.
+  // Filing limit is looked up per payer from wdFiling; days-left and priority are derived.
+  watchdog: [
+    {claim:"CLM-23915", patient:"Pham, L.",    payer:"Aetna",             sub:"03/26", days:128, charge:342,  ack:"277A · accepted"},
+    {claim:"CLM-23980", patient:"Turner, A.",  payer:"Aetna",             sub:"04/11", days:112, charge:980,  ack:"277A · accepted"},
+    {claim:"CLM-23888", patient:"Ellis, D.",   payer:"UnitedHealthcare",  sub:"05/09", days:84,  charge:560,  ack:"277A · accepted"},
+    {claim:"CLM-24192", patient:"Okafor, C.",  payer:"Cigna",             sub:"05/15", days:78,  charge:168,  ack:"277A · accepted"},
+    {claim:"CLM-24011", patient:"Sutton, M.",  payer:"MD Medicaid MCO",   sub:"04/27", days:96,  charge:128,  ack:"277 · acknowledged"},
+    {claim:"CLM-24176", patient:"Harper, S.",  payer:"BCBS MD",           sub:"06/12", days:50,  charge:1240, ack:"277 · addl info"},
+    {claim:"CLM-24044", patient:"Reyes, P.",   payer:"Medicare",          sub:"06/02", days:60,  charge:210,  ack:"277A · accepted"},
+    {claim:"CLM-24122", patient:"Nash, W.",    payer:"Cigna",             sub:"05/29", days:64,  charge:455,  ack:"277A · accepted"}
+  ],
+  // Payer timely-filing limits (calendar days from date of service).
+  wdFiling: { "Cigna":90, "UnitedHealthcare":90, "Aetna":120, "BCBS MD":180, "CareFirst BCBS Maryland":180, "Medicare":365, "MD Medicaid MCO":365, "Medicaid Maryland":365 },
 
   // ---- STEDI: Payers & enrollment.  y/p/n per transaction ----
   payersList: [
@@ -2112,7 +2170,7 @@ const TITLES = {
   expenses:"Expenses", edumedia:"EduMedia Tracker", q3goals:"Q3 Goals vs Actual",
   recovery:"Payment Recovery Timeline",
   discovery:"Insurance Discovery",
-  claimstatus:"Claim Status", remittance:"Remittance / ERA", payers:"Payers & Enrollment",
+  claimstatus:"Claim Status", remittance:"Remittance / ERA", watchdog:"Watchdog", payers:"Payers & Enrollment",
   pophealth:"Population Health", caregaps:"Care Gaps & Registry", hospital:"Hospital & TCM",
   mips:"Quality & MIPS", sources:"Sources & Method"
 };
@@ -3178,6 +3236,51 @@ function buildDowncode(){
     <td class="num" style="color:var(--denied)">-$${Number(r[5]).toLocaleString()}</td>
     <td>${r[6]}</td></tr>`).join('');
 }
+/* ---- Watchdog: acknowledged (277/277A) with no 835, ranked by days to filing deadline ---- */
+function wdRows(){
+  return (DATA.watchdog||[]).map(r=>{
+    const limit = DATA.wdFiling[r.payer] || 180;
+    const left = limit - r.days;                 // calendar days remaining to file
+    let pr;
+    if(left <= 0)      pr = {cls:'b-denied',  label:'Past deadline'};
+    else if(left<=14)  pr = {cls:'b-pending', label:'Due ≤14d'};
+    else if(left<=45)  pr = {cls:'b-info',    label:'Monitor'};
+    else               pr = {cls:'b-paid',    label:'Tracking'};
+    return {...r, limit, left, pr};
+  }).sort((a,b)=> a.left - b.left);              // most urgent first
+}
+function buildWatchdog(){
+  const rows = wdRows();
+  const total   = rows.reduce((s,r)=>s+r.charge,0);
+  const urgent  = rows.filter(r=>r.left>0 && r.left<=14).length;
+  const overdue = rows.filter(r=>r.left<=0).length;
+  const avg     = rows.length ? Math.round(rows.reduce((s,r)=>s+r.days,0)/rows.length) : 0;
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  set('wdCount', rows.length);
+  set('wdAtRisk', '$'+total.toLocaleString());
+  set('wdUrgent', urgent);
+  set('wdOverdue', overdue);
+  set('wdAvgAge', avg);
+  const navc=document.getElementById('wdNavCount');
+  if(navc){ const hot=urgent+overdue; navc.textContent = hot ? String(hot) : ''; }
+
+  const tb=document.querySelector('#tblWatchdog tbody'); if(!tb) return;
+  tb.innerHTML = rows.map(r=>{
+    const leftTxt = r.left<=0
+      ? `<span style="color:var(--denied);font-weight:700">${r.left} (past)</span>`
+      : (r.left<=14 ? `<span style="color:var(--pending);font-weight:700">${r.left}</span>` : r.left);
+    const riskStyle = r.left<=14 ? ' style="color:var(--denied);font-weight:700"' : '';
+    return `<tr>
+      <td><b>${r.claim}</b></td><td>${r.patient}</td><td>${r.payer}</td>
+      <td><span class="badge b-info">${r.ack}</span></td>
+      <td class="num">${r.days}</td>
+      <td class="num">${r.limit}d</td>
+      <td class="num">${leftTxt}</td>
+      <td class="num"${riskStyle}>$${Number(r.charge).toLocaleString()}</td>
+      <td><span class="badge ${r.pr.cls}">${r.pr.label}</span></td>
+    </tr>`;
+  }).join('');
+}
 /* ---- Time period filter (global) ---- */
 let PERIOD_DAYS = 30, PERIOD_LABEL = 'this month';
 const PERIOD_LABELS = {7:'this week',30:'this month',90:'this quarter',365:'year to date',0:'all time'};
@@ -3615,6 +3718,7 @@ function buildTables(){
   fillTable('tblAWV', DATA.awv, 4);
   buildDowncode();
   buildEra();
+  buildWatchdog();
   buildPayers();
   // Population health
   fillTable('tblRegistry', DATA.registry, null);
@@ -3766,6 +3870,16 @@ function renderCharts(id){
   }
   if(id==='remittance'){
     mk('chEraReason',{type:'bar',data:{labels:DATA.eraReason.labels,datasets:[{data:DATA.eraReason.values,backgroundColor:[C.blue,C.bronze,C.pending,C.neutral,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
+  }
+  if(id==='watchdog'){
+    const wd = DATA.watchdog||[];
+    const byP={}; wd.forEach(r=>{ byP[r.payer]=(byP[r.payer]||0)+r.charge; });
+    const pLabels=Object.keys(byP), pVals=pLabels.map(k=>byP[k]);
+    mk('chWdPayer',{type:'bar',data:{labels:pLabels,datasets:[{data:pVals,backgroundColor:C.bronze,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}});
+    const b=[0,0,0,0]; // past · ≤14 · ≤45 · >45
+    wd.forEach(r=>{ const left=(DATA.wdFiling[r.payer]||180)-r.days;
+      if(left<=0)b[0]++; else if(left<=14)b[1]++; else if(left<=45)b[2]++; else b[3]++; });
+    mk('chWdBuckets',{type:'doughnut',data:{labels:['Past deadline','Due ≤14d','Monitor','Tracking'],datasets:[{data:b,backgroundColor:[C.denied,C.pending,C.blue,C.sage],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}});
   }
   if(id==='pophealth'){
     mk('chRisk',{type:'bar',data:{labels:DATA.risk.labels,datasets:[{data:DATA.risk.values,backgroundColor:[C.sage,C.pending,C.bronze,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
