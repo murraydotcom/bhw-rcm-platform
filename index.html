@@ -540,8 +540,8 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
       <!-- ==================== RCM: CHARGE MASTER ==================== -->
       <section class="view" id="chargemaster">
-        <div class="page-head"><h2>Charge Master (CDM)</h2><p>96 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Reflects actual BHW services: EKG, PFTs &amp; inhaler training, SBIRT screenings, developmental screenings, <b>APCM</b> for chronic care, <b>CoCM</b> for behavioral health, and Flow&rsquo;s ABPM / autonomic-sudomotor / ABI-TBI / tilt testing. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0.</p></div>
-        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — they&rsquo;ll populate here automatically, no rebuild needed. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes. Diabetes Prevention Program is listed under Population Health for now — flag if it should move.</div>
+        <div class="page-head"><h2>Charge Master (CDM)</h2><p>118 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Reflects actual BHW services: EKG, PFTs &amp; inhaler training, SBIRT screenings, developmental screenings, <b>APCM</b> for chronic care, <b>CoCM</b> for behavioral health, <b>DSMT/MNT</b>, the <b>Medicare DPP (MDPP)</b> series, and Flow&rsquo;s ABPM / autonomic-sudomotor / ABI-TBI / tilt testing. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0.</p></div>
+        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — no rebuild needed. Diabetes services (DPP/MDPP, DSMT, MNT) sit under Population Health. <b>MDPP (G9873–G9891) is pending your Medicare DPP supplier enrollment</b> — verify those milestone codes against CMS&rsquo;s current MDPP HCPCS list before billing. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes.</div>
         <div class="section-tools">
           <input type="text" placeholder="Search CPT / description…" style="flex:1;min-width:200px">
           <select data-progfill="all"></select>
@@ -1993,7 +1993,31 @@ const DATA = {
     ["99496","Transitional care mgmt, high","Population Health (CCM)",null,null,null],
     ["G0556","APCM, level 1 (1 chronic condition)","Population Health (CCM)",null,null,null],
     ["G0558","APCM, level 3 (complex / QMB)","Population Health (CCM)",null,null,null],
-    ["0403T","Diabetes Prevention Program, group, per 30 min","Population Health (CCM)",null,null,null],
+    ["0403T","DPP, group, per 30 min (commercial)","Population Health (CCM)",null,null,null],
+    // DSMT / MNT (diabetes self-management + nutrition)
+    ["G0108","DSMT, individual, per 30 min","Population Health (CCM)",null,null,null],
+    ["G0109","DSMT, group (2+), per 30 min","Population Health (CCM)",null,null,null],
+    ["97802","MNT, initial assessment, per 15 min","Population Health (CCM)",null,null,null],
+    ["97803","MNT, reassessment/intervention, per 15 min","Population Health (CCM)",null,null,null],
+    ["97804","MNT, group (2+), per 30 min","Population Health (CCM)",null,null,null],
+    ["G0270","MNT reassessment, individual (subsequent)","Population Health (CCM)",null,null,null],
+    ["G0271","MNT reassessment, group (subsequent)","Population Health (CCM)",null,null,null],
+    // MDPP — Medicare Diabetes Prevention Program (pending supplier enrollment; verify vs CMS MDPP list)
+    ["G9873","MDPP: first core session attended","Population Health (CCM)",null,null,null],
+    ["G9874","MDPP: 4 core sessions attended","Population Health (CCM)",null,null,null],
+    ["G9875","MDPP: 9 core sessions attended","Population Health (CCM)",null,null,null],
+    ["G9876","MDPP: core maint. mo 7–9, 3 sessions (no 5% WL)","Population Health (CCM)",null,null,null],
+    ["G9877","MDPP: core maint. mo 7–9, 3 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9878","MDPP: core maint. mo 10–12, 3 sessions (no 5% WL)","Population Health (CCM)",null,null,null],
+    ["G9879","MDPP: core maint. mo 10–12, 3 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9880","MDPP: 5% weight-loss milestone","Population Health (CCM)",null,null,null],
+    ["G9881","MDPP: 9% weight-loss milestone","Population Health (CCM)",null,null,null],
+    ["G9882","MDPP: ongoing maint. mo 13–15, 2 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9883","MDPP: ongoing maint. mo 16–18, 2 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9884","MDPP: ongoing maint. mo 19–21, 2 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9885","MDPP: ongoing maint. mo 22–24, 2 sessions (5% WL)","Population Health (CCM)",null,null,null],
+    ["G9890","MDPP: bridge payment (one-time)","Population Health (CCM)",null,null,null],
+    ["G9891","MDPP: session reported (no payment)","Population Health (CCM)",null,null,null],
     // ---- CharmEd Minds (cognitive / memory) ----
     ["99483","Cognitive assessment & care plan","CharmEd Minds",null,null,null],
     ["96116","Neurobehavioral status exam, first hr","CharmEd Minds",null,null,null],
