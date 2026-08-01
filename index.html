@@ -1337,6 +1337,14 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
             <div id="thSuggest" style="font-size:13px;line-height:1.5"></div>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-head"><div><h3>Medicare Preventive Frequencies</h3><div class="card-sub">Frequency limits the freq rule enforces (needs the patient&rsquo;s prior-service date)</div></div><span class="tag">MLN006559</span></div>
+          <div class="table-scroll"><table id="tblFreq">
+            <thead><tr><th>Code</th><th>Limit</th><th>Notes</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
       </section>
 
       <!-- ==================== STEDI: WATCHDOG (277A -> 835 reconciliation) ==================== -->
@@ -2251,6 +2259,7 @@ const DATA = {
     {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
     {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
     {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."},
+    {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP Practitioner — Medicare + Medicaid (eff 07/01/2026)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
   ],
@@ -2264,7 +2273,8 @@ const DATA = {
     {id:"CLM-24215", patient:"Sutton, M.", payer:"Alterwood Advantage", program:"Primary Care", dos:"07/30", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:"10", timeDoc:true,  emCount:1, charge:190},
     {id:"CLM-24216", patient:"Harper, S.", payer:"BCBS MD",             program:"Primary Care", dos:"07/30", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:150},
     {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245},
-    {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120}
+    {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120},
+    {id:"CLM-24219", patient:"Cole, R.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"G0439", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, priorDays:200, charge:130}
   ],
   // Medicare Practitioner Services MUE (eff 07/01/2026), filtered to the charge master.
   // code -> [ MUE unit cap, MAI ] · MAI 2 = absolute (no appeal), MAI 3 = clinical (bypassable) · cap 0 = no published MUE.
@@ -2286,6 +2296,22 @@ const DATA = {
   // Medicaid MUE caps that DIFFER from Medicare (else fall back to the Medicare cap).
   // Medicaid publishes no MAI, and MD Medicaid may set its own values.
   mueMcdDiff: { "96125":3, "99385":1, "99386":1, "99387":1, "99395":1, "99396":1, "99397":1, "99408":1, "99409":1 },
+  // Medicare preventive-service frequency limits (MLN006559). days: period in days
+  // (0 = once per lifetime), max: allowed per period, null days = display-only.
+  freq: {
+    "G0402":{days:0,   max:1, label:"Once per lifetime",        note:"IPPE — within first 12 mo of Part B"},
+    "G0438":{days:0,   max:1, label:"Once per lifetime",        note:"AWV initial — 12 mo after IPPE / Part B"},
+    "G0439":{days:365, max:1, label:"Every 12 months",          note:"AWV subsequent — 11 full months must pass"},
+    "G0444":{days:365, max:1, label:"Every 12 months",          note:"Annual depression screening"},
+    "G0442":{days:365, max:1, label:"Every 12 months",          note:"Annual alcohol misuse screening"},
+    "G0443":{days:365, max:4, label:"Up to 4 per 12 months",    note:"Alcohol misuse counseling sessions"},
+    "99406":{days:365, max:8, label:"Up to 8 per 12 months",    note:"Tobacco cessation (2 attempts × 4)"},
+    "99407":{days:365, max:8, label:"Up to 8 per 12 months",    note:"Tobacco cessation (2 attempts × 4)"},
+    "97802":{days:0,   max:1, label:"Initial, once per referral", note:"MNT — 3 hrs year 1"},
+    "97803":{days:null,max:0, label:"Follow-up, 2 hrs/yr",      note:"MNT subsequent (per referral)"},
+    "G0108":{days:null,max:0, label:"10 hrs yr 1, 2 hrs/yr after", note:"DSMT individual"},
+    "G0109":{days:null,max:0, label:"10 hrs yr 1, 2 hrs/yr after", note:"DSMT group"}
+  },
   // NCCI PTP bundling edits (Practitioner v32.2, eff 07/01/2026), pairs both in the charge master.
   // key "Col1|Col2":modifierIndicator  (0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU}).
   ptp: {
@@ -3802,6 +3828,15 @@ function scrubClaim(c){
       else findings.push({sev:'warn', ruleId:'mue', msg:'Exceeds per-day MUE ('+units+' units, cap '+cap[0]+', MAI '+cap[1]+')', fix:'MAI '+cap[1]+': units above '+cap[0]+' need documentation or separate lines with a modifier to bypass.'});
     }
   }
+  // Medicare preventive frequency (MLN006559) — needs the claim's prior history
+  const fr=(DATA.freq||{})[c.em];
+  if(fr && fr.days!=null){
+    if(fr.days===0 && c.priorDone){
+      findings.push({sev:'block', ruleId:'freq', msg:c.em+' is '+fr.label.toLowerCase()+' — already performed for this patient', fix:fr.note});
+    } else if(fr.days>0 && c.priorDays!=null && c.priorDays<fr.days && (c.priorCount||1)>=fr.max){
+      findings.push({sev:'block', ruleId:'freq', msg:c.em+' allowed '+fr.label.toLowerCase()+' — last billed '+c.priorDays+'d ago'+(fr.max>1?' ('+(c.priorCount||1)+'/'+fr.max+' used)':''), fix:fr.note});
+    }
+  }
   return findings;
 }
 const TH_SEV = {block:{cls:'b-denied',label:'Block',rank:0}, warn:{cls:'b-pending',label:'Warn',rank:1}, info:{cls:'b-info',label:'Info',rank:2}};
@@ -3848,6 +3883,11 @@ function buildThemis(){
     sug.innerHTML = (items.join('')||'<div style="color:var(--muted)">No new patterns — the feedback loop is quiet.</div>')
       + '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Sourced from the 835 Downcoding Watch. Confirmed patterns become payer-custom rules above.</div>';
   }
+  const fq=document.querySelector('#tblFreq tbody');
+  if(fq) fq.innerHTML = Object.keys(DATA.freq||{}).map(code=>{
+    const f=DATA.freq[code];
+    return `<tr><td><b>${code}</b></td><td>${f.label}</td><td style="font-size:12px;color:var(--muted)">${f.note}</td></tr>`;
+  }).join('');
   renderThemisCharts(false);
 }
 function renderThemisCharts(create){
