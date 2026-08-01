@@ -551,7 +551,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         <div class="card">
           <div class="card-head"><h3>Fee Schedule</h3><span class="tag">Sample · Notion:Charge Master</span></div>
           <div class="table-scroll"><table id="tblCDM">
-            <thead><tr><th>CPT/HCPCS</th><th>Description</th><th>Program</th><th class="num">Charge</th><th class="num">Medicare Allow.</th><th class="num">BCBS MD Allow.</th></tr></thead>
+            <thead><tr><th>CPT/HCPCS</th><th>Description</th><th>Program</th><th class="num">MUE</th><th class="num">Bundles</th><th class="num">Charge</th><th class="num">Medicare Allow.</th><th class="num">BCBS MD Allow.</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -2680,10 +2680,20 @@ function money(v){ return (v==null) ? '<span class="tag" style="color:#9a6f16;ba
 function dol(v){ return (v==null||v==='') ? '—' : '$'+Number(v).toLocaleString(); }
 function buildCDM(){
   const tb=document.querySelector('#tblCDM tbody'); if(!tb) return;
-  tb.innerHTML = DATA.cdm.map(r=>`<tr>
-    <td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td>
-    <td class="num">${money(r[3])}</td><td class="num">${money(r[4])}</td><td class="num">${money(r[5])}</td>
-  </tr>`).join('');
+  const ptpKeys=Object.keys(DATA.ptp||{});
+  const bundleCount=code=>ptpKeys.reduce((n,k)=>{const i=k.indexOf('|'); return n+(k.slice(0,i)===code||k.slice(i+1)===code?1:0);},0);
+  tb.innerHTML = DATA.cdm.map(r=>{
+    const code=r[0];
+    const mue=(DATA.mue||{})[code];
+    const mueCell = (mue && mue[0]>0) ? (mue[0]+(mue[1]===2?' <span class="tag" title="absolute per-day — no appeal">abs</span>':'')) : '—';
+    const bc=bundleCount(code);
+    const bundleCell = bc ? '<span title="NCCI PTP pairs involving this code">'+bc+'</span>' : '—';
+    return `<tr>
+      <td><b>${code}</b></td><td>${r[1]}</td><td>${r[2]}</td>
+      <td class="num">${mueCell}</td><td class="num">${bundleCell}</td>
+      <td class="num">${money(r[3])}</td><td class="num">${money(r[4])}</td><td class="num">${money(r[5])}</td>
+    </tr>`;
+  }).join('');
 }
 function buildRecon(){
   const tb=document.querySelector('#tblRecon tbody'); if(!tb) return;
