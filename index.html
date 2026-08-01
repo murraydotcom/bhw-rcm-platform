@@ -540,8 +540,8 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
       <!-- ==================== RCM: CHARGE MASTER ==================== -->
       <section class="view" id="chargemaster">
-        <div class="page-head"><h2>Charge Master (CDM)</h2><p>46 CPT/HCPCS codes from the Notion <b>💠 Charge Master</b> database. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0, until the fee schedule is filled in Notion.</p></div>
-        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank in the source database. They&rsquo;ll populate here automatically as Amaris/Shadé complete the fee schedule in Notion — no rebuild needed.</div>
+        <div class="page-head"><h2>Charge Master (CDM)</h2><p>71 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0, until the fee schedule is filled.</p></div>
+        <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — they&rsquo;ll populate here automatically as Amaris/Shadé complete the fee schedule, no rebuild needed. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes and aren&rsquo;t listed here.</div>
         <div class="section-tools">
           <input type="text" placeholder="Search CPT / description…" style="flex:1;min-width:200px">
           <select data-progfill="all"></select>
@@ -1907,15 +1907,86 @@ const DATA = {
   // Charge Master: only G0557 ($125) and 99484 ($100) are confirmed.
   // null = "rate not set" — the UI must NOT show $0 for a blank rate.
   // (Sample rows below mirror the real DB's mostly-blank state.)
+  // Full per-program charge master. charge / Medicare / BCBS allowables stay
+  // null ("rate not set") until the MPFS pull + fee schedule fill them in —
+  // only G0557 and 99484 have confirmed rates today.
   cdm: [
-    ["G0557","Chronic care mgmt, add'l 20 min","Population Health (CCM)",125,null,null],
-    ["99484","Behavioral health care mgmt","Mind & Mood",100,null,null],
-    ["99213","Office visit, established, low","Primary Care (BHW)",null,null,null],
-    ["99214","Office visit, established, moderate","Primary Care (BHW)",null,null,null],
+    // ---- Primary Care (BHW) ----
+    ["99202","Office visit, new, straightforward","Primary Care (BHW)",null,null,null],
+    ["99203","Office visit, new, low","Primary Care (BHW)",null,null,null],
+    ["99204","Office visit, new, moderate","Primary Care (BHW)",null,null,null],
+    ["99205","Office visit, new, high","Primary Care (BHW)",null,null,null],
+    ["99211","Office visit, est, minimal","Primary Care (BHW)",null,null,null],
+    ["99212","Office visit, est, straightforward","Primary Care (BHW)",null,null,null],
+    ["99213","Office visit, est, low","Primary Care (BHW)",null,null,null],
+    ["99214","Office visit, est, moderate","Primary Care (BHW)",null,null,null],
+    ["99215","Office visit, est, high","Primary Care (BHW)",null,null,null],
+    ["G2211","Visit complexity add-on","Primary Care (BHW)",null,null,null],
+    ["99385","Preventive, new, 18–39","Primary Care (BHW)",null,null,null],
+    ["99386","Preventive, new, 40–64","Primary Care (BHW)",null,null,null],
+    ["99387","Preventive, new, 65+","Primary Care (BHW)",null,null,null],
+    ["99395","Preventive, est, 18–39","Primary Care (BHW)",null,null,null],
+    ["99396","Preventive, est, 40–64","Primary Care (BHW)",null,null,null],
+    ["99397","Preventive, est, 65+","Primary Care (BHW)",null,null,null],
+    ["G0402","Welcome-to-Medicare IPPE","Primary Care (BHW)",null,null,null],
+    ["G0438","Annual Wellness Visit, initial","Primary Care (BHW)",null,null,null],
+    ["G0439","Annual Wellness Visit, subsequent","Primary Care (BHW)",null,null,null],
+    ["G0444","Annual depression screen","Primary Care (BHW)",null,null,null],
+    ["99497","Advance care planning, 30 min","Primary Care (BHW)",null,null,null],
+    ["90471","Immunization admin, first","Primary Care (BHW)",null,null,null],
+    ["90472","Immunization admin, each add'l","Primary Care (BHW)",null,null,null],
+    ["90460","Immunization admin w/ counsel, first","Primary Care (BHW)",null,null,null],
+    ["36415","Venipuncture","Primary Care (BHW)",null,null,null],
+    ["20610","Arthrocentesis/injection, major joint","Primary Care (BHW)",null,null,null],
+    // ---- Mind & Mood (behavioral health) ----
+    ["90791","Psychiatric diagnostic eval","Mind & Mood",null,null,null],
+    ["90792","Psychiatric diagnostic eval w/ medical","Mind & Mood",null,null,null],
+    ["90832","Psychotherapy, 30 min","Mind & Mood",null,null,null],
+    ["90834","Psychotherapy, 45 min","Mind & Mood",null,null,null],
     ["90837","Psychotherapy, 60 min","Mind & Mood",null,null,null],
+    ["90833","Psychotherapy, 30 min w/ E/M","Mind & Mood",null,null,null],
+    ["90836","Psychotherapy, 45 min w/ E/M","Mind & Mood",null,null,null],
+    ["90838","Psychotherapy, 60 min w/ E/M","Mind & Mood",null,null,null],
+    ["90846","Family psychotherapy, w/o patient","Mind & Mood",null,null,null],
+    ["90847","Family psychotherapy, w/ patient","Mind & Mood",null,null,null],
+    ["90853","Group psychotherapy","Mind & Mood",null,null,null],
+    ["90785","Interactive complexity add-on","Mind & Mood",null,null,null],
+    ["96127","Brief emotional/behavioral assessment","Mind & Mood",null,null,null],
+    ["96130","Psychological testing eval, first hr","Mind & Mood",null,null,null],
+    ["96131","Psychological testing eval, add'l hr","Mind & Mood",null,null,null],
+    ["99484","Behavioral health care mgmt","Mind & Mood",100,null,null],
+    // ---- Population Health (CCM / RPM / TCM) ----
     ["99490","Chronic care mgmt, 20 min","Population Health (CCM)",null,null,null],
+    ["99439","Chronic care mgmt, add'l 20 min","Population Health (CCM)",null,null,null],
+    ["99491","Chronic care mgmt, physician 30 min","Population Health (CCM)",null,null,null],
+    ["99437","Chronic care mgmt, physician add'l 30 min","Population Health (CCM)",null,null,null],
+    ["G0557","Chronic care mgmt, add'l 20 min","Population Health (CCM)",125,null,null],
+    ["99487","Complex chronic care mgmt, 60 min","Population Health (CCM)",null,null,null],
+    ["99489","Complex chronic care mgmt, add'l 30 min","Population Health (CCM)",null,null,null],
+    ["99424","Principal care mgmt, physician 30 min","Population Health (CCM)",null,null,null],
+    ["99425","Principal care mgmt, physician add'l 30 min","Population Health (CCM)",null,null,null],
+    ["99426","Principal care mgmt, staff 30 min","Population Health (CCM)",null,null,null],
+    ["99427","Principal care mgmt, staff add'l 30 min","Population Health (CCM)",null,null,null],
+    ["99453","RPM, setup & patient education","Population Health (CCM)",null,null,null],
+    ["99454","RPM, device supply, 30 days","Population Health (CCM)",null,null,null],
+    ["99457","RPM, treatment mgmt, first 20 min","Population Health (CCM)",null,null,null],
+    ["99458","RPM, treatment mgmt, add'l 20 min","Population Health (CCM)",null,null,null],
+    ["99091","Collection/interpretation of physiologic data","Population Health (CCM)",null,null,null],
+    ["99495","Transitional care mgmt, moderate","Population Health (CCM)",null,null,null],
+    ["99496","Transitional care mgmt, high","Population Health (CCM)",null,null,null],
+    // ---- CharmEd Minds (cognitive / memory) ----
     ["99483","Cognitive assessment & care plan","CharmEd Minds",null,null,null],
-    ["93923","Extremity vascular study, bilateral","Flow Vascular Stabilization",null,null,null]
+    ["96116","Neurobehavioral status exam, first hr","CharmEd Minds",null,null,null],
+    ["96121","Neurobehavioral status exam, add'l hr","CharmEd Minds",null,null,null],
+    ["96125","Standardized cognitive performance testing","CharmEd Minds",null,null,null],
+    ["99498","Advance care planning, add'l 30 min","CharmEd Minds",null,null,null],
+    // ---- Flow Vascular Stabilization (vascular studies) ----
+    ["93922","Limited bilateral noninvasive extremity study","Flow Vascular Stabilization",null,null,null],
+    ["93923","Complete bilateral extremity study","Flow Vascular Stabilization",null,null,null],
+    ["93925","Lower extremity arterial duplex, complete","Flow Vascular Stabilization",null,null,null],
+    ["93926","Lower extremity arterial duplex, limited","Flow Vascular Stabilization",null,null,null],
+    ["93970","Extremity venous duplex, complete","Flow Vascular Stabilization",null,null,null],
+    ["93971","Extremity venous duplex, limited","Flow Vascular Stabilization",null,null,null]
   ],
   cpt: [
     ["99214","Office visit, moderate","Primary Care (BHW)",412,"$76,632","$154"],
