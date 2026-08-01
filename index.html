@@ -2250,7 +2250,8 @@ const DATA = {
     {id:"medicare-awv",type:"frequency",  scope:"payer", payer:"Medicare", label:"AWV frequency: G0438 once-in-lifetime, G0439 every 11 full months", sev:"warn", source:"CMS", fix:"Verify 11 full months since the last AWV; use G0438 only for the very first."},
     {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
     {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
-    {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."}
+    {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."},
+    {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation."}
   ],
   // Pre-bill claims waiting to go out — each is run through scrubClaim() live.
   scrubQueue: [
@@ -2261,8 +2262,26 @@ const DATA = {
     {id:"CLM-24214", patient:"Baldwin, K.",payer:"CareFirst Community", program:"Primary Care", dos:"07/30", em:"99214", newPt:false, seenWithin3y:false, mods:["95"], sameDayProc:null,    awv:null,    telePOS:"10", timeDoc:true,  emCount:1, charge:186},
     {id:"CLM-24215", patient:"Sutton, M.", payer:"Alterwood Advantage", program:"Primary Care", dos:"07/30", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:"10", timeDoc:true,  emCount:1, charge:190},
     {id:"CLM-24216", patient:"Harper, S.", payer:"BCBS MD",             program:"Primary Care", dos:"07/30", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:150},
-    {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245}
+    {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245},
+    {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120}
   ],
+  // Medicare Practitioner Services MUE (eff 07/01/2026), filtered to the charge master.
+  // code -> [ MUE unit cap, MAI ] · MAI 2 = absolute (no appeal), MAI 3 = clinical (bypassable) · cap 0 = no published MUE.
+  mue: {
+    "0403T":[1,2], "90460":[9,3], "90471":[1,2], "90472":[8,3], "90785":[3,3], "90791":[1,3], "90792":[1,3], "90832":[2,3],
+    "90833":[2,3], "90834":[2,3], "90836":[2,3], "90837":[2,3], "90838":[2,3], "90846":[1,3], "90847":[1,3], "90853":[1,3],
+    "93000":[3,3], "93660":[1,3], "93784":[1,2], "93786":[1,2], "93788":[1,2], "93790":[1,2], "93922":[2,2], "93923":[2,2],
+    "94010":[1,3], "94060":[1,3], "94070":[1,2], "94640":[4,3], "94664":[1,3], "95921":[1,3], "95922":[1,3], "95923":[1,3],
+    "95924":[1,3], "96110":[3,3], "96112":[1,2], "96113":[6,3], "96116":[1,2], "96121":[3,3], "96125":[2,3], "96127":[3,3],
+    "96130":[1,2], "96131":[7,3], "97802":[12,2], "97803":[11,2], "97804":[6,2], "99091":[1,2], "99202":[1,2], "99203":[1,2],
+    "99204":[1,2], "99205":[1,2], "99211":[1,3], "99212":[2,3], "99213":[2,3], "99214":[2,3], "99215":[1,3], "99385":[0,3],
+    "99386":[0,3], "99387":[0,3], "99395":[0,3], "99396":[0,3], "99397":[0,3], "99406":[1,2], "99407":[1,2], "99408":[0,3],
+    "99409":[0,3], "99424":[1,2], "99425":[2,3], "99426":[1,2], "99427":[2,3], "99437":[2,3], "99439":[2,2], "99453":[1,2],
+    "99454":[1,2], "99457":[1,2], "99458":[3,3], "99483":[1,2], "99484":[1,2], "99487":[1,2], "99489":[10,3], "99490":[1,2],
+    "99491":[1,2], "99492":[1,2], "99493":[1,2], "99494":[4,3], "99495":[1,2], "99496":[1,2], "99497":[1,2], "99498":[3,3],
+    "G0108":[6,3], "G0109":[12,3], "G0270":[8,3], "G0271":[4,3], "G0402":[1,2], "G0438":[1,2], "G0439":[1,2], "G0442":[1,2],
+    "G0443":[1,2], "G0444":[1,2], "G0556":[1,2], "G0557":[1,2], "G0558":[1,2], "G2214":[1,2]
+  },
 
   // ---- STEDI: Payers & enrollment.  y/p/n per transaction ----
   payersList: [
@@ -3565,6 +3584,13 @@ function scrubClaim(c){
   if(/CareFirst Community/.test(p))              add('cfc-note');
   if(/UHC Community Plan/.test(p))               add('uhccp-freq');
   if(/Alterwood/.test(p))                        add('alterwood');
+  // Medicare MUE unit cap (from the CMS Practitioner MUE table)
+  const units = c.units || 1;
+  const cap = (DATA.mue||{})[c.em];
+  if(cap && cap[0]>0 && units>cap[0]){
+    if(cap[1]===2) findings.push({sev:'block', ruleId:'mue', msg:'Exceeds absolute per-day MUE ('+units+' units, cap '+cap[0]+', MAI 2 — no appeal)', fix:'Bill at most '+cap[0]+' unit(s) of '+c.em+' per day; MAI 2 denials cannot be bypassed with a modifier.'});
+    else findings.push({sev:'warn', ruleId:'mue', msg:'Exceeds per-day MUE ('+units+' units, cap '+cap[0]+', MAI '+cap[1]+')', fix:'MAI '+cap[1]+': units above '+cap[0]+' need documentation or separate lines with a modifier to bypass.'});
+  }
   return findings;
 }
 const TH_SEV = {block:{cls:'b-denied',label:'Block',rank:0}, warn:{cls:'b-pending',label:'Warn',rank:1}, info:{cls:'b-info',label:'Info',rank:2}};
