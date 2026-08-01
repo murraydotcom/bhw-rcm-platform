@@ -2267,6 +2267,9 @@ const DATA = {
     {id:"tele-audio", type:"payer-custom",scope:"payer", payer:"Medicare", label:"Audio-only telehealth needs modifier 93", sev:"warn", source:"CMS 2025 telehealth", fix:"If the telehealth visit was audio-only, append modifier 93 (in addition to 95/POS) or it may deny."},
     {id:"humana-dc",  type:"payer-custom",scope:"payer", payer:"Humana", label:"Humana (MA) downcodes 99204/99205/99214/99215 when the diagnosis doesn't support the level", sev:"warn", source:"Humana policy CP2024003", fix:"Make sure the claim diagnoses reflect the severity that supports the billed E/M level — Humana adjusts the level on review."},
     {id:"cf-tcm-fac", type:"payer-custom",scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst: TCM (99495/99496) requires a facility E/M in the prior 30 days", sev:"info", source:"CareFirst PP CO 014.01", fix:"Confirm a hospital/facility E/M (or a 0/10/90-day global with POS 21) in the previous 30 days before billing TCM."},
+    {id:"cf-peds-prev",type:"frequency",   scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst pediatric preventive caps: 99381/99391 ≤8/yr (<1yo); 99382/99392 ≤7 per 4 yrs (ages 1–4)", sev:"info", source:"CareFirst PP CO 014.01", fix:"Verify the child's visit count is within CareFirst's pediatric preventive limits before billing."},
+    {id:"cf-rpm-cov", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst covers RPM (99453–99458) only within 120 days of an ED/inpatient discharge for CHF/COPD/CKD/HTN/COVID", sev:"info", source:"CareFirst Care Mgmt (QI)", fix:"Confirm an ED visit or inpatient discharge in the prior 60 days, a covered condition, and a provider-supplied Bluetooth device."},
+    {id:"cf-mppr-cv", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst MPPR: 2nd+ same-day cardiovascular diagnostic paid at 75% (technical component)", sev:"info", source:"CareFirst PP CO 400.03", fix:"Expect reduced payment on the lower-RVU cardiovascular diagnostic when multiple are billed same day — a reduction, not a denial."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
@@ -3832,7 +3835,13 @@ function scrubClaim(c){
   if(p==='Cigna' && /^(96130|96131|96116|96121|96125)$/.test(c.em)) add('cigna-testauth');
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
-  if(/CareFirst|BCBS/.test(p) && /^(99495|99496)$/.test(c.em)) add('cf-tcm-fac');
+  if(/CareFirst|BCBS/.test(p)){
+    if(/^(99495|99496)$/.test(c.em)) add('cf-tcm-fac');
+    if(/^(99381|99391|99382|99392)$/.test(c.em)) add('cf-peds-prev');
+    if(/^(99453|99454|99457|99458)$/.test(c.em)) add('cf-rpm-cov');
+    const CV=/^(93000|93784|93786|93788|93790|95921|95922|95923|95924|93660|93922|93923)$/;
+    if(CV.test(c.em) && c.sameDayProc && CV.test(c.sameDayProc)) add('cf-mppr-cv');
+  }
   // MUE unit cap — payer-aware: Medicaid table for Medicaid/MCO payers (no MAI),
   // otherwise the Medicare table (with MAI driving block vs warn).
   const units = c.units || 1;
