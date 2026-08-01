@@ -2265,6 +2265,8 @@ const DATA = {
     {id:"g2211-comm", type:"payer-custom",scope:"payer", payer:"Commercial", label:"G2211 frequently not reimbursed by commercial payers", sev:"info", source:"BHW custom (payer behavior)", fix:"Confirm the commercial plan pays G2211; many recognize it for Medicare only. Track denials to firm this up."},
     {id:"cigna-testauth", type:"payer-custom",scope:"payer", payer:"Cigna", label:"Cigna/Evernorth may require prior auth for psych/neuro testing", sev:"info", source:"Cigna behavioral policy", fix:"Verify prior authorization for 96130/96131/96116/96121/96125 before testing to avoid a no-auth denial."},
     {id:"tele-audio", type:"payer-custom",scope:"payer", payer:"Medicare", label:"Audio-only telehealth needs modifier 93", sev:"warn", source:"CMS 2025 telehealth", fix:"If the telehealth visit was audio-only, append modifier 93 (in addition to 95/POS) or it may deny."},
+    {id:"humana-dc",  type:"payer-custom",scope:"payer", payer:"Humana", label:"Humana (MA) downcodes 99204/99205/99214/99215 when the diagnosis doesn't support the level", sev:"warn", source:"Humana policy CP2024003", fix:"Make sure the claim diagnoses reflect the severity that supports the billed E/M level — Humana adjusts the level on review."},
+    {id:"cf-tcm-fac", type:"payer-custom",scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst: TCM (99495/99496) requires a facility E/M in the prior 30 days", sev:"info", source:"CareFirst PP CO 014.01", fix:"Confirm a hospital/facility E/M (or a 0/10/90-day global with POS 21) in the previous 30 days before billing TCM."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
@@ -3829,6 +3831,8 @@ function scrubClaim(c){
   }
   if(p==='Cigna' && /^(96130|96131|96116|96121|96125)$/.test(c.em)) add('cigna-testauth');
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
+  if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
+  if(/CareFirst|BCBS/.test(p) && /^(99495|99496)$/.test(c.em)) add('cf-tcm-fac');
   // MUE unit cap — payer-aware: Medicaid table for Medicaid/MCO payers (no MAI),
   // otherwise the Medicare table (with MAI driving block vs warn).
   const units = c.units || 1;
