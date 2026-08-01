@@ -233,6 +233,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('reconciliation',this)"><span class="ic">⇄</span> Reconciliation</div>
       <div class="nav-item" onclick="go('chargemaster',this)"><span class="ic">≣</span> Charge Master</div>
       <a class="nav-item" href="coding-worksheet.html" style="text-decoration:none"><span class="ic">✎</span> Coding Worksheet</a>
+      <div class="nav-item" onclick="go('scrub',this)"><span class="ic">⚖</span> Themis <span class="nav-count" id="thNavCount"></span></div>
       <div class="nav-item" onclick="go('verify',this)"><span class="ic">◈</span> Insurance Verify</div>
       <div class="nav-item" onclick="go('contracts',this)"><span class="ic">§</span> Contracts</div>
       <div class="nav-item" onclick="go('insights',this)"><span class="ic">✦</span> AI Insights</div>
@@ -1289,6 +1290,55 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
       </section>
 
+      <!-- ==================== THEMIS: E/M CLEAN-CLAIM SCRUB (pre-bill edits) ==================== -->
+      <section class="view" id="scrub">
+        <div class="page-head split">
+          <div><h2>Themis &nbsp;<span class="tag">E/M clean-claim scrub</span></h2><p>Pre-bill edits that catch what a payer would deny or downcode — <b>before</b> the claim goes out. Curated to your E/M coding and payers, tuned for actual reimbursement, not just first-pass acceptance.</p></div>
+          <div class="btn-row" style="align-items:center">
+            <span class="pill live">● Rules · v1</span>
+            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Review the Themis pre-bill scrub queue: which claims will deny or downcode as-is, the total dollars at risk, and the exact fix (modifier, documentation, or code change) for each flagged claim — most costly first.','Themis')">Scrub the queue</button>
+          </div>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--blue);margin-bottom:16px">
+          <div class="card-head split"><div><h3>⚖ Optimize for reimbursement, not acceptance</h3><div class="card-sub">A &ldquo;clean claim&rdquo; that clears the clearinghouse can still be denied or downcoded by the payer.</div></div></div>
+          <div class="note" style="margin-bottom:0">Themis runs each claim against curated <b>national</b> edits (NCCI/MUE, modifier &amp; E/M rules) plus <b>payer-specific</b> rules learned from your own denials. Anything marked <span class="badge b-denied">Block</span> would deny as-is; <span class="badge b-pending">Warn</span> is downcode / underpayment risk. Fix it here and it never becomes an Aegis follow-up or a Denials write-off later.</div>
+        </div>
+
+        <div class="grid g5" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
+          <div class="card kpi"><span class="k-accent" style="background:var(--blue)"></span><div class="k-label">Rules Active</div><div class="k-val" id="thRules">0</div><div class="mini">national + payer</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--sage)"></span><div class="k-label">In Queue</div><div class="k-val" id="thQueued">0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--denied)"></span><div class="k-label">Would Block</div><div class="k-val" id="thBlocked" style="color:var(--denied)">0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--pending)"></span><div class="k-label">Flagged</div><div class="k-val" id="thFlagged" style="color:var(--pending)">0</div></div>
+          <div class="card kpi"><span class="k-accent" style="background:var(--bronze)"></span><div class="k-label">$ Protected (est.)</div><div class="k-val" id="thProtected">$0</div></div>
+        </div>
+
+        <div class="grid g3" style="margin-bottom:16px">
+          <div class="card" style="grid-column:span 2"><div class="card-head"><div><h3>Flagged $ by Payer</h3><div class="card-sub">Where the pre-bill exposure sits</div></div></div><div class="chart-wrap sm"><canvas id="chThPayer"></canvas></div></div>
+          <div class="card"><div class="card-head"><div><h3>Findings by Severity</h3></div></div><div class="chart-wrap sm"><canvas id="chThSev"></canvas></div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head"><h3>Pre-Bill Scrub Queue</h3><span class="tag">claims run through Themis</span></div>
+          <div class="table-scroll"><table id="tblScrubQueue">
+            <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>E/M</th><th>Findings</th><th>Top fix</th><th class="num">Charge</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+
+        <div class="grid g3" style="margin-bottom:16px">
+          <div class="card" style="grid-column:span 2"><div class="card-head"><h3>Rule Library</h3><span class="tag">E/M · curated</span></div>
+            <div class="table-scroll"><table id="tblScrubRules">
+              <thead><tr><th>Rule</th><th>Type</th><th>Scope</th><th>Severity</th><th>Source</th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+          <div class="card"><div class="card-head"><div><h3>Suggested from your denials</h3><div class="card-sub">Rules the 835 feedback loop proposes</div></div></div>
+            <div id="thSuggest" style="font-size:13px;line-height:1.5"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- ==================== STEDI: WATCHDOG (277A -> 835 reconciliation) ==================== -->
       <section class="view" id="watchdog">
         <div class="page-head split">
@@ -2064,6 +2114,36 @@ const DATA = {
   // Payer timely-filing limits (calendar days from date of service).
   wdFiling: { "Cigna":90, "UnitedHealthcare":90, "Aetna":120, "BCBS MD":180, "CareFirst BCBS Maryland":180, "Medicare":365, "MD Medicaid MCO":365, "Medicaid Maryland":365 },
 
+  // ---- THEMIS: E/M clean-claim scrub (pre-bill edits) ----
+  // Rule library, curated to E/M coding for BHW's payers. The engine is scrubClaim().
+  // sev: block (will deny) · warn (downcode / risk) · info (payer note).
+  scrubRules: [
+    {id:"mod25",      type:"modifier",    scope:"national", payer:null, label:"E/M + same-day minor procedure needs modifier 25", sev:"block", source:"NCCI / CPT", fix:"Append modifier 25 to the E/M when it is significant & separately identifiable from the procedure."},
+    {id:"newpt3y",    type:"eligibility", scope:"national", payer:null, label:"New-patient E/M (99202–99205) invalid if seen in last 3 yrs", sev:"block", source:"CPT E/M guidelines", fix:"Recode to an established-patient code (99211–99215)."},
+    {id:"level5doc",  type:"necessity",   scope:"national", payer:null, label:"99205 / 99215 without documented high MDM or total time", sev:"warn", source:"CPT 2021 E/M (MDM)", fix:"Confirm high-complexity MDM or that the time threshold is met; otherwise level down before billing."},
+    {id:"awv25",      type:"modifier",    scope:"national", payer:null, label:"AWV (G0438/G0439/G0402) + problem E/M same day needs modifier 25", sev:"warn", source:"CMS AWV", fix:"Add modifier 25 to the problem E/M and document a distinct problem addressed."},
+    {id:"tele-mod",   type:"modifier",    scope:"national", payer:null, label:"Telehealth E/M needs modifier 95 and POS 02/10", sev:"warn", source:"CMS telehealth", fix:"Add modifier 95 and set POS 10 (home) or 02; verify the payer covers telehealth for this code."},
+    {id:"em-dup",     type:"mue",         scope:"national", payer:null, label:"More than one office E/M, same provider, same date", sev:"block", source:"MUE / NCCI", fix:"Bill a single E/M; only split with modifier 25/59 if a truly separate service is documented."},
+    {id:"aetna-25",   type:"payer-custom",scope:"payer", payer:"Aetna", label:"Aetna auto-denies same-day E/M without modifier 25", sev:"block", source:"BHW custom (denial pattern)", fix:"Modifier 25 is mandatory for Aetna same-day E/M + procedure — do not submit without it."},
+    {id:"cigna-dc",   type:"payer-custom",scope:"payer", payer:"Cigna", label:"Cigna downcodes 99214 / 99215 — document time up front", sev:"warn", source:"BHW custom (Aegis feedback)", fix:"Record total time / MDM in the note; flag for appeal if downcoded (ties into Aegis & Downcoding Watch)."},
+    {id:"uhc-newpt",  type:"payer-custom",scope:"payer", payer:"UnitedHealthcare", label:"UHC applies the 3-yr new-patient rule across the group NPI", sev:"warn", source:"UHC policy", fix:"Check the whole group's visit history, not just this provider, before billing new-patient E/M."},
+    {id:"medicare-awv",type:"frequency",  scope:"payer", payer:"Medicare", label:"AWV frequency: G0438 once-in-lifetime, G0439 every 11 full months", sev:"warn", source:"CMS", fix:"Verify 11 full months since the last AWV; use G0438 only for the very first."},
+    {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
+    {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
+    {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."}
+  ],
+  // Pre-bill claims waiting to go out — each is run through scrubClaim() live.
+  scrubQueue: [
+    {id:"CLM-24210", patient:"Nguyen, T.", payer:"Aetna",              program:"Primary Care", dos:"07/28", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:"20610", awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:212},
+    {id:"CLM-24211", patient:"Okafor, C.", payer:"Cigna",              program:"Mind & Mood",  dos:"07/28", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:1, charge:245},
+    {id:"CLM-24212", patient:"Ellis, D.",  payer:"UnitedHealthcare",    program:"Primary Care", dos:"07/29", em:"99204", newPt:true,  seenWithin3y:true,  mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:198},
+    {id:"CLM-24213", patient:"Reyes, P.",  payer:"Medicare",            program:"Primary Care", dos:"07/29", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:"G0439", telePOS:null, timeDoc:true,  emCount:1, charge:274},
+    {id:"CLM-24214", patient:"Baldwin, K.",payer:"CareFirst Community", program:"Primary Care", dos:"07/30", em:"99214", newPt:false, seenWithin3y:false, mods:["95"], sameDayProc:null,    awv:null,    telePOS:"10", timeDoc:true,  emCount:1, charge:186},
+    {id:"CLM-24215", patient:"Sutton, M.", payer:"Alterwood Advantage", program:"Primary Care", dos:"07/30", em:"99214", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:"10", timeDoc:true,  emCount:1, charge:190},
+    {id:"CLM-24216", patient:"Harper, S.", payer:"BCBS MD",             program:"Primary Care", dos:"07/30", em:"99213", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:true,  emCount:1, charge:150},
+    {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245}
+  ],
+
   // ---- STEDI: Payers & enrollment.  y/p/n per transaction ----
   payersList: [
     ["Cigna","HGJLR","y","y","y","live"],
@@ -2163,7 +2243,7 @@ const STEDI_SAMPLE = {
 const TITLES = {
   dashboard:"Dashboard", charges:"Charges & Claims", payments:"Payments", denials:"Denials",
   reconciliation:"Reconciliation", chargemaster:"Charge Master", verify:"Insurance Verify",
-  contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary",
+  contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary", scrub:"Themis",
   monthclose:"Monthly Close", finhealth:"Financial Health", forecast:"Forecast", banking:"The Books", programpage:"Program",
   provperf:"Provider Profitability", ratebench:"Rate Benchmarking", benchmarks:"Industry Benchmarks", revopps:"Revenue Opportunities", taxplan:"Tax Planning", aicfo:"AI CFO",
   goals:"Weekly Goals", cpt:"CPT by Program", claimslog:"Claims Log", pnl:"P&L by Program",
@@ -3340,6 +3420,94 @@ function buildWatchdog(){
     </tr>`;
   }).join('');
 }
+/* ---- Themis: E/M clean-claim scrub (pre-bill edits) ---- */
+// Runs one claim through the curated E/M rule set and returns findings.
+function scrubClaim(c){
+  const findings=[];
+  const has  = m  => Array.isArray(c.mods) && c.mods.includes(m);
+  const rule = id => DATA.scrubRules.find(r=>r.id===id) || {};
+  const add  = (id,extra) => { const r=rule(id); findings.push({sev:r.sev, ruleId:id, msg:r.label+(extra?' — '+extra:''), fix:r.fix}); };
+  const isNewEM = /^992(0[2-5])$/.test(c.em);      // 99202–99205
+  const isL5    = c.em==='99215' || c.em==='99205';
+  const p = String(c.payer||'');
+  // national edits
+  if(c.sameDayProc && !has('25')) add('mod25','with '+c.sameDayProc);
+  if(isNewEM && c.seenWithin3y)   add('newpt3y');
+  if(isL5 && !c.timeDoc)          add('level5doc');
+  if(c.awv && !has('25'))         add('awv25','AWV '+c.awv+' + '+c.em);
+  if(c.telePOS && !has('95'))     add('tele-mod','POS '+c.telePOS);
+  if((c.emCount||1)>1)            add('em-dup');
+  // payer-specific
+  if(p==='Aetna' && c.sameDayProc && !has('25')) add('aetna-25');
+  if(p==='Cigna' && (isL5 || c.em==='99214'))    add('cigna-dc');
+  if(/UnitedHealthcare/.test(p) && isNewEM)      add('uhc-newpt');
+  if(p==='Medicare' && c.awv)                    add('medicare-awv');
+  if(/CareFirst Community/.test(p))              add('cfc-note');
+  if(/UHC Community Plan/.test(p))               add('uhccp-freq');
+  if(/Alterwood/.test(p))                        add('alterwood');
+  return findings;
+}
+const TH_SEV = {block:{cls:'b-denied',label:'Block',rank:0}, warn:{cls:'b-pending',label:'Warn',rank:1}, info:{cls:'b-info',label:'Info',rank:2}};
+function thStatus(f){
+  if(!f.length) return {cls:'b-paid',label:'Clean'};
+  const worst=f.reduce((a,x)=>Math.min(a,(TH_SEV[x.sev]||{rank:3}).rank),3);
+  return worst===0?{cls:'b-denied',label:'Block'}:worst===1?{cls:'b-pending',label:'Flagged'}:{cls:'b-info',label:'Note'};
+}
+function buildThemis(){
+  const rows=(DATA.scrubQueue||[]).map(c=>{ const f=scrubClaim(c); return {c, f, st:thStatus(f)}; });
+  const blocked = rows.filter(r=>r.f.some(x=>x.sev==='block')).length;
+  const flagged = rows.filter(r=>r.f.some(x=>x.sev==='block'||x.sev==='warn')).length;
+  const atRisk  = rows.filter(r=>r.f.some(x=>x.sev==='block'||x.sev==='warn')).reduce((s,r)=>s+(r.c.charge||0),0);
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+  set('thRules',(DATA.scrubRules||[]).length); set('thQueued',rows.length);
+  set('thBlocked',blocked); set('thFlagged',flagged); set('thProtected','$'+atRisk.toLocaleString());
+  const navc=document.getElementById('thNavCount'); if(navc) navc.textContent = flagged?String(flagged):'';
+  const tb=document.querySelector('#tblScrubQueue tbody');
+  if(tb) tb.innerHTML = rows.map(r=>{
+    const badges = r.f.length
+      ? r.f.map(x=>{const s=TH_SEV[x.sev]||{cls:'b-info',label:x.sev}; return `<span class="badge ${s.cls}" title="${x.msg.replace(/"/g,'&quot;')}">${s.label}</span>`;}).join(' ')
+      : '<span class="badge b-paid">Clean</span>';
+    const topFix = r.f.length ? r.f[0].fix : '—';
+    return `<tr>
+      <td><b>${r.c.id}</b></td><td>${r.c.patient}</td><td>${r.c.payer}</td>
+      <td><span class="badge b-info">${r.c.em}</span>${(r.c.mods||[]).map(m=>' <span class="tag">-'+m+'</span>').join('')}</td>
+      <td>${badges}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:320px">${topFix}</td>
+      <td class="num">$${Number(r.c.charge||0).toLocaleString()}</td>
+      <td><span class="badge ${r.st.cls}">${r.st.label}</span></td>
+    </tr>`;
+  }).join('');
+  const tr=document.querySelector('#tblScrubRules tbody');
+  if(tr) tr.innerHTML = (DATA.scrubRules||[]).map(r=>{
+    const s=TH_SEV[r.sev]||{cls:'b-info',label:r.sev};
+    const scope = r.scope==='payer' ? (r.payer||'payer') : 'National';
+    return `<tr><td>${r.label}</td><td><span class="tag">${r.type}</span></td><td>${scope}</td>
+      <td><span class="badge ${s.cls}">${s.label}</span></td><td style="font-size:12px;color:var(--muted)">${r.source}</td></tr>`;
+  }).join('');
+  const sug=document.getElementById('thSuggest');
+  if(sug){
+    const byPayer={}; (DATA.downcode||[]).forEach(r=>{ byPayer[r[1]]=(byPayer[r[1]]||0)+1; });
+    const items = Object.keys(byPayer).map(p=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${p}</b> downcoded ${byPayer[p]}× recently → <span class="badge b-pending">rule active</span> <span style="color:var(--muted)">document time / appeal</span></div>`);
+    sug.innerHTML = (items.join('')||'<div style="color:var(--muted)">No new patterns — the feedback loop is quiet.</div>')
+      + '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Sourced from the 835 Downcoding Watch. Confirmed patterns become payer-custom rules above.</div>';
+  }
+  renderThemisCharts(false);
+}
+function renderThemisCharts(create){
+  const rows=(DATA.scrubQueue||[]).map(c=>({c, f:scrubClaim(c)}));
+  const sev={block:0,warn:0,info:0,clean:0}, byPayer={};
+  rows.forEach(r=>{
+    const hasB=r.f.some(x=>x.sev==='block'), hasW=r.f.some(x=>x.sev==='warn'), hasI=r.f.some(x=>x.sev==='info');
+    if(hasB)sev.block++; else if(hasW)sev.warn++; else if(hasI)sev.info++; else sev.clean++;
+    if(hasB||hasW) byPayer[r.c.payer]=(byPayer[r.c.payer]||0)+(r.c.charge||0);
+  });
+  const pL=Object.keys(byPayer), pV=pL.map(k=>byPayer[k]);
+  if(charts['chThPayer']){ charts['chThPayer'].data.labels=pL; charts['chThPayer'].data.datasets[0].data=pV; charts['chThPayer'].update(); }
+  else if(create){ mk('chThPayer',{type:'bar',data:{labels:pL,datasets:[{data:pV,backgroundColor:C.bronze,borderRadius:6}]},options:{maintainAspectRatio:false,indexAxis:'y',...noLegend}}); }
+  const sevData=[sev.block,sev.warn,sev.info,sev.clean];
+  if(charts['chThSev']){ charts['chThSev'].data.datasets[0].data=sevData; charts['chThSev'].update(); }
+  else if(create){ mk('chThSev',{type:'doughnut',data:{labels:['Block','Warn','Info','Clean'],datasets:[{data:sevData,backgroundColor:[C.denied,C.pending,C.blue,C.sage],borderWidth:2,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'60%',...bottomLegend}}); }
+}
 /* ---- Time period filter (global) ---- */
 let PERIOD_DAYS = 30, PERIOD_LABEL = 'this month';
 const PERIOD_LABELS = {7:'this week',30:'this month',90:'this quarter',365:'year to date',0:'all time'};
@@ -3778,6 +3946,7 @@ function buildTables(){
   buildDowncode();
   buildEra();
   buildWatchdog();
+  buildThemis();
   buildPayers();
   // Population health
   fillTable('tblRegistry', DATA.registry, null);
@@ -3932,6 +4101,9 @@ function renderCharts(id){
   }
   if(id==='watchdog'){
     renderWatchdogCharts(true);
+  }
+  if(id==='scrub'){
+    renderThemisCharts(true);
   }
   if(id==='pophealth'){
     mk('chRisk',{type:'bar',data:{labels:DATA.risk.labels,datasets:[{data:DATA.risk.values,backgroundColor:[C.sage,C.pending,C.bronze,C.denied],borderRadius:6}]},options:{maintainAspectRatio:false,...noLegend}});
