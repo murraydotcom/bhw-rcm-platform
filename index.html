@@ -2270,6 +2270,8 @@ const DATA = {
     {id:"cf-peds-prev",type:"frequency",   scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst pediatric preventive caps: 99381/99391 ≤8/yr (<1yo); 99382/99392 ≤7 per 4 yrs (ages 1–4)", sev:"info", source:"CareFirst PP CO 014.01", fix:"Verify the child's visit count is within CareFirst's pediatric preventive limits before billing."},
     {id:"cf-rpm-cov", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst covers RPM (99453–99458) only within 120 days of an ED/inpatient discharge for CHF/COPD/CKD/HTN/COVID", sev:"info", source:"CareFirst Care Mgmt (QI)", fix:"Confirm an ED visit or inpatient discharge in the prior 60 days, a covered condition, and a provider-supplied Bluetooth device."},
     {id:"cf-mppr-cv", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst MPPR: 2nd+ same-day cardiovascular diagnostic paid at 75% (technical component)", sev:"info", source:"CareFirst PP CO 400.03", fix:"Expect reduced payment on the lower-RVU cardiovascular diagnostic when multiple are billed same day — a reduction, not a denial."},
+    {id:"prev-em-25", type:"modifier",     scope:"national", payer:null, label:"Preventive visit + problem E/M same day requires modifier 25", sev:"warn", source:"CPT / payer E/M policies", fix:"Append modifier 25 to the problem E/M billed the same day as a preventive visit (99381–99397); document a separate, significant problem (screenings are not separately payable)."},
+    {id:"curative-hi", type:"payer-custom", scope:"payer", payer:"Curative", label:"Curative prepay/postpay-reviews high-level E/M (99204/99205/99214/99215)", sev:"warn", source:"Curative E/M Payment Policy", fix:"Ensure MDM or time fully supports the level — Curative flags and may downcode high-level E/M."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
@@ -2286,7 +2288,8 @@ const DATA = {
     {id:"CLM-24217", patient:"Diaz, R.",   payer:"UHC Community Plan",   program:"Mind & Mood",  dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[],     sameDayProc:null,    awv:null,    telePOS:null, timeDoc:false, emCount:2, charge:245},
     {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120},
     {id:"CLM-24219", patient:"Cole, R.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"G0439", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, priorDays:200, charge:130},
-    {id:"CLM-24220", patient:"Frey, A.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"99214", newPt:false, seenWithin3y:false, mods:["25"], sameDayProc:"94640", awv:null, telePOS:null, timeDoc:true, emCount:1, g2211:true, charge:224}
+    {id:"CLM-24220", patient:"Frey, A.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"99214", newPt:false, seenWithin3y:false, mods:["25"], sameDayProc:"94640", awv:null, telePOS:null, timeDoc:true, emCount:1, g2211:true, charge:224},
+    {id:"CLM-24221", patient:"West, L.",   payer:"Curative",            program:"Primary Care (BHW)", dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[], sameDayProc:"99396", awv:null, telePOS:null, timeDoc:true, emCount:1, charge:236}
   ],
   // Medicare Practitioner Services MUE (eff 07/01/2026), filtered to the charge master.
   // code -> [ MUE unit cap, MAI ] · MAI 2 = absolute (no appeal), MAI 3 = clinical (bypassable) · cap 0 = no published MUE.
@@ -3819,6 +3822,8 @@ function scrubClaim(c){
   if((c.emCount||1)>1)            add('em-dup');
   if(c.em==='90837' && !c.timeDoc) add('psy-time');
   if(/^G055[678]$/.test(c.em))     add('ccm-apcm');
+  const isPrev=x=>/^(9938[1-7]|9939[1-7])$/.test(x||''), isProbEM=x=>/^(9920[2-5]|9921[1-5])$/.test(x||'');
+  if(((isPrev(c.em)&&isProbEM(c.sameDayProc))||(isProbEM(c.em)&&isPrev(c.sameDayProc))) && !has('25')) add('prev-em-25');
   // payer-specific
   if(p==='Aetna' && c.sameDayProc && !has('25')) add('aetna-25');
   if(p==='Cigna' && (isL5 || c.em==='99214'))    add('cigna-dc');
@@ -3835,6 +3840,7 @@ function scrubClaim(c){
   if(p==='Cigna' && /^(96130|96131|96116|96121|96125)$/.test(c.em)) add('cigna-testauth');
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
+  if(p==='Curative' && /^(99204|99205|99214|99215)$/.test(c.em)) add('curative-hi');
   if(/CareFirst|BCBS/.test(p)){
     if(/^(99495|99496)$/.test(c.em)) add('cf-tcm-fac');
     if(/^(99381|99391|99382|99392)$/.test(c.em)) add('cf-peds-prev');
