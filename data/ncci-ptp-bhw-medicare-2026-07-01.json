@@ -1,0 +1,7069 @@
+{
+ "source": "CMS NCCI PTP Practitioner v32.2 (eff 07/01/2026)",
+ "codeSet": "BHW charge master",
+ "count": 1177,
+ "pairs": [
+  {
+   "col1": "90460",
+   "col2": "90471",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90460",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99408",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99409",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90460",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90471",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99408",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99409",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90471",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90472",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99408",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99409",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90472",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90834",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90836",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90837",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90838",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90846",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90847",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "90853",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "96116",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99407",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90791",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90791",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90792",
+   "col2": "90791",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "90792",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90834",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90836",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90837",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90838",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90846",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90847",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "90853",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "96116",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99407",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90792",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90792",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90832",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99483",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90832",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90832",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90833",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90833",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99407",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90833",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90833",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90834",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90834",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90834",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99483",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90834",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90834",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90836",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90836",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90836",
+   "col2": "90834",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90836",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99407",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90836",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90836",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90837",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90837",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90837",
+   "col2": "90834",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90837",
+   "col2": "90836",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90837",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99406",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "99407",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99483",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90837",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90837",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90838",
+   "col2": "90832",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90838",
+   "col2": "90833",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90838",
+   "col2": "90834",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90838",
+   "col2": "90836",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90838",
+   "col2": "90837",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90838",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "99385",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99386",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99387",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99395",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99396",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99397",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99407",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99491",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90838",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90838",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90846",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "90847",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90846",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90846",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90846",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90847",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90847",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90847",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "90853",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "90846",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90853",
+   "col2": "90847",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "90853",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "90853",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "90853",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "93000",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93660",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "95922",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "95924",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99495",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93660",
+   "col2": "99496",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "93784",
+   "col2": "93786",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "93784",
+   "col2": "93788",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "93784",
+   "col2": "93790",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "93784",
+   "col2": "99453",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93784",
+   "col2": "99454",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93786",
+   "col2": "99453",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93786",
+   "col2": "99454",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93788",
+   "col2": "99453",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93788",
+   "col2": "99454",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93790",
+   "col2": "99453",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93790",
+   "col2": "99454",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "93923",
+   "col2": "93922",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "94010",
+   "col2": "94640",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "94010",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94010",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "94010",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "94060",
+   "col2": "94640",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "94664",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "94060",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94060",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "94010",
+   "mod": "1",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "94070",
+   "col2": "94060",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "94070",
+   "col2": "94640",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94070",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "94664",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "94640",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94640",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "94664",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "95921",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "95921",
+   "col2": "95922",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "95922",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "95923",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "95924",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "95924",
+   "col2": "95921",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "95924",
+   "col2": "95922",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "96110",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96112",
+   "col2": "90791",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90792",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90846",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90847",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "90853",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "96110",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96112",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96112",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96112",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96112",
+   "col2": "96131",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96112",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96112",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90791",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90792",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90846",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90847",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "90853",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "96110",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96113",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96113",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96113",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99483",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96113",
+   "col2": "99497",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "96116",
+   "col2": "96110",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96116",
+   "col2": "96112",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96116",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96116",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96121",
+   "col2": "96110",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96121",
+   "col2": "96112",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96121",
+   "col2": "96113",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "96121",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96121",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96125",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96130",
+   "col2": "90785",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "96130",
+   "col2": "96110",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96130",
+   "col2": "96113",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96130",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "96130",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "96131",
+   "col2": "90785",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "96131",
+   "col2": "96110",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96131",
+   "col2": "96113",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "96131",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "96131",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "97802",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "97802",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "97803",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99091",
+   "col2": "99424",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99091",
+   "col2": "99425",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99091",
+   "col2": "99426",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99091",
+   "col2": "99427",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99202",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99202",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99202",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99202",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99202",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99203",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99203",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99203",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99203",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99203",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99203",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99204",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99204",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99204",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99204",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99204",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99204",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99204",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99205",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99205",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99205",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99205",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99205",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99205",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99205",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99205",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99211",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99211",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99211",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99211",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99211",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99211",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99211",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99211",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99211",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99212",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99212",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99212",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99212",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99212",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99213",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99213",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99213",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99213",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99213",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99214",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99214",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99214",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99214",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99214",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99215",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99215",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99215",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99215",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99215",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99385",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99385",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99386",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99386",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99387",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99387",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99395",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99395",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99396",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99396",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99397",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99397",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99406",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99406",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99406",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99406",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99407",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99407",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99407",
+   "col2": "99406",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99407",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99407",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99408",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99408",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99409",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99409",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99409",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99424",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99424",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99424",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99425",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99425",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99425",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99425",
+   "col2": "99439",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99426",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99426",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99427",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99427",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99427",
+   "col2": "99439",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99437",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99437",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99437",
+   "col2": "99439",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99439",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99439",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99439",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99439",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99453",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99454",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99457",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99458",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "90785",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "90791",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "90792",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "96116",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "96125",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "96130",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99202",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99203",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99204",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99205",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99211",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99212",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99213",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99214",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99215",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99483",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99483",
+   "col2": "99497",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "99498",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0402",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0438",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0439",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99483",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99484",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99484",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99424",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99425",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99426",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99427",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99437",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99484",
+   "col2": "99491",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99487",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99425",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99439",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99487",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "HCPCS/CPT procedure code definition"
+  },
+  {
+   "col1": "99489",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99489",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99385",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99386",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99387",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99395",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99396",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99397",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99489",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99489",
+   "col2": "99425",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99489",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99489",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99489",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99490",
+   "col2": "99091",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99425",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99437",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99490",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99491",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99425",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99426",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99439",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99487",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99489",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99491",
+   "col2": "99490",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99492",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99492",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99492",
+   "col2": "99484",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99492",
+   "col2": "99493",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99492",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99493",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99493",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99493",
+   "col2": "99484",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99493",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99494",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99494",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99494",
+   "col2": "99484",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99494",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99494",
+   "col2": "99496",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99495",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99495",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99495",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99495",
+   "col2": "99492",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99495",
+   "col2": "99493",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99496",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99496",
+   "col2": "99424",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99496",
+   "col2": "99427",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99496",
+   "col2": "99495",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "99497",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99497",
+   "col2": "96125",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "96130",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99497",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99497",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99497",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "99497",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99497",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "99497",
+   "col2": "G0442",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "G0443",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "99497",
+   "col2": "G0444",
+   "mod": "1",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "99498",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0108",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0108",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0108",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0108",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0108",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0109",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0109",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0109",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0109",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0109",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0270",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0270",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0270",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0270",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0271",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0271",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0271",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90791",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90792",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "G0402",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0402",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0402",
+   "col2": "G0438",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "G0439",
+   "mod": "0",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0402",
+   "col2": "G0444",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90791",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90792",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0438",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0438",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0438",
+   "col2": "G0439",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "G0438",
+   "col2": "G0444",
+   "mod": "0",
+   "rationale": "More extensive procedure"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90791",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90792",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90832",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90833",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90834",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90836",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90837",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "90838",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0439",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99202",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99203",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99204",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99205",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99211",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99212",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99213",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99214",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "99215",
+   "mod": "1",
+   "rationale": "Mutually exclusive procedures"
+  },
+  {
+   "col1": "G0439",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0439",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "0403T",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "G0442",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0442",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0442",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0442",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "0403T",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "G0443",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0443",
+   "col2": "96127",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0443",
+   "col2": "99408",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "99409",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0443",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "0403T",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "93000",
+   "mod": "1",
+   "rationale": "Standards of medical/surgical practice"
+  },
+  {
+   "col1": "G0444",
+   "col2": "96116",
+   "mod": "1",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0444",
+   "col2": "96127",
+   "mod": "1",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "97802",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "97803",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "97804",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "99091",
+   "mod": "0",
+   "rationale": "CPT Manual or CMS manual coding instruction"
+  },
+  {
+   "col1": "G0444",
+   "col2": "G0270",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  },
+  {
+   "col1": "G0444",
+   "col2": "G0271",
+   "mod": "0",
+   "rationale": "Misuse of Column Two code with Column One code"
+  }
+ ]
+}
