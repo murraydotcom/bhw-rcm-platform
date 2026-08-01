@@ -2251,7 +2251,7 @@ const DATA = {
     {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
     {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
     {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."},
-    {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP Practitioner v32.2 (eff 07/01/2026)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
+    {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP Practitioner — Medicare + Medicaid (eff 07/01/2026)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
   ],
   // Pre-bill claims waiting to go out — each is run through scrubClaim() live.
@@ -2437,6 +2437,31 @@ const DATA = {
     "G0443|97803":0, "G0443|97804":0, "G0443|99091":0, "G0443|99408":0, "G0443|99409":0, "G0443|G0270":0, "G0443|G0271":0, "G0444|0403T":1,
     "G0444|93000":1, "G0444|96116":1, "G0444|96127":1, "G0444|97802":0, "G0444|97803":0, "G0444|97804":0, "G0444|99091":0, "G0444|G0270":0,
     "G0444|G0271":0
+  },
+  // Medicaid PTP entries that DIFFER from Medicare (else Medicaid = Medicare pair).
+  // value 9 = pair NOT active under Medicaid (Medicare-only). Used for Medicaid/MCO payers.
+  ptpMcdDiff: {
+    "90846|99408":1, "90846|99409":1, "90847|99408":1, "90847|99409":1, "90853|99408":1, "90853|99409":1, "99202|99408":1, "99202|99409":1,
+    "99203|99408":1, "99203|99409":1, "99204|99408":1, "99204|99409":1, "99205|99408":1, "99205|99409":1, "99211|99408":1, "99211|99409":1,
+    "99212|99408":1, "99212|99409":1, "99213|99408":1, "99213|99409":1, "99214|99408":1, "99214|99409":1, "99215|99408":1, "99215|99409":1,
+    "99385|99202":1, "99385|99203":1, "99385|99204":1, "99385|99205":1, "99385|99211":1, "99385|99212":1, "99385|99213":1, "99385|99214":1,
+    "99385|99215":1, "99385|99386":0, "99385|99387":0, "99385|99395":0, "99385|99396":0, "99385|99397":0, "99385|G0442":1, "99385|G0443":1,
+    "99386|99202":1, "99386|99203":1, "99386|99204":1, "99386|99205":1, "99386|99211":1, "99386|99212":1, "99386|99213":1, "99386|99214":1,
+    "99386|99215":1, "99386|99387":0, "99386|99395":0, "99386|99396":0, "99386|99397":0, "99386|G0442":1, "99386|G0443":1, "99387|99202":1,
+    "99387|99203":1, "99387|99204":1, "99387|99205":1, "99387|99211":1, "99387|99212":1, "99387|99213":1, "99387|99214":1, "99387|99215":1,
+    "99387|99395":0, "99387|99396":0, "99387|99397":0, "99387|G0442":1, "99387|G0443":1, "99395|99202":1, "99395|99203":1, "99395|99204":1,
+    "99395|99205":1, "99395|99211":1, "99395|99212":1, "99395|99213":1, "99395|99214":1, "99395|99215":1, "99395|99396":0, "99395|99397":0,
+    "99395|G0442":1, "99395|G0443":1, "99396|99202":1, "99396|99203":1, "99396|99204":1, "99396|99205":1, "99396|99211":1, "99396|99212":1,
+    "99396|99213":1, "99396|99214":1, "99396|99215":1, "99396|99397":0, "99396|G0442":1, "99396|G0443":1, "99397|99202":1, "99397|99203":1,
+    "99397|99204":1, "99397|99205":1, "99397|99211":1, "99397|99212":1, "99397|99213":1, "99397|99214":1, "99397|99215":1, "99397|G0442":1,
+    "99397|G0443":1, "99406|96127":9, "99406|99202":1, "99406|99203":1, "99406|99204":1, "99406|99205":1, "99406|99211":1, "99406|99212":1,
+    "99406|99213":1, "99406|99214":1, "99406|99215":1, "99406|99408":9, "99406|99409":9, "99407|96127":9, "99407|99202":1, "99407|99203":1,
+    "99407|99204":1, "99407|99205":1, "99407|99211":1, "99407|99212":1, "99407|99213":1, "99407|99214":1, "99407|99215":1, "99407|99408":9,
+    "99407|99409":9, "99408|G0442":1, "99408|G0443":1, "99409|G0442":1, "99409|G0443":1, "99427|99490":0, "99427|99491":0, "99483|99487":0,
+    "99483|99489":0, "99483|99490":0, "99483|99495":0, "99483|99496":0, "99487|96127":1, "99487|99494":0, "99489|96127":1, "99490|96127":1,
+    "99490|99427":9, "99491|99427":9, "99492|99487":1, "99492|99490":1, "99493|99487":1, "99493|99490":1, "99495|96127":1, "99496|96127":1,
+    "99497|99408":1, "99497|99409":1, "G0402|96127":1, "G0438|96127":1, "G0439|96127":1, "G0442|99408":9, "G0442|99409":9, "G0443|99408":9,
+    "G0443|99409":9
   },
 
   // ---- STEDI: Payers & enrollment.  y/p/n per transaction ----
@@ -3735,13 +3760,15 @@ function scrubClaim(c){
   const isNewEM = /^992(0[2-5])$/.test(c.em);      // 99202–99205
   const isL5    = c.em==='99215' || c.em==='99205';
   const p = String(c.payer||'');
-  // national edits — NCCI PTP bundling (real edit table) for the E/M + same-day procedure
+  // national edits — NCCI PTP bundling (real edit table), payer-aware: Medicaid/MCO
+  // payers use the Medicaid pairs (Medicare pairs overridden by DATA.ptpMcdDiff).
   if(c.sameDayProc){
-    const ptp=DATA.ptp||{};
+    const ptp=DATA.ptp||{}, mcd=DATA.ptpMcdDiff||{}, isMcd=/medicaid|community/i.test(p);
+    const look=k=>{ if(isMcd && (k in mcd)){ const v=mcd[k]; return v===9?null:String(v); } return (k in ptp)?String(ptp[k]):null; };
     const k1=c.em+'|'+c.sameDayProc, k2=c.sameDayProc+'|'+c.em;
-    let mod=null, col1=null, col2=null;
-    if(k1 in ptp){ mod=String(ptp[k1]); col1=c.em; col2=c.sameDayProc; }
-    else if(k2 in ptp){ mod=String(ptp[k2]); col1=c.sameDayProc; col2=c.em; }
+    let mod=null, col1=null, col2=null, r=look(k1);
+    if(r!==null){ mod=r; col1=c.em; col2=c.sameDayProc; }
+    else if((r=look(k2))!==null){ mod=r; col1=c.sameDayProc; col2=c.em; }
     const bypass = has('25')||has('59')||has('XE')||has('XS')||has('XP')||has('XU');
     if(mod==='0') findings.push({sev:'block', ruleId:'ptp', msg:'NCCI PTP: '+col2+' is bundled into '+col1+' — not separately payable (modifier indicator 0, cannot unbundle)', fix:'Only one of '+col1+'/'+col2+' is payable on the same day; do not bill both.'});
     else if(mod==='1' && !bypass) findings.push({sev:'block', ruleId:'ptp', msg:'NCCI PTP: '+col2+' bundled into '+col1+' — append a modifier to unbundle', fix:'If separately identifiable, append modifier 25 (E/M) or 59/X{EPSU} to '+col2+'; otherwise it denies.'});
