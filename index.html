@@ -245,7 +245,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('discovery',this)"><span class="ic">⌕</span> Insurance Discovery</div>
       <div class="nav-item" onclick="go('claimstatus',this)"><span class="ic">◱</span> Claim Status (276/277)</div>
       <div class="nav-item" onclick="go('remittance',this)"><span class="ic">▤</span> Remittance / ERA (835)</div>
-      <div class="nav-item" onclick="go('watchdog',this)"><span class="ic">🛡</span> Watchdog <span class="nav-count" id="wdNavCount"></span></div>
+      <div class="nav-item" onclick="go('watchdog',this)"><span class="ic">🛡</span> Aegis <span class="nav-count" id="wdNavCount"></span></div>
       <div class="nav-item" onclick="go('payers',this)"><span class="ic">⌁</span> Payers &amp; Enrollment</div>
     </nav>
 
@@ -1292,10 +1292,10 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <!-- ==================== STEDI: WATCHDOG (277A -> 835 reconciliation) ==================== -->
       <section class="view" id="watchdog">
         <div class="page-head split">
-          <div><h2>Watchdog &nbsp;<span class="tag">277A → 835</span></h2><p>The claims the payer <b>acknowledged</b> (277/277A) but for which <b>no 835 remittance has ever come back</b>. Money that would otherwise die quietly against the timely-filing clock — surfaced here <b>before</b> the deadline, ranked by days left to file.</p></div>
+          <div><h2>Aegis &nbsp;<span class="tag">277A → 835</span></h2><p>Your shield on the timely-filing line: the claims the payer <b>acknowledged</b> (277/277A) but for which <b>no 835 remittance has ever come back</b>. Money that would otherwise die quietly against the filing clock — surfaced here <b>before</b> the deadline, ranked by days left to file.</p></div>
           <div class="btn-row" style="align-items:center">
             <span class="pill live" id="wdMode">● Stedi · sample</span>
-            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Work the Watchdog queue: for the claims the payer acknowledged via 277/277A with no 835 received, tell me which are closest to their timely-filing deadline, the total dollars at risk, and draft a status-inquiry plus proof-of-timely-filing follow-up for the single most urgent claim.','Watchdog')">Work the queue</button>
+            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Work the Aegis queue: for the claims the payer acknowledged via 277/277A with no 835 received, tell me which are closest to their timely-filing deadline, the total dollars at risk, and draft a status-inquiry plus proof-of-timely-filing follow-up for the single most urgent claim.','Aegis')">Work the queue</button>
           </div>
         </div>
 
@@ -1304,7 +1304,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <div class="card-head split">
             <div><h3>⏱ Acknowledged, never remitted</h3><div class="card-sub">The one thing the 277 feed and the 835 feed can&rsquo;t tell you apart — <b>joined</b>.</div></div>
           </div>
-          <div class="note" style="margin-bottom:0">A claim that was <b>accepted</b> on the 277A but has produced <b>no 835</b> is not &ldquo;in process&rdquo; — it is at risk of aging past the payer&rsquo;s filing limit with nothing to appeal against. Watchdog matches every acknowledged claim to the remittance feed, and for anything still unmatched it counts down to that payer&rsquo;s <b>timely-filing deadline</b>. Anything <span class="badge b-pending">Due ≤14d</span> or <span class="badge b-denied">Past deadline</span> is worked first — a status inquiry now (or a good-cause/proof-of-timely-filing packet) is the difference between getting paid and writing it off.</div>
+          <div class="note" style="margin-bottom:0">A claim that was <b>accepted</b> on the 277A but has produced <b>no 835</b> is not &ldquo;in process&rdquo; — it is at risk of aging past the payer&rsquo;s filing limit with nothing to appeal against. Aegis matches every acknowledged claim to the remittance feed, and for anything still unmatched it counts down to that payer&rsquo;s <b>timely-filing deadline</b>. Anything <span class="badge b-pending">Due ≤14d</span> or <span class="badge b-denied">Past deadline</span> is worked first — a status inquiry now (or a good-cause/proof-of-timely-filing packet) is the difference between getting paid and writing it off.</div>
         </div>
 
         <div class="grid g5" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
@@ -1321,7 +1321,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
         </div>
 
         <div class="card">
-          <div class="card-head"><h3>Watchdog Worklist</h3><span class="tag">acknowledged · no 835 · sorted by days left</span></div>
+          <div class="card-head"><h3>Aegis Worklist</h3><span class="tag">acknowledged · no 835 · sorted by days left</span></div>
           <div class="table-scroll"><table id="tblWatchdog">
             <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>Acknowledged (277)</th><th class="num">Days No-835</th><th class="num">Filing Limit</th><th class="num">Days Left</th><th class="num">$ at Risk</th><th>Priority</th></tr></thead>
             <tbody></tbody>
@@ -2170,7 +2170,7 @@ const TITLES = {
   expenses:"Expenses", edumedia:"EduMedia Tracker", q3goals:"Q3 Goals vs Actual",
   recovery:"Payment Recovery Timeline",
   discovery:"Insurance Discovery",
-  claimstatus:"Claim Status", remittance:"Remittance / ERA", watchdog:"Watchdog", payers:"Payers & Enrollment",
+  claimstatus:"Claim Status", remittance:"Remittance / ERA", watchdog:"Aegis", payers:"Payers & Enrollment",
   pophealth:"Population Health", caregaps:"Care Gaps & Registry", hospital:"Hospital & TCM",
   mips:"Quality & MIPS", sources:"Sources & Method"
 };
