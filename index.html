@@ -2272,6 +2272,9 @@ const DATA = {
     {id:"cf-mppr-cv", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst MPPR: 2nd+ same-day cardiovascular diagnostic paid at 75% (technical component)", sev:"info", source:"CareFirst PP CO 400.03", fix:"Expect reduced payment on the lower-RVU cardiovascular diagnostic when multiple are billed same day — a reduction, not a denial."},
     {id:"prev-em-25", type:"modifier",     scope:"national", payer:null, label:"Preventive visit + problem E/M same day requires modifier 25", sev:"warn", source:"CPT / payer E/M policies", fix:"Append modifier 25 to the problem E/M billed the same day as a preventive visit (99381–99397); document a separate, significant problem (screenings are not separately payable)."},
     {id:"curative-hi", type:"payer-custom", scope:"payer", payer:"Curative", label:"Curative prepay/postpay-reviews high-level E/M (99204/99205/99214/99215)", sev:"warn", source:"Curative E/M Payment Policy", fix:"Ensure MDM or time fully supports the level — Curative flags and may downcode high-level E/M."},
+    {id:"addon-primary",type:"necessity",  scope:"national", payer:null, label:"Add-on code billed without its required primary code", sev:"block", source:"CPT Appendix D / CMS; UHC 2026R0071C", fix:"Report the add-on only with its primary service on the same claim (e.g. 96121 w/ 96116, 99439 w/ 99490, 99458 w/ 99457, 99494 w/ 99492/99493) — a stand-alone add-on denies."},
+    {id:"uhc-emreview",type:"payer-custom", scope:"payer", payer:"UnitedHealthcare", label:"UHC compares E/M levels to peer data and may downcode high-level E/M (99204/99205/99214/99215)", sev:"warn", source:"UHC E/M Policy 2026R5007A", fix:"Ensure MDM (2 of 3) or total time supports the level; UHC requests records when billing deviates from peers and may downcode."},
+    {id:"uhc-replace",type:"payer-custom",  scope:"payer", payer:"UnitedHealthcare", label:"UHC denies NPFS status-'I' codes that have a replacement", sev:"block", source:"UHC Replacement Codes 2026R0128A", fix:"Report the CMS replacement code: telehealth 98000–98015 → 99202–99215 + POS 02/10; S9470 → 97802/97803; 99417 → G2212."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
     {id:"mue",        type:"mue",         scope:"national", payer:null, label:"Units exceed the Medicare per-code MUE cap", sev:"warn", source:"CMS Practitioner MUE — Medicare + Medicaid (eff 07/01/2026)", fix:"Keep units ≤ the code's MUE; Medicare MAI 2 caps are absolute (no modifier bypass), MAI 3 need documentation. Medicaid uses its own caps (no MAI)."}
@@ -2289,7 +2292,8 @@ const DATA = {
     {id:"CLM-24218", patient:"Barnes, J.", payer:"Medicare",            program:"Flow Vascular Stabilization", dos:"07/31", em:"93923", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, units:3, charge:120},
     {id:"CLM-24219", patient:"Cole, R.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"G0439", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, priorDays:200, charge:130},
     {id:"CLM-24220", patient:"Frey, A.",   payer:"Medicare",            program:"Primary Care (BHW)", dos:"07/31", em:"99214", newPt:false, seenWithin3y:false, mods:["25"], sameDayProc:"94640", awv:null, telePOS:null, timeDoc:true, emCount:1, g2211:true, charge:224},
-    {id:"CLM-24221", patient:"West, L.",   payer:"Curative",            program:"Primary Care (BHW)", dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[], sameDayProc:"99396", awv:null, telePOS:null, timeDoc:true, emCount:1, charge:236}
+    {id:"CLM-24221", patient:"West, L.",   payer:"Curative",            program:"Primary Care (BHW)", dos:"07/31", em:"99215", newPt:false, seenWithin3y:false, mods:[], sameDayProc:"99396", awv:null, telePOS:null, timeDoc:true, emCount:1, charge:236},
+    {id:"CLM-24222", patient:"Ivey, D.",   payer:"UnitedHealthcare",     program:"Population Health (CCM)", dos:"07/31", em:"99458", newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null, timeDoc:true, emCount:1, charge:62}
   ],
   // Medicare Practitioner Services MUE (eff 07/01/2026), filtered to the charge master.
   // code -> [ MUE unit cap, MAI ] · MAI 2 = absolute (no appeal), MAI 3 = clinical (bypassable) · cap 0 = no published MUE.
@@ -3813,7 +3817,7 @@ function scrubClaim(c){
     const bypass = has('25')||has('59')||has('XE')||has('XS')||has('XP')||has('XU');
     if(mod==='0') findings.push({sev:'block', ruleId:'ptp', msg:'NCCI PTP: '+col2+' is bundled into '+col1+' — not separately payable (modifier indicator 0, cannot unbundle)', fix:'Only one of '+col1+'/'+col2+' is payable on the same day; do not bill both.'});
     else if(mod==='1' && !bypass) findings.push({sev:'block', ruleId:'ptp', msg:'NCCI PTP: '+col2+' bundled into '+col1+' — append a modifier to unbundle', fix:'If separately identifiable, append modifier 25 (E/M) or 59/X{EPSU} to '+col2+'; otherwise it denies.'});
-    else if(mod===null && !has('25')) findings.push({sev:'warn', ruleId:'mod25', msg:'E/M + same-day service '+c.sameDayProc+' — verify modifier 25', fix:'Append modifier 25 to the E/M if it is significant & separately identifiable from the service.'});
+    else if(mod===null && !has('25') && /^(9920[2-5]|9921[1-5]|9938[1-7]|9939[1-7])$/.test(c.em)) findings.push({sev:'warn', ruleId:'mod25', msg:'E/M + same-day service '+c.sameDayProc+' — verify modifier 25', fix:'Append modifier 25 to the E/M if it is significant & separately identifiable from the service.'});
   }
   if(isNewEM && c.seenWithin3y)   add('newpt3y');
   if(isL5 && !c.timeDoc)          add('level5doc');
@@ -3824,6 +3828,10 @@ function scrubClaim(c){
   if(/^G055[678]$/.test(c.em))     add('ccm-apcm');
   const isPrev=x=>/^(9938[1-7]|9939[1-7])$/.test(x||''), isProbEM=x=>/^(9920[2-5]|9921[1-5])$/.test(x||'');
   if(((isPrev(c.em)&&isProbEM(c.sameDayProc))||(isProbEM(c.em)&&isPrev(c.sameDayProc))) && !has('25')) add('prev-em-25');
+  // Add-on code billed without its required primary (CPT Appendix D / CMS)
+  const ADDON={"96121":/^96116$/,"96131":/^96130$/,"99439":/^99490$/,"99437":/^99491$/,"99489":/^99487$/,"99458":/^99457$/,"99494":/^(99492|99493)$/,"96113":/^96112$/,"99498":/^99497$/,"99425":/^99424$/,"99427":/^99426$/,"90833":/^992\d\d$/,"90836":/^992\d\d$/,"90838":/^992\d\d$/,"90785":/^(90791|90792|9083[2478]|992\d\d)$/};
+  const addonPrim=ADDON[c.em];
+  if(addonPrim && !(c.sameDayProc && addonPrim.test(c.sameDayProc))) add('addon-primary');
   // payer-specific
   if(p==='Aetna' && c.sameDayProc && !has('25')) add('aetna-25');
   if(p==='Cigna' && (isL5 || c.em==='99214'))    add('cigna-dc');
@@ -3841,6 +3849,8 @@ function scrubClaim(c){
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
   if(p==='Curative' && /^(99204|99205|99214|99215)$/.test(c.em)) add('curative-hi');
+  if(/UnitedHealthcare|UHC Community Plan/.test(p) && /^(99204|99205|99214|99215)$/.test(c.em)) add('uhc-emreview');
+  if(p==='UnitedHealthcare' && (/^980(0\d|1[0-6])$/.test(c.em) || /^(S9470|99417|95941|97014)$/.test(c.em))) add('uhc-replace');
   if(/CareFirst|BCBS/.test(p)){
     if(/^(99495|99496)$/.test(c.em)) add('cf-tcm-fac');
     if(/^(99381|99391|99382|99392)$/.test(c.em)) add('cf-peds-prev');
