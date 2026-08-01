@@ -2259,6 +2259,8 @@ const DATA = {
     {id:"cfc-note",   type:"payer-custom",scope:"payer", payer:"CareFirst Community", label:"CareFirst Community (Medicare & MD Medicaid) — telehealth + referral rules", sev:"info", source:"CareFirst Community policy", fix:"Confirm the telehealth modifier and any PCP-attribution / referral requirement."},
     {id:"uhccp-freq", type:"payer-custom",scope:"payer", payer:"UHC Community Plan", label:"UHC Community Plan (MD Medicaid) — E/M frequency & referral", sev:"info", source:"UHC Community Plan", fix:"Verify visit-frequency limits and that any referral is on file."},
     {id:"alterwood",  type:"payer-custom",scope:"payer", payer:"Alterwood Advantage", label:"Alterwood Advantage (MA) follows Medicare E/M edits + plan telehealth modifier", sev:"info", source:"Alterwood Advantage", fix:"Apply the Medicare E/M edits and add any plan-required telehealth modifier."},
+    {id:"psy-time",   type:"necessity",   scope:"national", payer:null, label:"90837 (60-min psychotherapy) requires ≥53 minutes documented", sev:"warn", source:"CPT time rules", fix:"Document total psychotherapy time; if under 53 min, bill 90834 (38–52 min) instead of 90837."},
+    {id:"ccm-apcm",   type:"frequency",   scope:"national", payer:null, label:"APCM and CCM are mutually exclusive in the same month", sev:"info", source:"CMS APCM policy", fix:"For a given patient/month bill either APCM (G0556–G0558) or CCM (99490 etc.), not both."},
     {id:"g2211-25",   type:"payer-custom",scope:"payer", payer:"Medicare", label:"G2211 not payable when the same-day E/M carries modifier 25", sev:"block", source:"CMS G2211 policy", fix:"When you append modifier 25 to the E/M for a same-day procedure or AWV, drop G2211 — it will deny that day."},
     {id:"g2211-comm", type:"payer-custom",scope:"payer", payer:"Commercial", label:"G2211 frequently not reimbursed by commercial payers", sev:"info", source:"BHW custom (payer behavior)", fix:"Confirm the commercial plan pays G2211; many recognize it for Medicare only. Track denials to firm this up."},
     {id:"cigna-testauth", type:"payer-custom",scope:"payer", payer:"Cigna", label:"Cigna/Evernorth may require prior auth for psych/neuro testing", sev:"info", source:"Cigna behavioral policy", fix:"Verify prior authorization for 96130/96131/96116/96121/96125 before testing to avoid a no-auth denial."},
@@ -3810,6 +3812,8 @@ function scrubClaim(c){
   if(c.awv && !has('25'))         add('awv25','AWV '+c.awv+' + '+c.em);
   if(c.telePOS && !has('95'))     add('tele-mod','POS '+c.telePOS);
   if((c.emCount||1)>1)            add('em-dup');
+  if(c.em==='90837' && !c.timeDoc) add('psy-time');
+  if(/^G055[678]$/.test(c.em))     add('ccm-apcm');
   // payer-specific
   if(p==='Aetna' && c.sameDayProc && !has('25')) add('aetna-25');
   if(p==='Cigna' && (isL5 || c.em==='99214'))    add('cigna-dc');
