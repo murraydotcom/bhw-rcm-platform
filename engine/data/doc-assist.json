@@ -1,4 +1,61 @@
 {
+  "90471": {
+    "supports": [
+      "Immunization administration — a single vaccine (or combination vaccine/toxoid) by percutaneous, intradermal, subcutaneous, or intramuscular route",
+      "For each additional vaccine at the same encounter, add +90472",
+      "Report the vaccine product code(s) separately from the administration code"
+    ],
+    "modifiers": {},
+    "modifiersAllowed": [
+      "33",
+      "52",
+      "53",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AR",
+      "AS",
+      "GA",
+      "GC",
+      "GR",
+      "KX",
+      "PD",
+      "Q6",
+      "QJ",
+      "SY"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 90471; MUE 1"
+  },
+  "90472": {
+    "supports": [
+      "Add-on to 90471 — each additional vaccine (single or combination vaccine/toxoid) administered at the same encounter; list separately in addition to the primary administration code",
+      "Report once per additional vaccine/toxoid component"
+    ],
+    "modifiers": {},
+    "modifiersAllowed": [
+      "33",
+      "52",
+      "53",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AR",
+      "AS",
+      "GA",
+      "GC",
+      "GR",
+      "KX",
+      "PD",
+      "Q6",
+      "QJ",
+      "SY"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 90472 (add-on); MUE 8"
+  },
   "90785": {
     "supports": [
       "Interactive complexity ADD-ON — communication difficulties during the session",
@@ -131,6 +188,92 @@
     ],
     "modifiers": {},
     "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "93000": {
+    "supports": [
+      "Routine ECG with at least 12 leads — complete service (both the technical tracing AND the physician interpretation and report)",
+      "Do NOT append modifier 26 or TC — 93000 already includes both components; use 93005 for the technical component only and 93010 for the professional component only",
+      "Document the interpretation and any abnormality detected in the tracing"
+    ],
+    "modifiers": {},
+    "modifiersAllowed": [
+      "51",
+      "52",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AQ",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "KX",
+      "PD",
+      "Q5",
+      "Q6",
+      "QJ",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 93000; MUE 3"
+  },
+  "93005": {
+    "supports": [
+      "Routine ECG with at least 12 leads — tracing only (technical component), without interpretation and report",
+      "Do NOT append TC — 93005 is already the technical component; use 93010 for the professional component only, or 93000 for the complete service"
+    ],
+    "modifiers": {},
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 93005 (tracing only; technical component)"
+  },
+  "93010": {
+    "supports": [
+      "Routine ECG with at least 12 leads — interpretation and report only (professional component)",
+      "Bill only the physician's interpretation and report, not performing the procedure; do NOT use modifier 26 or TC (the professional and technical parts have separate codes)",
+      "Document the interpretation and report"
+    ],
+    "modifiers": {},
+    "modifiersAllowed": [
+      "52",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AQ",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "KX",
+      "PD",
+      "Q5",
+      "Q6",
+      "QJ",
+      "SA",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 93010 (interpretation & report only); MUE 5"
   },
   "93660": {
     "supports": [
