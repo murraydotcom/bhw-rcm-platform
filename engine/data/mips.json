@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "illustrative": true,
+    "status": "SEED — a small set of real MIPS measures relevant to BHW primary care + behavioral health. Replace with the full AAPC MIPS Manager / QPP measure set (same shape) for complete lookup.",
+    "howToPopulate": "Append measures to quality[], cost[], improvementActivities[], promotingInteroperability[]. Fields: number/id, title, method[], highPriority, keywords[], codes[] (CPT/HCPCS/quality codes), nqf.",
+    "performanceYear": "confirm against current QPP program year"
+  },
+  "quality": [
+    { "number": "001", "title": "Diabetes: Hemoglobin A1c (HbA1c) Poor Control (> 9%)", "method": ["eCQM", "Registry", "Claims"], "highPriority": false, "nqf": "0059", "keywords": ["diabetes", "a1c", "hba1c"], "codes": ["3044F", "3046F", "3051F", "3052F"] },
+    { "number": "128", "title": "Preventive Care and Screening: Body Mass Index (BMI) Screening and Follow-Up Plan", "method": ["Registry", "Claims"], "highPriority": false, "keywords": ["bmi", "obesity", "screening"], "codes": ["G8417", "G8418", "G8420", "G8421"] },
+    { "number": "134", "title": "Preventive Care and Screening: Screening for Depression and Follow-Up Plan", "method": ["eCQM", "Registry", "Claims"], "highPriority": false, "keywords": ["depression", "phq", "screening", "behavioral"], "codes": ["G8431", "G8510", "G8432"] },
+    { "number": "226", "title": "Preventive Care and Screening: Tobacco Use — Screening and Cessation Intervention", "method": ["eCQM", "Registry", "Claims"], "highPriority": false, "keywords": ["tobacco", "smoking", "cessation"], "codes": ["4004F", "1036F"] },
+    { "number": "236", "title": "Controlling High Blood Pressure", "method": ["eCQM", "Registry"], "highPriority": false, "nqf": "0018", "keywords": ["hypertension", "blood pressure", "htn"], "codes": ["3074F", "3075F", "3077F"] },
+    { "number": "317", "title": "Preventive Care and Screening: Screening for High Blood Pressure and Follow-Up", "method": ["Registry", "Claims"], "highPriority": false, "keywords": ["hypertension", "blood pressure", "screening"], "codes": ["G8783", "G8950", "G8952"] },
+    { "number": "383", "title": "Adherence to Antipsychotic Medications for Individuals with Schizophrenia", "method": ["Registry"], "highPriority": true, "keywords": ["schizophrenia", "antipsychotic", "adherence", "behavioral"], "codes": [] },
+    { "number": "391", "title": "Follow-Up After Hospitalization for Mental Illness (FUH)", "method": ["Registry"], "highPriority": true, "keywords": ["mental illness", "follow-up", "hospitalization", "behavioral"], "codes": [] },
+    { "number": "431", "title": "Preventive Care and Screening: Unhealthy Alcohol Use — Screening & Brief Counseling", "method": ["eCQM", "Registry", "Claims"], "highPriority": false, "keywords": ["alcohol", "sbirt", "screening"], "codes": ["G9621", "G9622", "G9623"] },
+    { "number": "488", "title": "Kidney Health Evaluation", "method": ["eCQM"], "highPriority": true, "keywords": ["kidney", "ckd", "egfr", "uacr"], "codes": [] }
+  ],
+  "cost": [
+    { "id": "COST_TPCC", "title": "Total Per Capita Cost (TPCC)", "keywords": ["total cost", "per capita"] },
+    { "id": "COST_MSPB", "title": "Medicare Spending Per Beneficiary (MSPB) — Clinician", "keywords": ["mspb", "spending"] }
+  ],
+  "improvementActivities": [
+    { "id": "IA_BMH_4", "title": "Depression Screening", "weight": "Medium", "keywords": ["depression", "screening", "behavioral"] },
+    { "id": "IA_BMH_2", "title": "Tobacco Use", "weight": "Medium", "keywords": ["tobacco", "cessation"] },
+    { "id": "IA_CC_1", "title": "Implementation of Use of Specialist Reports Back to Referring Clinician", "weight": "Medium", "keywords": ["care coordination", "referral"] },
+    { "id": "IA_PM_2", "title": "Anticoagulant Management Improvements", "weight": "High", "keywords": ["population management"] }
+  ],
+  "promotingInteroperability": [
+    { "id": "PI_EP_1", "title": "e-Prescribing", "keywords": ["eprescribe", "erx"] },
+    { "id": "PI_HIE_1", "title": "Support Electronic Referral Loops by Sending Health Information", "keywords": ["hie", "referral", "exchange"] },
+    { "id": "PI_PEA_1", "title": "Provide Patients Electronic Access to Their Health Information", "keywords": ["patient access", "portal"] }
+  ]
+}

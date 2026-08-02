@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "model": "CMS-HCC (V24-structured seed)",
+    "illustrative": true,
+    "status": "ILLUSTRATIVE SEED — real HCC categories, labels, hierarchies and dx→HCC structure; coefficients and demographic factors are PLACEHOLDERS. Load the official annual CMS risk-adjustment model files (the coefficient CSVs + full ICD-10→CC crosswalk) before any payment-grade use.",
+    "howToPopulate": "Replace demographic[], hccCoeff[] and dxToHcc{} with the official CMS values (same shape). ESRD-HCC and Rx-HCC live under byModel; populate the same way. The engine (engine/hcc.mjs) needs no code change.",
+    "source": "CMS Risk Adjustment model software / Rate Announcement"
+  },
+  "models": ["CMS-HCC", "ESRD-HCC", "Rx-HCC"],
+  "segments": {
+    "CNA": "Community, Non-Dual, Aged",
+    "CND": "Community, Non-Dual, Disabled",
+    "CFA": "Community, Full-Benefit Dual, Aged",
+    "CFD": "Community, Full-Benefit Dual, Disabled",
+    "CPA": "Community, Partial-Benefit Dual, Aged",
+    "CPD": "Community, Partial-Benefit Dual, Disabled",
+    "INS": "Institutional"
+  },
+  "demographic": {
+    "CNA": {
+      "F65_69": 0.323, "F70_74": 0.396, "F75_79": 0.470, "F80_84": 0.546, "F85_89": 0.620, "F90_94": 0.664, "F95_GT": 0.664,
+      "M65_69": 0.410, "M70_74": 0.488, "M75_79": 0.560, "M80_84": 0.641, "M85_89": 0.744, "M90_94": 0.809, "M95_GT": 0.809
+    },
+    "CND": {
+      "F35_44": 0.290, "F45_54": 0.330, "F55_59": 0.370, "F60_64": 0.410,
+      "M35_44": 0.300, "M45_54": 0.340, "M55_59": 0.380, "M60_64": 0.420
+    },
+    "INS": {
+      "F65_69": 1.000, "F70_74": 1.020, "F75_79": 1.040, "F80_84": 1.070, "F85_89": 1.100, "F90_94": 1.130, "F95_GT": 1.130,
+      "M65_69": 1.050, "M70_74": 1.070, "M75_79": 1.090, "M80_84": 1.120, "M85_89": 1.160, "M90_94": 1.190, "M95_GT": 1.190
+    }
+  },
+  "hccLabels": {
+    "HCC17": "Diabetes with Acute Complications",
+    "HCC18": "Diabetes with Chronic Complications",
+    "HCC19": "Diabetes without Complication",
+    "HCC22": "Morbid Obesity",
+    "HCC40": "Rheumatoid Arthritis & Inflammatory Connective Tissue Disease",
+    "HCC55": "Substance Use Disorder, Moderate/Severe, or Substance Use with Complications",
+    "HCC59": "Major Depressive, Bipolar, and Paranoid Disorders",
+    "HCC85": "Congestive Heart Failure",
+    "HCC96": "Specified Heart Arrhythmias",
+    "HCC108": "Vascular Disease",
+    "HCC111": "Chronic Obstructive Pulmonary Disease",
+    "HCC136": "Chronic Kidney Disease, Stage 5",
+    "HCC137": "Chronic Kidney Disease, Severe (Stage 4)",
+    "HCC138": "Chronic Kidney Disease, Moderate (Stage 3)"
+  },
+  "hierarchies": [
+    ["HCC17", "HCC18", "HCC19"],
+    ["HCC136", "HCC137", "HCC138"]
+  ],
+  "hccCoeff": {
+    "CNA": {
+      "HCC17": 0.302, "HCC18": 0.302, "HCC19": 0.105, "HCC22": 0.250, "HCC40": 0.374,
+      "HCC55": 0.383, "HCC59": 0.309, "HCC85": 0.323, "HCC96": 0.268, "HCC108": 0.288,
+      "HCC111": 0.328, "HCC136": 0.289, "HCC137": 0.289, "HCC138": 0.069
+    },
+    "CND": {
+      "HCC17": 0.320, "HCC18": 0.320, "HCC19": 0.120, "HCC22": 0.300, "HCC40": 0.400,
+      "HCC55": 0.470, "HCC59": 0.420, "HCC85": 0.360, "HCC96": 0.290, "HCC108": 0.300,
+      "HCC111": 0.360, "HCC136": 0.300, "HCC137": 0.300, "HCC138": 0.090
+    },
+    "INS": {
+      "HCC17": 0.440, "HCC18": 0.440, "HCC19": 0.150, "HCC22": 0.330, "HCC40": 0.430,
+      "HCC55": 0.470, "HCC59": 0.380, "HCC85": 0.220, "HCC96": 0.180, "HCC108": 0.240,
+      "HCC111": 0.290, "HCC136": 0.230, "HCC137": 0.230, "HCC138": 0.060
+    }
+  },
+  "interactions": {
+    "CNA": [
+      { "id": "HF_DIABETES", "requires": ["HCC85", "HCC18"], "coeff": 0.121 },
+      { "id": "HF_COPD", "requires": ["HCC85", "HCC111"], "coeff": 0.145 },
+      { "id": "HF_CKD", "requires": ["HCC85", "HCC136"], "coeff": 0.101 }
+    ],
+    "CND": [
+      { "id": "HF_DIABETES", "requires": ["HCC85", "HCC18"], "coeff": 0.130 },
+      { "id": "DISABLED_HF", "requires": ["HCC85"], "flag": "disabled", "coeff": 0.080 }
+    ],
+    "INS": []
+  },
+  "dxToHcc": {
+    "E1010": "HCC17", "E1110": "HCC17", "E1100": "HCC17",
+    "E1122": "HCC18", "E1142": "HCC18", "E1165": "HCC18", "E1151": "HCC18", "E1140": "HCC18", "E1121": "HCC18",
+    "E119": "HCC19", "E118": "HCC19", "E1100X": "HCC19",
+    "E6601": "HCC22", "Z6842": "HCC22",
+    "M069": "HCC40", "M0609": "HCC40", "M068": "HCC40",
+    "F1420": "HCC55", "F1120": "HCC55", "F1020": "HCC55", "F1220": "HCC55",
+    "F320": "HCC59", "F322": "HCC59", "F332": "HCC59", "F333": "HCC59", "F310": "HCC59", "F3130": "HCC59",
+    "I509": "HCC85", "I5022": "HCC85", "I5032": "HCC85", "I5042": "HCC85", "I5043": "HCC85", "I5023": "HCC85",
+    "I480": "HCC96", "I481": "HCC96", "I4891": "HCC96", "I472": "HCC96",
+    "I739": "HCC108", "I7020": "HCC108", "I700": "HCC108", "I2510": "HCC108",
+    "J449": "HCC111", "J440": "HCC111", "J441": "HCC111", "J439": "HCC111",
+    "N185": "HCC136", "N186": "HCC136",
+    "N184": "HCC137",
+    "N1830": "HCC138", "N1831": "HCC138", "N1832": "HCC138"
+  },
+  "byModel": {
+    "ESRD-HCC": { "_note": "Load official ESRD-HCC dialysis/functioning-graft tables here (same shape)." },
+    "Rx-HCC": { "_note": "Load official Rx-HCC (Part D) coefficient + RXHCC mapping tables here (same shape)." }
+  }
+}
