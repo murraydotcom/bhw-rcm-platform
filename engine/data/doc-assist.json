@@ -172,6 +172,136 @@
     "modifiers": {},
     "source": "Non-invasive vascular study documentation — validate vs BHW Coders' Specialty Guide"
   },
+  "94010": {
+    "supports": [
+      "Spirometry (pulmonary function test): graphic record of total and timed vital capacity and expiratory flow rate(s), with or without maximal voluntary ventilation — evaluates COPD, asthma, pulmonary fibrosis",
+      "Patient performs a forced expiratory maneuver (blows ~5-6 sec); the technician may repeat for the best result; the physician interprets the flow/volume graph",
+      "Related codes: infants/children 94011-94013; patient-initiated 30-day spirometry 94014-94016; separate vital capacity 94150; maximal voluntary ventilation 94200"
+    ],
+    "modifiers": {
+      "26": "Professional component (interpretation) only",
+      "TC": "Technical component only"
+    },
+    "modifiersAllowed": [
+      "26",
+      "52",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AQ",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "KX",
+      "PD",
+      "Q5",
+      "Q6",
+      "QJ",
+      "TC",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 94010 (spirometry); MUE 1"
+  },
+  "94060": {
+    "supports": [
+      "Bronchodilation responsiveness: spirometry as in 94010, performed pre- and post-bronchodilator administration, to evaluate the efficacy of the bronchodilator",
+      "Spirometry is performed before and after inhaling the bronchodilator; record the difference between the two results (responsiveness of the airways to the drug)",
+      "Soft nose clips ensure all air enters the mouthpiece; the spirometer records in/outflow and plots the airflow"
+    ],
+    "modifiers": {
+      "26": "Professional component (interpretation) only",
+      "TC": "Technical component only"
+    },
+    "modifiersAllowed": [
+      "26",
+      "52",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AQ",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "KX",
+      "PD",
+      "Q5",
+      "Q6",
+      "QJ",
+      "TC",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 94060 (bronchodilation responsiveness); MUE 1"
+  },
+  "94640": {
+    "supports": [
+      "Pressurized or nonpressurized inhalation treatment for acute airway obstruction (therapeutic) and/or for diagnostic sputum induction — via aerosol generator, nebulizer, metered-dose inhaler, or IPPB device",
+      "Represents a SINGLE encounter for short-term inhalation treatment (even if paused/resumed, or more than one treatment during the encounter). Spirometry performed before/after is included and not reported separately",
+      "If more than one treatment at different times on the same date, report 94640 again with modifier 76 (some payers don't recognize 76 — verify). Do NOT report with 94644-94645 under any circumstances",
+      "For nebulizer treatments choose either 94640 or 94664; also reportable for intrapulmonary percussive ventilator (IPV)"
+    ],
+    "modifiers": {
+      "76": "Repeat procedure, same physician — for a second same-date treatment at a different time (verify payer acceptance)"
+    },
+    "modifiersAllowed": [
+      "52",
+      "53",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "99",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "KX",
+      "N1",
+      "N2",
+      "N3",
+      "PD",
+      "Q5",
+      "Q6",
+      "QJ",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 94640 (inhalation treatment); MUE 4"
+  },
   "95921": {
     "supports": [
       "Autonomic function test — cardiovagal innervation (parasympathetic)",
