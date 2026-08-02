@@ -67,6 +67,14 @@ export function calcRAF(bene = {}, MODEL = {}) {
   let demoFactor = cell != null && cell in demoTable ? demoTable[cell] : 0;
   if (cell == null) notes.push("Age/sex not provided — demographic factor omitted.");
   else if (!(cell in demoTable)) notes.push(`No demographic factor for ${seg}/${cell} in the loaded model.`);
+  /* Demographic add-factors (originally-disabled, long-term institutional Medicaid) */
+  const isAged = /A$/.test(seg);
+  const add = M.addFactors || {};
+  if (bene.origDisabled && isAged) {
+    const t = (String(bene.sex || "").toUpperCase().startsWith("F") ? add.origDisabledFemale : add.origDisabledMale) || {};
+    if (seg in t) demoFactor += t[seg];
+  }
+  if (bene.medicaid && seg === "INS" && add.ltiMcaid && seg in add.ltiMcaid) demoFactor += add.ltiMcaid[seg];
 
   /* 2) Map dx → HCCs ------------------------------------------------------- */
   const dxToHcc = M.dxToHcc || {};
@@ -81,9 +89,17 @@ export function calcRAF(bene = {}, MODEL = {}) {
   }
 
   /* 3) Apply disease hierarchies (keep most-severe, zero the rest) --------- */
-  const hierarchies = M.hierarchies || [];   // each: ordered most-severe → least
   const dropped = [];
-  for (const ordered of hierarchies) {
+  /* CMS-native map: each present HCC zeros the HCCs it dominates. */
+  if (M.hierarchyMap) {
+    for (const h of Array.from(present.keys())) {
+      for (const dom of M.hierarchyMap[h] || []) {
+        if (present.has(dom)) { dropped.push({ hcc: dom, label: label(M, dom), supersededBy: h }); present.delete(dom); }
+      }
+    }
+  }
+  /* Ordered-list form (used by the seed / HHS models). */
+  for (const ordered of M.hierarchies || []) {
     const inList = ordered.filter((h) => present.has(h));
     if (inList.length <= 1) continue;
     const keep = inList[0];                   // most severe present
@@ -107,12 +123,21 @@ export function calcRAF(bene = {}, MODEL = {}) {
 
   /* 5) Disease interactions ------------------------------------------------ */
   const keptSet = new Set(present.keys());
+  /* A requirement token is satisfied if it is a present HCC, a disease GROUP
+   * with any member present, or a beneficiary flag (DISABL). */
+  const groups = M.groups || {};
+  const reqOk = (tok) => {
+    if (keptSet.has(tok)) return true;
+    if (tok === "DISABL" || tok === "DISABLED") return !!bene.disabled;
+    if (groups[tok]) return groups[tok].some((h) => keptSet.has(h));
+    return false;
+  };
   const interactions = [];
   let interactionSum = 0;
   for (const it of (M.interactions && M.interactions[seg]) || []) {
-    const hccsOk = (it.requires || []).every((h) => keptSet.has(h));
+    const reqsOk = (it.requires || []).every(reqOk);
     const flagOk = !it.flag || (it.flag === "disabled" ? !!bene.disabled : it.flag === "origDisabled" ? !!bene.origDisabled : true);
-    if (hccsOk && flagOk) { interactionSum += it.coeff || 0; interactions.push({ id: it.id, coeff: it.coeff || 0 }); }
+    if (reqsOk && flagOk) { interactionSum += it.coeff || 0; interactions.push({ id: it.id, coeff: it.coeff || 0 }); }
   }
 
   const raf = round3(demoFactor + diseaseSum + interactionSum);
@@ -122,10 +147,15 @@ export function calcRAF(bene = {}, MODEL = {}) {
     hccs, dropped, interactions, unmapped,
     breakdown: { demographic: round3(demoFactor), disease: round3(diseaseSum), interactions: round3(interactionSum) },
     raf, notes,
-    illustrative: !!(MODEL._meta && MODEL._meta.illustrative),
+    illustrative: modelIllustrative(M, MODEL),
   };
 }
 
+/* The active model's own _meta wins; fall back to the outer file's _meta. */
+function modelIllustrative(M, MODEL) {
+  if (M && M._meta && "illustrative" in M._meta) return !!M._meta.illustrative;
+  return !!(MODEL._meta && MODEL._meta.illustrative);
+}
 function label(M, hcc) { return (M.hccLabels && M.hccLabels[hcc]) || hcc; }
 function round3(n) { return Math.round((Number(n) + Number.EPSILON) * 1000) / 1000; }
 
@@ -169,7 +199,7 @@ function calcHHS(bene, M, MODEL, modelName) {
   const sub = (M.subModels && M.subModels[ageModel]) || {};
   const base = {
     model: modelName, segment: `${ageModel} · ${metal}`, segmentLabel: `HHS-HCC ${ageModel} model, ${metal}`,
-    illustrative: !!(MODEL._meta && MODEL._meta.illustrative),
+    illustrative: modelIllustrative(M, MODEL),
   };
   if (ageModel == null) { notes.push("Age not provided — cannot select HHS-HCC sub-model."); return { ...base, demographic: { cell: null, factor: 0 }, hccs: [], dropped: [], interactions: [], unmapped: [], breakdown: { demographic: 0, disease: 0, interactions: 0 }, raf: 0, notes }; }
   if (ageModel === "Infant" && !sub.hccCoeff) notes.push("Infant model uses a maturity × severity structure — load the Infant tables to score infants.");

@@ -9,7 +9,9 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { calcRAF, ageBand, demoCell, segmentFor, hhsAgeModel } from "../hcc.mjs";
 
-const MODEL = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "data", "hcc-model.json"), "utf8"));
+const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+const MODEL = JSON.parse(readFileSync(join(dataDir, "hcc-model.json"), "utf8"));
+const V22 = JSON.parse(readFileSync(join(dataDir, "hcc-v22.json"), "utf8"));
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≈ ${b}`);
 
 test("age bands and demographic cells", () => {
@@ -108,4 +110,28 @@ test("HHS-HCC defaults to Silver and notes a missing metal level", () => {
   const r = calcRAF({ model: "HHS-HCC", age: 42, sex: "F", dxCodes: [] }, MODEL);
   assert.equal(r.metal, "Silver");
   assert.ok(r.notes.some((n) => /Silver/.test(n)));
+});
+
+/* ---- Real CMS-HCC v22 package (official coefficients) -------------------- */
+test("v22: real dx→HCC crosswalk + demographic + single HCC coefficient", () => {
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.9"] }, V22); // HCC19, non-dual aged
+  assert.equal(r.illustrative, false);
+  assert.equal(r.segment, "CNA");
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC19"]);
+  near(r.raf, 0.374 + 0.104);            // official CNA F70_74 + HCC19
+  assert.equal(r.interactions.length, 0);
+});
+
+test("v22: hierarchy map — acute diabetes supersedes chronic and uncomplicated", () => {
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E10.10", "E11.65", "E11.9"] }, V22); // HCC17 > HCC18 > HCC19
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC17"]);
+  assert.deepEqual(r.dropped.map((d) => d.hcc).sort(), ["HCC18", "HCC19"]);
+  near(r.raf, 0.374 + 0.318);            // demo + HCC17 CNA
+});
+
+test("v22: group-based interaction fires (CHF × diabetes group)", () => {
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.65", "I50.9"] }, V22); // HCC18 + HCC85
+  assert.ok(r.interactions.some((i) => i.id === "HCC85_gDiabetesMellit"));
+  near(r.breakdown.interactions, 0.154); // official CNA interaction coefficient
+  near(r.raf, 0.374 + 0.318 + 0.323 + 0.154);
 });

@@ -119,10 +119,10 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
       </div>
 
       <div class="note">
-        <b>Illustrative seed data.</b> The RAF <b>methodology</b> is real (segments, age/sex cells, disease
-        hierarchies, interactions), but the coefficient tables and ICD-10→HCC crosswalk shipped here are
-        placeholders. Load the official CMS model file below (or the AAPC data) before any payment-grade use.
-        MIPS is a small starter measure set — replace with the full QPP/AAPC list.
+        <b>CMS-HCC v22 is loaded from the official CMS package</b> — real relative factors, hierarchies,
+        interactions and the full ICD-10→HCC crosswalk (~9,800 codes). ESRD-/Rx-HCC and HHS-HCC are still
+        seeds pending their official data; the "seed model" tag flags those. Always confirm against the CMS
+        software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
       </div>
 
       <div class="grid g2">
@@ -295,16 +295,36 @@ function renderMVP(id) {
 }
 
 /* ---- Load data + wire --------------------------------------------------- */
-async function loadModel(obj) {
-  MODEL = obj;
-  const sel = $("model"); sel.innerHTML = (MODEL.models || ["CMS-HCC"]).map((m) => `<option>${esc(m)}</option>`).join("");
-  const seed = MODEL._meta && MODEL._meta.illustrative;
+function activeModelMeta() {
+  const name = $("model").value;
+  const M = (MODEL.byModel && MODEL.byModel[name]) || MODEL;
+  return M._meta || MODEL._meta || {};
+}
+function updateModelPill() {
+  const seed = !!activeModelMeta().illustrative;
   $("modelPill").className = "pill " + (seed ? "warn" : "");
   $("modelPill").textContent = seed ? "seed model" : "official model";
+}
+async function loadModel(obj) {
+  MODEL = obj;
+  $("model").innerHTML = (MODEL.models || ["CMS-HCC"]).map((m) => `<option>${esc(m)}</option>`).join("");
+  updateModelPill();
 }
 
 (async function init() {
   try { const r = await fetch("../engine/data/hcc-model.json"); if (r.ok) await loadModel(await r.json()); } catch (e) { $("rafOut").innerHTML = `<div class="empty">Could not load hcc-model.json.</div>`; }
+  // Register the real CMS-HCC v22 package as a selectable (default) model.
+  try {
+    const r = await fetch("../engine/data/hcc-v22.json");
+    if (r.ok) {
+      const v22 = await r.json();
+      MODEL.byModel = MODEL.byModel || {};
+      MODEL.byModel["CMS-HCC v22"] = v22;
+      MODEL.models = ["CMS-HCC v22", ...(MODEL.models || []).filter((m) => m !== "CMS-HCC v22")];
+      $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
+      updateModelPill();
+    }
+  } catch (e) { /* falls back to the seed CMS-HCC */ }
   try { const r = await fetch("../engine/data/mips.json"); if (r.ok) MIPS = await r.json(); } catch (e) {}
   const s = coverageSummary(MIPS);
   $("mipsPill").textContent = `${s.total} measures loaded`;
@@ -315,7 +335,7 @@ async function loadModel(obj) {
   $("mvpSel").addEventListener("change", (e) => renderMVP(e.target.value));
 
   syncModelInputs();
-  $("model").addEventListener("change", () => { syncModelInputs(); runRAF(); });
+  $("model").addEventListener("change", () => { syncModelInputs(); updateModelPill(); runRAF(); });
   $("metal").addEventListener("change", runRAF);
   $("calcBtn").onclick = runRAF;
   $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
