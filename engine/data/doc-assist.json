@@ -786,5 +786,15 @@
     ],
     "modifiers": {},
     "source": "CMS depression screening — validate vs BHW Coders' Specialty Guide"
+  },
+  "G2214": {
+    "supports": [
+      "Psychiatric Collaborative Care Management (CoCM): a care team of the treating (directing) provider, a psychiatric consultant, and a behavioral health care manager — report the first 30 minutes of behavioral health care-manager activities in an initial or subsequent calendar month",
+      "Behavioral health care-manager activities: proactive, systematic follow-up using validated rating scales and a registry; assessment of compliance, tolerance and clinical response; brief evidence-based interventions (e.g., behavioral activation, motivational interviewing)",
+      "Weekly caseload consultation with the psychiatric consultant; treatment-change recommendations and relapse-prevention planning documented",
+      "Use G2214 when the minutes required for 99492 (first 70 min, initial month) or 99493 (first 60 min, subsequent month) are NOT met — e.g. the patient is seen but is then hospitalized or referred. Document the qualifying time; confirm payer coverage and reporting rules"
+    ],
+    "modifiers": {},
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — HCPCS G2214 (psychiatric CoCM, first 30 min)"
   }
 }
