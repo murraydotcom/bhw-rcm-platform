@@ -119,6 +119,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
       <div class="label">Pre-Bill</div>
       <div class="nav-item active"><span class="ic">◈</span> Encounter Scrub</div>
       <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
+      <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
       <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
     </nav>
     <div class="sidebar-foot">Themis engine · shared with the RCM app.<br>Decision support — validate before billing.</div>
@@ -206,6 +207,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 
           <div class="card" style="margin-bottom:16px">
             <div class="card-head"><h3 id="findTitle">Findings</h3><span id="ovStatus"></span></div>
+            <div id="paBar"></div>
             <div id="findings"><div class="empty">Enter an encounter and run the scrub.</div></div>
           </div>
 
@@ -247,6 +249,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 <script type="module">
 import { suggestEM, docChecklist } from "../engine/assist.mjs";
 import { analyzeNote } from "../engine/note-analyze.mjs";
+import { checkPriorAuth } from "../engine/prior-auth.mjs";
 
 /* Payer options use the exact strings the engine's payer-specific rules key off,
  * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
@@ -258,7 +261,7 @@ const PAYERS = [
 
 const $ = (id) => document.getElementById(id);
 const S = { patientType: "established" };
-let DOC_ASSIST = {};
+let DOC_ASSIST = {}, PA_RULES = {};
 const CDM = (window.DATA && window.DATA.cdm) || [];
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
@@ -350,9 +353,24 @@ function renderNote(claim) {
       <div class="sr">${esc(c.source)}</div></div></div>`).join("");
 }
 
+function renderPA(claim) {
+  const bar = $("paBar");
+  const codes = [claim.em, claim.sameDayProc].filter(Boolean);
+  if (!codes.length || !Object.keys(PA_RULES).length) { bar.innerHTML = ""; return; }
+  const tone = { required: "var(--denied)", conditional: "#9a6f16", not_required: "#5c7050", unknown: "var(--ink-soft)" };
+  const label = { required: "Prior auth REQUIRED", conditional: "Prior auth — conditional", not_required: "No prior auth needed", unknown: "Prior auth — verify" };
+  const rows = codes.map((code) => {
+    const r = checkPriorAuth({ payer: claim.payer, code }, PA_RULES);
+    return `<span style="color:${tone[r.status]};font-weight:700">✋ ${esc(code)}: ${esc(label[r.status])}</span>`;
+  });
+  bar.innerHTML = `<div class="mini" style="padding:8px 11px;border:1px dashed var(--line);border-radius:9px;margin-bottom:10px">
+    ${rows.join(" &nbsp;·&nbsp; ")} <a href="prior-auth.html" style="text-decoration:underline;opacity:.75">CRD workflow →</a></div>`;
+}
+
 function run() {
   const claim = readClaim();
   renderFindings(window.scrubClaim(claim));
+  renderPA(claim);
   renderChecklist([claim.em, claim.sameDayProc]);
   renderEM(claim);
   renderNote(claim);
@@ -399,6 +417,10 @@ function renderCoverage() {
     const res = await fetch("../engine/data/doc-assist.json");
     if (res.ok) DOC_ASSIST = await res.json();
   } catch (e) { /* checklist/E-M assist degrade to "not loaded" */ }
+  try {
+    const res = await fetch("../engine/data/pa-rules.json");
+    if (res.ok) PA_RULES = await res.json();
+  } catch (e) { /* PA bar degrades to hidden */ }
   renderCoverage();
   run();
 })();
