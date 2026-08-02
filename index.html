@@ -540,7 +540,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 
       <!-- ==================== RCM: CHARGE MASTER ==================== -->
       <section class="view" id="chargemaster">
-        <div class="page-head"><h2>Charge Master (CDM)</h2><p>135 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Reflects actual BHW services: EKG, PFTs &amp; inhaler training, SBIRT screenings, developmental screenings, <b>APCM</b> for chronic care, <b>CoCM</b> for behavioral health, <b>DSMT/MNT</b>, the <b>Medicare DPP (MDPP)</b> series, and Flow&rsquo;s ABPM / autonomic-sudomotor / ABI-TBI / tilt testing. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0.</p></div>
+        <div class="page-head"><h2>Charge Master (CDM)</h2><p>137 CPT/HCPCS codes — the full per-program master across the clinical programs (Primary Care, Mind &amp; Mood, Population Health, CharmEd Minds, Flow Vascular). Reflects actual BHW services: EKG, PFTs &amp; inhaler training, SBIRT screenings, developmental screenings, <b>APCM</b> for chronic care, <b>CoCM</b> for behavioral health, <b>DSMT/MNT</b>, the <b>Medicare DPP (MDPP)</b> series, and Flow&rsquo;s ABPM / autonomic-sudomotor / ABI-TBI / tilt testing. Only G0557 ($125) and 99484 ($100) have confirmed rates today — blanks show <b>&ldquo;rate not set&rdquo;</b>, never $0.</p></div>
         <div class="note" style="margin-bottom:14px"><b>Rates pending.</b> Standard Charge and payer allowables are mostly blank until the <b>Medicare MPFS</b> pull and payer fee schedules fill them in — no rebuild needed. Diabetes services (DPP/MDPP, DSMT, MNT) sit under Population Health. <b>MDPP (G9873–G9891) is pending your Medicare DPP supplier enrollment</b> — verify those milestone codes against CMS&rsquo;s current MDPP HCPCS list before billing. Non-claim programs (EduMedia, ELVT&rsquo;D, The Foundation) carry no CPT codes.</div>
         <div class="section-tools">
           <input type="text" placeholder="Search CPT / description…" style="flex:1;min-width:200px">
@@ -1951,6 +1951,8 @@ const DATA = {
     ["94010","Spirometry","Primary Care (BHW)",null,null,null],
     ["94060","Spirometry, pre/post bronchodilator","Primary Care (BHW)",null,null,null],
     ["94070","Bronchospasm provocation evaluation","Primary Care (BHW)",null,null,null],
+    ["94150","Vital capacity, total (separate procedure)","Primary Care (BHW)",null,null,null],
+    ["94200","Maximum breathing capacity (MVV)","Primary Care (BHW)",null,null,null],
     ["94640","Nebulizer / inhalation treatment","Primary Care (BHW)",null,null,null],
     ["94664","Inhaler / nebulizer use training","Primary Care (BHW)",null,null,null],
     ["G0442","Annual alcohol misuse screening","Primary Care (BHW)",null,null,null],
