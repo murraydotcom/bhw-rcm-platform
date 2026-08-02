@@ -2275,8 +2275,10 @@ const DATA = {
     {id:"cf-mppr-cv", type:"payer-custom", scope:"payer", payer:"CareFirst / BCBS", label:"CareFirst MPPR: 2nd+ same-day cardiovascular diagnostic paid at 75% (technical component)", sev:"info", source:"CareFirst PP CO 400.03", fix:"Expect reduced payment on the lower-RVU cardiovascular diagnostic when multiple are billed same day — a reduction, not a denial."},
     {id:"prev-em-25", type:"modifier",     scope:"national", payer:null, label:"Preventive visit + problem E/M same day requires modifier 25", sev:"warn", source:"CPT / payer E/M policies", fix:"Append modifier 25 to the problem E/M billed the same day as a preventive visit (99381–99397); document a separate, significant problem (screenings are not separately payable)."},
     {id:"curative-hi", type:"payer-custom", scope:"payer", payer:"Curative", label:"Curative prepay/postpay-reviews high-level E/M (99204/99205/99214/99215)", sev:"warn", source:"Curative E/M Payment Policy", fix:"Ensure MDM or time fully supports the level — Curative flags and may downcode high-level E/M."},
-    {id:"addon-primary",type:"necessity",  scope:"national", payer:null, label:"Add-on code billed without its required primary code", sev:"block", source:"CPT Appendix D / CMS; UHC 2026R0071C", fix:"Report the add-on only with its primary service on the same claim (e.g. 96121 w/ 96116, 99439 w/ 99490, 99458 w/ 99457, 99494 w/ 99492/99493) — a stand-alone add-on denies."},
+    {id:"addon-primary",type:"necessity",  scope:"national", payer:null, label:"Add-on code billed without its required primary code", sev:"block", source:"CPT Appendix D / CMS; UHC 2026R0071C; Optum BH 2017RP202A", fix:"Report the add-on only with its primary service on the same claim (e.g. 96121 w/ 96116, 99439 w/ 99490, 99458 w/ 99457, 99494 w/ 99492/99493; psych 90785 w/ 90833/90836/90853; 90833/90836/90838 w/ E/M) — a stand-alone add-on denies."},
     {id:"uhc-emreview",type:"payer-custom", scope:"payer", payer:"UnitedHealthcare", label:"UHC compares E/M levels to peer data and may downcode high-level E/M (99204/99205/99214/99215)", sev:"warn", source:"UHC E/M Policy 2026R5007A", fix:"Ensure MDM (2 of 3) or total time supports the level; UHC requests records when billing deviates from peers and may downcode."},
+    {id:"testing-set",type:"necessity",   scope:"national", payer:null, label:"Psychological and neuropsychological testing evaluation code sets billed together", sev:"block", source:"Optum BH 2019RP501A (APA testing guide)", fix:"Bill only one evaluation set per testing episode — 96130/96131 (psychological) OR 96132/96133 (neuropsychological), whichever is predominant. Billing both denies (not an NCCI PTP pair, so a modifier will not clear it)."},
+    {id:"family-therapy",type:"frequency",scope:"national", payer:null, label:"More than one family-psychotherapy code on the same date of service", sev:"block", source:"Optum BH 2017RP501A; NCCI MFPD", fix:"Only one family therapy code (90846, 90847, or 90849) is reimbursable per family per day, regardless of separate sessions — a second denies and no modifier clears it."},
     {id:"uhc-replace",type:"payer-custom",  scope:"payer", payer:"UnitedHealthcare", label:"UHC denies NPFS status-'I' codes that have a replacement", sev:"block", source:"UHC Replacement Codes 2026R0128A", fix:"Report the CMS replacement code: telehealth 98000–98015 → 99202–99215 + POS 02/10; S9470 → 97802/97803; 99417 → G2212."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
@@ -3832,7 +3834,7 @@ function scrubClaim(c){
   const isPrev=x=>/^(9938[1-7]|9939[1-7])$/.test(x||''), isProbEM=x=>/^(9920[2-5]|9921[1-5])$/.test(x||'');
   if(((isPrev(c.em)&&isProbEM(c.sameDayProc))||(isProbEM(c.em)&&isPrev(c.sameDayProc))) && !has('25')) add('prev-em-25');
   // Add-on code billed without its required primary (CPT Appendix D / CMS)
-  const ADDON={"96121":/^96116$/,"96131":/^96130$/,"99439":/^99490$/,"99437":/^99491$/,"99489":/^99487$/,"99458":/^99457$/,"99494":/^(99492|99493)$/,"96113":/^96112$/,"99498":/^99497$/,"99425":/^99424$/,"99427":/^99426$/,"90833":/^992\d\d$/,"90836":/^992\d\d$/,"90838":/^992\d\d$/,"90785":/^(90791|90792|9083[2478]|992\d\d)$/};
+  const ADDON={"96121":/^96116$/,"96131":/^96130$/,"99439":/^99490$/,"99437":/^99491$/,"99489":/^99487$/,"99458":/^99457$/,"99494":/^(99492|99493)$/,"96113":/^96112$/,"96133":/^96132$/,"96137":/^9613[026]$/,"96139":/^9613[028]$/,"99498":/^99497$/,"99425":/^99424$/,"99427":/^99426$/,"90833":/^992\d\d$/,"90836":/^992\d\d$/,"90838":/^992\d\d$/,"90785":/^(90791|90792|9083[2-8]|90853|992\d\d)$/};
   const addonPrim=ADDON[c.em];
   if(addonPrim && !(c.sameDayProc && addonPrim.test(c.sameDayProc))) add('addon-primary');
   // payer-specific
@@ -3849,6 +3851,12 @@ function scrubClaim(c){
     if(/^(Aetna|Cigna|UnitedHealthcare|BCBS MD)$/.test(p)) add('g2211-comm');
   }
   if(p==='Cigna' && /^(96130|96131|96116|96121|96125)$/.test(c.em)) add('cigna-testauth');
+  if(c.sameDayProc){
+    const PSY=/^9613[01]$/, NEU=/^9613[23]$/;
+    if((PSY.test(c.em)&&NEU.test(c.sameDayProc))||(NEU.test(c.em)&&PSY.test(c.sameDayProc))) add('testing-set');
+    const FAM=/^9084[679]$/;
+    if(FAM.test(c.em)&&FAM.test(c.sameDayProc)) add('family-therapy');
+  }
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
   if(p==='Curative' && /^(99204|99205|99214|99215)$/.test(c.em)) add('curative-hi');
