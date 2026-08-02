@@ -2281,6 +2281,10 @@ const DATA = {
     {id:"family-therapy",type:"frequency",scope:"national", payer:null, label:"More than one family-psychotherapy code on the same date of service", sev:"block", source:"Optum BH 2017RP501A; NCCI MFPD", fix:"Only one family therapy code (90846, 90847, or 90849) is reimbursable per family per day, regardless of separate sessions — a second denies and no modifier clears it."},
     {id:"hb-nonphysician",type:"payer-custom",scope:"national", payer:null, label:"Health & Behavior code (96156-96171) — non-physician QHP only", sev:"warn", source:"Optum BH 2020P501A", fix:"H&B codes are payable only when rendered by a non-physician QHP (psychologist, LCSW, etc.); a physician performing the service bills E/M instead. Point the claim to the medical ICD-10 (not a DSM/mental-health dx). Note 96170/96171 are Medicare non-covered."},
     {id:"abpm-ncd",   type:"necessity",   scope:"national", payer:null, label:"ABPM (93784-93790) covered only for suspected white-coat / masked hypertension", sev:"warn", source:"CMS NCD 20.19", fix:"Medicare covers ABPM once per year only for: (a) suspected white-coat HTN — office avg >130/80 and <160/100 over two visits (≥2 readings each) plus ≥2 out-of-office readings <130/80; or (b) suspected masked HTN — office avg 120-129 systolic or 75-79 diastolic over two visits plus ≥2 out-of-office readings ≥130/80. Confirm the qualifying dx and a full ≥24-hr recording; screening/routine ABPM denies."},
+    {id:"aft-dx",     type:"necessity",   scope:"national", payer:null, label:"Autonomic function test (95921-95924) needs a covered medical-necessity diagnosis", sev:"warn", source:"Novitas LCD L35395 / A54954", fix:"Covered only for the LCD's 48 ICD-10 diagnoses (diabetic autonomic neuropathy E1x.43, amyloidosis E85.x, autonomic degenerations G90.x, CRPS, orthostatic hypotension I95.1, syncope R55, hyperhidrosis R61, etc.). Screening — including in diabetes/hepatic/renal disease without autonomic signs or symptoms — is not covered. Utilization guideline ~once per patient per year; more invites medical review. A same-day E/M to evaluate the same autonomic symptoms is not separately identifiable."},
+    {id:"aft-dxbad",  type:"necessity",   scope:"national", payer:null, label:"Autonomic function test diagnosis is not on the LCD's covered list", sev:"block", source:"Novitas LCD L35395 / A54954", fix:"The pointed diagnosis is not among the 48 ICD-10 codes that support 95921-95924 under L35395 — the line will deny as not medically necessary. Confirm a covered dx or do not bill."},
+    {id:"aft-sudoscan",type:"necessity",  scope:"national", payer:null, label:"Sudomotor testing via Sudoscan / ESC device does not meet 95923", sev:"warn", source:"Novitas LCD L35395 / A54954", fix:"Sudoscan, ANSAR ANX 3.0, and similar electrochemical-skin-conductance (ESC) devices do not meet CPT 95923 — bill unlisted 95999 and note SUDOSCAN or ESC in Item 19. Reserve 95923 for QSART / thermoregulatory / silastic-imprint sudomotor testing."},
+    {id:"aft-9524dup",type:"necessity",   scope:"national", payer:null, label:"Combined autonomic test 95924 billed with 95921 or 95922 (duplication)", sev:"block", source:"Novitas LCD L35395 (Limitation 9); CPT", fix:"95924 (combined parasympathetic + sympathetic) duplicates 95921 (cardiovagal) and 95922 (vasomotor adrenergic); do not report 95924 with either on the same day."},
     {id:"uhc-replace",type:"payer-custom",  scope:"payer", payer:"UnitedHealthcare", label:"UHC denies NPFS status-'I' codes that have a replacement", sev:"block", source:"UHC Replacement Codes 2026R0128A", fix:"Report the CMS replacement code: telehealth 98000–98015 → 99202–99215 + POS 02/10; S9470 → 97802/97803; 99417 → G2212."},
     {id:"freq",       type:"frequency",   scope:"national", payer:null, label:"Exceeds Medicare preventive-service frequency", sev:"block", source:"CMS MLN006559 Medicare Preventive Services", fix:"Honor the per-code frequency (e.g. AWV every 12 months, IPPE once per lifetime); confirm the patient's prior-service date before billing."},
     {id:"ptp",        type:"ptp",         scope:"national", payer:null, label:"NCCI PTP bundling edit (Column1/Column2 pair)", sev:"block", source:"CMS NCCI PTP — Medicare + Medicaid; commercial payers apply the same Column1/Column2 edits (e.g. UnitedHealthcare policy 2025R0105A)", fix:"Column2 code is bundled into Column1: indicator 0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU} when separately identifiable."},
@@ -2339,6 +2343,13 @@ const DATA = {
     "G0109":{days:null,max:0, label:"10 hrs yr 1, 2 hrs/yr after", note:"DSMT group"},
     "93784":{days:365, max:1, label:"Every 12 months",          note:"ABPM — NCD 20.19: once per year for suspected white-coat or masked hypertension"}
   },
+  // Novitas LCD L35395 / Article A54954 — Autonomic Function Tests. 48 ICD-10-CM codes that
+  // support medical necessity for 95921/95922/95923/95924; anything else denies.
+  aft: { lcd:"L35395", article:"A54954", cpts:["95921","95922","95923","95924"], dx:[
+    "E10.41","E10.42","E10.43","E10.44","E10.49","E10.610","E11.41","E11.42","E11.43","E11.44","E11.49","E11.610",
+    "E13.41","E13.42","E13.43","E13.44","E13.49","E13.610","E85.0","E85.1","E85.3","E85.4","E85.81","E85.82","E85.89",
+    "G23.0","G23.1","G23.2","G23.8","G56.83","G57.83","G60.3","G60.8","G61.82","G90.09","G90.3","G90.50","G90.511",
+    "G90.512","G90.513","G90.521","G90.522","G90.523","G90.59","I95.1","R00.0","R55","R61"] },
   // NCCI PTP bundling edits (Practitioner v32.2, eff 07/01/2026), pairs both in the charge master.
   // key "Col1|Col2":modifierIndicator  (0 = never unbundle, 1 = unbundle with modifier 25/59/X{EPSU}).
   ptp: {
@@ -3862,6 +3873,16 @@ function scrubClaim(c){
   }
   if(/^96(156|158|159|164|165|167|168|170|171)$/.test(c.em)) add('hb-nonphysician');
   if(/^937(8[468]|90)$/.test(c.em)) add('abpm-ncd');
+  if(/^9592[1234]$/.test(c.em)){
+    const dx=(c.dx||'').toUpperCase().replace(/[^A-Z0-9.]/g,'');
+    if(dx){ if(!((DATA.aft&&DATA.aft.dx)||[]).includes(dx)) add('aft-dxbad','dx '+dx); }
+    else add('aft-dx');
+  }
+  if(c.em==='95923') add('aft-sudoscan');
+  if(c.sameDayProc){
+    const A2=/^9592[12]$/;
+    if((c.em==='95924'&&A2.test(c.sameDayProc))||(A2.test(c.em)&&c.sameDayProc==='95924')) add('aft-9524dup');
+  }
   if(c.telePOS && c.audioOnly && !has('93'))     add('tele-audio');
   if(p==='Humana' && /^(99204|99205|99214|99215)$/.test(c.em)) add('humana-dc');
   if(p==='Curative' && /^(99204|99205|99214|99215)$/.test(c.em)) add('curative-hi');
