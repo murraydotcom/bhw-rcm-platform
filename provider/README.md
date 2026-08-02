@@ -4,61 +4,69 @@ A **provider / billing-staff-facing** point-of-care app. Enter the encounter
 before the superbill leaves the room and get, in one place:
 
 1. **Coding assist** — E/M level from total time or MDM (2 of 3).
-2. **Pre-bill scrub** — payer-aware clean-claim edits (NCCI PTP, MUE, add-on,
-   covered-dx gating, modifier prompts) *before* submission.
+2. **Pre-bill scrub** — the real payer-aware clean-claim edits (NCCI PTP, MUE,
+   add-on, covered-dx gating, payer quirks) *before* submission.
 3. **Documentation support** — "to bill code X, the note must contain Y".
 
 The thesis: **more than Encoda + Codify Pro** — all three, proactively, payer-aware
-to BHW's mix, and owned. See the project brief for the full vision.
+to BHW's mix, and owned.
 
 ## Architecture
 
 ```
-engine/                 ← shared, pure JS (no DOM) — one source of truth
-  themis.mjs            scrubClaim() · suggestEM() · docChecklist()
-  pack.mjs              assemblePack() — normalizes data files → engine `pack`
-  data/*.json           rules + CMS/coverage tables (see engine/data/README.md)
-  test/themis.test.mjs  node --test harness (npm test)
-provider/index.html     ← this app (imports the engine, reuses BHW design system)
-index.html              ← the RCM Command Center (imports the same engine)
+engine/
+  themis.js         ← the REAL scrub engine (auto-generated, DO NOT EDIT).
+                       Exports DATA {scrubRules(49), ptp(1177)+ptpMcdDiff(161),
+                       mue(102)+mueMcdDiff, aft, freq, cdm(137)}, scrubClaim(c),
+                       thStatus(f), TH_SEV. Shared with the RCM Command Center.
+  assist.mjs        ← the NEW layer this app adds: suggestEM() + docChecklist()
+                       (pillars 1 & 3 — not in the scrub engine). Pure ESM.
+  data/doc-assist.json  ← note↔code map (E/M + AWV; validate vs Coders' Guide).
+  test/themis.test.mjs  ← node --test over the real engine + the assist layer.
+tools/extract-engine.js ← regenerates engine/themis.js from index.html.
+provider/index.html     ← this app: loads themis.js (global) + assist.mjs (module).
+index.html              ← the RCM Command Center (same engine).
 ```
 
-Static, no build step, no framework — matching the rest of the repo. Netlify
-serves it; secrets stay in `netlify/functions`.
+`scrubClaim(c)` uses a two-code model: `{ payer, em, sameDayProc, mods[], dx,
+units, awv, telePOS, audioOnly, seenWithin3y, timeDoc, g2211, priorDone,
+priorDays, priorCount }` → `[{ sev, ruleId, msg, fix }]`.
+
+Static, no build step, no framework — matching the rest of the repo.
 
 ## Run it
 
-The page uses ES-module imports + `fetch`, so it must be served over **http**
-(not `file://`):
+The page loads the engine as a classic script and `fetch`es the doc-assist JSON,
+so serve it over **http** (not `file://`):
 
 ```bash
-# from the repo root
-python3 -m http.server 8080      # or: npx serve
+python3 -m http.server 8080      # from the repo root  (or: npx serve)
 # open http://localhost:8080/provider/index.html
+npm test                          # engine + assist tests (12, all passing)
 ```
 
-Tests:
+## Regenerating the engine
+
+`engine/themis.js` is generated from the canonical `index.html` (the one that
+contains `scrubClaim` + the `DATA` tables) by:
 
 ```bash
-npm test
+node tools/extract-engine.js
 ```
 
-## ⚠️ Status — read this
+> Note: the `index.html` currently committed to this repo is the earlier demo
+> dashboard and does **not** contain the engine, so running the tool here will
+> report "capture failed". `engine/themis.js` was generated from the full
+> `index.html` and committed directly. Point the tool at the full `index.html`
+> to regenerate. After changing `scrubClaim()` or a `DATA` table, re-run it —
+> the RCM app and this app then stay in lockstep.
 
-This is the **scaffold + working loop**, not a finished product. The project
-brief assumed the "Themis" scrub engine and its 1,338-pair NCCI / MUE / 49-rule
-dataset already lived in `index.html` to be extracted — **they do not exist in
-this repo** (index.html is a demo dashboard with ~8 sample charge codes). So:
+## Status & next steps
 
-- The **engine framework, UX, E/M coding assist, documentation checklist, and
-  structural edits (modifier-25 prompt) are built and tested** and work now.
-- The **CMS data tables** (NCCI PTP, MUE, payer covered-dx, add-on map) ship
-  **empty** — the engine honestly reports those checks as *inactive* rather than
-  faking a pass. Populate `engine/data/*.json` from real CMS files to activate
-  them (see `engine/data/README.md`). **Nothing is invented** — that is guardrail
-  §5 and it is non-negotiable for a real billing tool.
+Working now: the real scrub engine + full CMS data, the point-of-care UX, E/M
+suggestion, and the documentation checklist.
 
-Next steps, in order: (1) supply the real NCCI/MUE/covered-dx data; (2) validate
-the E/M doc-assist against BHW's Coders' Specialty Guide and extend it to the
-highest-volume codes (behavioral, CCM, cognitive, Flow); (3) wire live
-eligibility / charge-master reads via the existing Netlify function pattern.
+Next: (1) validate + extend `doc-assist.json` beyond office E/M + AWV to the
+highest-volume codes (behavioral, CCM, cognitive, Flow); (2) surface the
+`cdm` rates in the UI; (3) wire live eligibility / claim-history reads (for the
+frequency edits) via the existing Netlify function pattern.

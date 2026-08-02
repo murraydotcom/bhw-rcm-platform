@@ -52,11 +52,10 @@ a{color:inherit}
 .page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
 .page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:820px}
 .grid{display:grid;gap:16px}
-.g2{grid-template-columns:1.1fr .9fr}
+.g2{grid-template-columns:1.05fr .95fr}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
 .card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
-.card .card-sub{font-size:11.5px;color:var(--ink-soft);margin-bottom:14px}
-.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .card-head h3{margin:0}
 label.fld{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
 select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
@@ -66,27 +65,29 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .seg button{font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border:none;background:var(--card);color:var(--ink-soft);cursor:pointer}
 .seg button.on{background:var(--blue);color:#fff}
+.flags{display:flex;flex-wrap:wrap;gap:8px 16px;margin:2px 0 14px}
+.flags label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer}
 .btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-primary:hover{filter:brightness(1.05)}
-.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
-.btn-ghost:hover{background:var(--base)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.btn-ghost:hover{background:var(--base)}
 .btn-sm{padding:6px 11px;font-size:11.5px}
-.line-row{display:grid;grid-template-columns:1.3fr .6fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--base);border:1px solid var(--line);color:var(--ink);margin:0 6px 6px 0}
-.chip button{border:none;background:none;cursor:pointer;color:var(--ink-soft);font-size:13px;line-height:1}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px}
+.status .d{width:8px;height:8px;border-radius:50%}
+.st-clean{background:#e8f0e3;color:#5c7050}.st-clean .d{background:#5c7050}
+.st-block{background:#f7e0dc;color:#a53f30}.st-block .d{background:var(--denied)}
+.st-flag{background:#fdf1d6;color:#9a6f16}.st-flag .d{background:var(--pending)}
+.st-note{background:#e2edf1;color:#4d7686}.st-note .d{background:var(--blue-d)}
 .finding{display:flex;gap:11px;padding:12px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;background:var(--card)}
 .finding .dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
-.finding.block{border-left:4px solid var(--denied)} .finding.block .dot{background:var(--denied)}
-.finding.warn{border-left:4px solid var(--pending)} .finding.warn .dot{background:var(--pending)}
-.finding.info{border-left:4px solid var(--blue)} .finding.info .dot{background:var(--blue)}
+.finding.block{border-left:4px solid var(--denied)}.finding.block .dot{background:var(--denied)}
+.finding.warn{border-left:4px solid var(--pending)}.finding.warn .dot{background:var(--pending)}
+.finding.info{border-left:4px solid var(--blue)}.finding.info .dot{background:var(--blue)}
 .finding .sev{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
-.finding.block .sev{color:var(--denied)} .finding.warn .sev{color:#9a6f16} .finding.info .sev{color:var(--blue-d)}
-.finding .lbl{font-weight:700;font-size:12.5px;margin:1px 0 3px}
-.finding .det{font-size:12px;color:var(--ink-soft)}
-.finding .src{font-size:10.5px;color:var(--ink-soft);margin-top:5px}
-.finding .fix{font-size:11.5px;margin-top:6px;padding:7px 9px;background:var(--base);border-radius:8px}
+.finding.block .sev{color:var(--denied)}.finding.warn .sev{color:#9a6f16}.finding.info .sev{color:var(--blue-d)}
+.finding .msg{font-weight:700;font-size:12.5px;margin:1px 0 4px}
+.finding .fix{font-size:11.5px;color:var(--ink-soft)}
+.finding .rid{font-size:10px;color:var(--ink-soft);opacity:.7;margin-top:4px;font-variant:all-small-caps;letter-spacing:.5px}
 .empty{padding:22px;text-align:center;color:var(--ink-soft);font-size:12.5px}
 .chk{display:flex;gap:9px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
 .chk:last-child{border-bottom:none}
@@ -98,32 +99,26 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
 :root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
 .note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
 .mini{font-size:11px;color:var(--ink-soft)}
-.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--base);border:1px solid var(--line);color:var(--ink-soft)}
 @media(max-width:1000px){.g2{grid-template-columns:1fr}.sidebar{display:none}.r2,.r3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand">
-      <h1>BHW Provider</h1>
-      <div class="sub">Point-of-Care Coding</div>
-    </div>
+    <div class="brand"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div>
     <nav class="nav-group">
       <div class="label">Pre-Bill</div>
       <div class="nav-item active"><span class="ic">◈</span> Encounter Scrub</div>
       <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
     </nav>
-    <div class="sidebar-foot">
-      Themis engine · shared with the RCM app.<br>Decision support only — validate before billing.
-    </div>
+    <div class="sidebar-foot">Themis engine · shared with the RCM app.<br>Decision support — validate before billing.</div>
   </aside>
 
   <div class="main">
     <div class="topbar">
       <div class="crumb">Pre-Bill · <b>Encounter Scrub &amp; Coding Assist</b></div>
       <div class="tools">
-        <span class="pill" id="dataPill">loading data…</span>
+        <span class="pill" id="dataPill">loading…</span>
         <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
       </div>
     </div>
@@ -131,73 +126,64 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
     <div class="content">
       <div class="page-head">
         <h2>Pre-Bill Scrub &amp; Coding Assist</h2>
-        <p>Enter the encounter before the superbill leaves the room. Themis runs payer-aware clean-claim
-           edits, suggests the E/M level from time or MDM, and lists what the note must contain to support each code.</p>
+        <p>Enter the encounter before the superbill leaves the room. The shared Themis engine runs the real
+           payer-aware clean-claim edits (NCCI PTP, MUE, add-on, covered-dx, payer quirks); the assist layer
+           suggests the E/M level and lists what the note must contain for each code.</p>
       </div>
 
-      <div class="note" id="banner">
-        <b>Decision support, not a guarantee.</b> A clean result means "no problems found in the data we currently have."
-        The CMS edit tables (NCCI PTP, MUE, covered-dx) ship empty in this repo — until they're populated from real
-        CMS files, those checks report as <b>inactive</b>, not passed. Validate E/M guidance against BHW's Coders' Guide.
+      <div class="note">
+        <b>Decision support, not a guarantee.</b> Findings are the same edits the RCM Command Center runs.
+        The E/M suggestion + documentation checklist use published 2021 AMA guidance — <b>validate against BHW's
+        Coders' Specialty Guide</b>. Frequency edits need the patient's prior claim history to fire.
       </div>
 
       <div class="grid g2">
         <!-- ============ INPUT ============ -->
-        <div>
-          <div class="card">
-            <div class="card-head"><h3>Encounter</h3></div>
-
-            <div class="row r2">
-              <div>
-                <label class="fld">Patient</label>
-                <div class="seg" id="ptype">
-                  <button data-v="established" class="on">Established</button>
-                  <button data-v="new">New</button>
-                </div>
-              </div>
-              <div>
-                <label class="fld" for="payer">Payer</label>
-                <select id="payer"></select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label class="fld" for="dxInput">Diagnoses (ICD-10) — type, press Enter</label>
-                <input type="text" id="dxInput" placeholder="e.g. I10, E11.9, G90.01" autocomplete="off">
-                <div id="dxChips" style="margin-top:9px"></div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label class="fld">Planned codes (CPT / HCPCS)</label>
-                <div id="lines"></div>
-                <button class="btn btn-ghost btn-sm" id="addLine">+ Add code</button>
-              </div>
-            </div>
-
-            <div class="row r3">
-              <div>
-                <label class="fld" for="minutes">Total time (min)</label>
-                <input type="number" id="minutes" min="0" placeholder="optional">
-              </div>
-              <div>
-                <label class="fld" for="mdm">MDM level</label>
-                <select id="mdm">
-                  <option value="">—</option>
-                  <option value="straightforward">Straightforward</option>
-                  <option value="low">Low</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              <div style="align-self:end">
-                <button class="btn btn-primary" id="runBtn" style="width:100%">Run scrub ✦</button>
-              </div>
-            </div>
-            <div class="mini" id="dataDetail"></div>
+        <div class="card">
+          <div class="card-head"><h3>Encounter</h3>
+            <div class="seg" id="ptype"><button data-v="established" class="on">Established</button><button data-v="new">New</button></div>
           </div>
+
+          <div class="row"><div>
+            <label class="fld" for="payer">Payer</label>
+            <select id="payer"></select>
+          </div></div>
+
+          <div class="row r2">
+            <div><label class="fld" for="em">Primary code (CPT/HCPCS)</label>
+              <input type="text" id="em" list="cdmList" placeholder="e.g. 99214" autocomplete="off"></div>
+            <div><label class="fld" for="proc">Same-day procedure <span class="mini">(optional)</span></label>
+              <input type="text" id="proc" list="cdmList" placeholder="e.g. 93923" autocomplete="off"></div>
+          </div>
+
+          <div class="row r3">
+            <div><label class="fld" for="dx">Primary dx (ICD-10)</label>
+              <input type="text" id="dx" placeholder="e.g. I10" autocomplete="off"></div>
+            <div><label class="fld" for="mods">Modifiers</label>
+              <input type="text" id="mods" placeholder="e.g. 25, 59" autocomplete="off"></div>
+            <div><label class="fld" for="units">Units</label>
+              <input type="number" id="units" min="1" value="1"></div>
+          </div>
+
+          <label class="fld">Context</label>
+          <div class="flags">
+            <label><input type="checkbox" id="f_tele"> Telehealth</label>
+            <label><input type="checkbox" id="f_audio"> Audio-only</label>
+            <label><input type="checkbox" id="f_seen3y"> Seen in last 3y</label>
+            <label><input type="checkbox" id="f_g2211"> G2211 add-on</label>
+          </div>
+
+          <div class="row r3">
+            <div><label class="fld" for="awv">AWV code</label>
+              <select id="awv"><option value="">—</option><option>G0438</option><option>G0439</option><option>G0402</option></select></div>
+            <div><label class="fld" for="minutes">Total time (min)</label>
+              <input type="number" id="minutes" min="0" placeholder="optional"></div>
+            <div><label class="fld" for="mdm">MDM level</label>
+              <select id="mdm"><option value="">—</option><option value="straightforward">Straightforward</option><option value="low">Low</option><option value="moderate">Moderate</option><option value="high">High</option></select></div>
+          </div>
+
+          <button class="btn btn-primary" id="runBtn" style="width:100%">Run scrub ✦</button>
+          <datalist id="cdmList"></datalist>
         </div>
 
         <!-- ============ OUTPUT ============ -->
@@ -209,7 +195,7 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
           </div>
 
           <div class="card" style="margin-bottom:16px">
-            <div class="card-head"><h3 id="findTitle">Findings</h3></div>
+            <div class="card-head"><h3 id="findTitle">Findings</h3><span id="ovStatus"></span></div>
             <div id="findings"><div class="empty">Enter an encounter and run the scrub.</div></div>
           </div>
 
@@ -223,152 +209,109 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
   </div>
 </div>
 
+<!-- Real, shared scrub engine (classic script → window.scrubClaim / DATA / thStatus / TH_SEV) -->
+<script src="../engine/themis.js"></script>
 <script type="module">
-import { scrubClaim, suggestEM, docChecklist, SEV } from "../engine/themis.mjs";
-import { assemblePack, DATA_FILES } from "../engine/pack.mjs";
+import { suggestEM, docChecklist } from "../engine/assist.mjs";
 
-/* Real BHW payer mix (as referenced across the RCM app). */
+/* Payer options use the exact strings the engine's payer-specific rules key off,
+ * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
 const PAYERS = [
-  "Medicare (Novitas)", "MD Medicaid", "MD Medicaid MCO — Priority Partners",
-  "Aetna", "Cigna", "UHC / Optum", "CareFirst BCBS Maryland",
-  "CareFirst BCBS Medicare Advantage", "Alterwood", "Humana", "Curative",
+  "Medicare", "Medicaid Maryland", "UHC Community Plan", "CareFirst Community",
+  "Aetna", "Cigna", "UnitedHealthcare", "CareFirst BCBS", "BCBS MD",
+  "Alterwood", "Humana", "Curative",
 ];
 
 const $ = (id) => document.getElementById(id);
-const state = { patientType: "established", payer: PAYERS[0], dx: [], lines: [{ code: "", units: 1, mods: [] }] };
-let PACK = null, CDM = [];
-
-/* ---- Load engine data (served over http — Netlify or a local server) ---- */
-async function loadPack() {
-  try {
-    const raw = {};
-    await Promise.all(Object.entries(DATA_FILES).map(async ([k, f]) => {
-      const res = await fetch(`../engine/data/${f}`);
-      if (!res.ok) throw new Error(`${f}: ${res.status}`);
-      raw[k] = await res.json();
-    }));
-    PACK = assemblePack(raw);
-    CDM = (raw.cdm && raw.cdm.codes) || [];
-    const inactive = countInactive();
-    $("dataPill").textContent = inactive ? `${inactive} check(s) need CMS data` : "data loaded";
-    $("dataPill").className = "pill " + (inactive ? "warn" : "live");
-  } catch (e) {
-    PACK = assemblePack({});
-    $("dataPill").textContent = "data load failed";
-    $("dataPill").className = "pill warn";
-    $("banner").innerHTML = `<b>Could not load engine data (${e.message}).</b> This page uses ES modules + fetch, so it must be
-      served over http — open it via Netlify or run a local server (e.g. <code>npx serve</code>) from the repo root, not file://.`;
-  }
-}
-function countInactive() {
-  if (!PACK) return 0;
-  const probe = scrubClaim({ payer: "Medicare (Novitas)", dx: [], lines: [{ code: "95921" }, { code: "99490" }] }, PACK);
-  return probe.meta.inactiveRules.length;
-}
-
-/* ---- Rendering --------------------------------------------------------- */
-function renderPayers() {
-  $("payer").innerHTML = PAYERS.map((p) => `<option${p === state.payer ? " selected" : ""}>${p}</option>`).join("");
-}
-function renderDx() {
-  $("dxChips").innerHTML = state.dx.map((d, i) =>
-    `<span class="chip">${d}<button data-i="${i}" class="dxDel">×</button></span>`).join("") || `<span class="mini">No diagnoses entered.</span>`;
-  document.querySelectorAll(".dxDel").forEach((b) => b.onclick = () => { state.dx.splice(+b.dataset.i, 1); renderDx(); run(); });
-}
-function cdmOptions() {
-  return CDM.map((r) => `<option value="${r[0]}">${r[0]} — ${r[1]}</option>`).join("");
-}
-function renderLines() {
-  $("lines").innerHTML = state.lines.map((l, i) => `
-    <div class="line-row">
-      <input type="text" list="cdmList" placeholder="code" value="${l.code}" data-i="${i}" class="lc">
-      <input type="number" min="1" value="${l.units}" data-i="${i}" class="lu" title="units">
-      <input type="text" placeholder="mods e.g. 25,59" value="${l.mods.join(",")}" data-i="${i}" class="lm" title="modifiers">
-      <button class="btn btn-ghost btn-sm ldel" data-i="${i}">×</button>
-    </div>`).join("") + `<datalist id="cdmList">${cdmOptions()}</datalist>`;
-  document.querySelectorAll(".lc").forEach((el) => el.oninput = () => { state.lines[+el.dataset.i].code = el.value.trim().toUpperCase(); run(); });
-  document.querySelectorAll(".lu").forEach((el) => el.oninput = () => { state.lines[+el.dataset.i].units = +el.value || 1; run(); });
-  document.querySelectorAll(".lm").forEach((el) => el.oninput = () => { state.lines[+el.dataset.i].mods = el.value.split(/[,\s]+/).map((m) => m.trim().toUpperCase()).filter(Boolean); run(); });
-  document.querySelectorAll(".ldel").forEach((el) => el.onclick = () => { state.lines.splice(+el.dataset.i, 1); if (!state.lines.length) state.lines.push({ code: "", units: 1, mods: [] }); renderLines(); run(); });
-}
+const S = { patientType: "established" };
+let DOC_ASSIST = {};
+const CDM = (window.DATA && window.DATA.cdm) || [];
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
 
-function renderFindings(res) {
-  const f = res.findings;
-  $("findTitle").textContent = `Findings${f.length ? ` — ${res.meta.counts.block} block · ${res.meta.counts.warn} warn · ${res.meta.counts.info} info` : ""}`;
-  if (!f.length) {
-    $("findings").innerHTML = `<div class="empty">No problems found in the loaded data.${res.meta.dataComplete ? "" : " Some checks are inactive (need CMS data) — see below."}</div>`;
-  } else {
-    $("findings").innerHTML = f.map((x) => `
-      <div class="finding ${x.sev}">
-        <div class="dot"></div>
-        <div style="flex:1">
-          <div class="sev">${x.sev}</div>
-          <div class="lbl">${esc(x.label)}</div>
-          <div class="det">${esc(x.detail)}</div>
-          ${x.source ? `<div class="src">Source: ${esc(x.source)}</div>` : ""}
-          ${x.fix ? `<div class="fix">→ ${esc(x.fix)}</div>` : ""}
-        </div>
-      </div>`).join("");
-  }
-  const inact = res.meta.inactiveRules;
-  $("dataDetail").innerHTML = inact.length
-    ? `<b>${inact.length} inactive check(s)</b> (need real CMS data): ` + inact.map((r) => `<span class="tag">${esc(r.id)}</span>`).join(" ")
-    : `All configured checks active.`;
+function initStatic() {
+  $("payer").innerHTML = PAYERS.map((p) => `<option>${p}</option>`).join("");
+  $("cdmList").innerHTML = CDM.map((r) => `<option value="${r[0]}">${r[0]} — ${esc(r[1])}</option>`).join("");
+  const D = window.DATA || {};
+  const pairs = Object.keys(D.ptp || {}).length, mcd = Object.keys(D.ptpMcdDiff || {}).length;
+  $("dataPill").textContent = `${(D.cdm || []).length} codes · ${(D.scrubRules || []).length} rules · ${pairs + mcd} NCCI edits`;
+  $("dataPill").className = "pill live";
 }
 
-function renderChecklist() {
-  const codes = state.lines.map((l) => l.code).filter(Boolean);
-  if (!codes.length) { $("checklist").innerHTML = `<div class="empty">Add codes to see documentation requirements.</div>`; return; }
-  const rows = docChecklist(codes, PACK);
-  $("checklist").innerHTML = rows.map((r) => {
+function readClaim() {
+  const mods = $("mods").value.split(/[,\s]+/).map((m) => m.trim().toUpperCase()).filter(Boolean);
+  const minutes = $("minutes").value ? +$("minutes").value : null;
+  return {
+    payer: $("payer").value,
+    em: $("em").value.trim().toUpperCase(),
+    sameDayProc: $("proc").value.trim().toUpperCase() || null,
+    dx: $("dx").value.trim().toUpperCase(),
+    mods, units: +$("units").value || 1,
+    awv: $("awv").value || null,
+    telePOS: $("f_tele").checked ? "10" : null,
+    audioOnly: $("f_audio").checked,
+    seenWithin3y: $("f_seen3y").checked,
+    g2211: $("f_g2211").checked,
+    timeDoc: minutes != null && minutes > 0,   // entering time documents it (clears level-5 flag)
+    _minutes: minutes,
+  };
+}
+
+function renderFindings(findings) {
+  const st = window.thStatus(findings);
+  const map = { Clean: "st-clean", Block: "st-block", Flagged: "st-flag", Note: "st-note" };
+  $("ovStatus").innerHTML = `<span class="status ${map[st.label] || "st-note"}"><span class="d"></span>${st.label}</span>`;
+  const counts = findings.reduce((a, f) => (a[f.sev] = (a[f.sev] || 0) + 1, a), {});
+  $("findTitle").textContent = `Findings${findings.length ? ` — ${counts.block || 0} block · ${counts.warn || 0} warn · ${counts.info || 0} info` : ""}`;
+  $("findings").innerHTML = findings.length
+    ? findings.map((f) => `
+        <div class="finding ${f.sev}"><div class="dot"></div><div style="flex:1">
+          <div class="sev">${esc(f.sev)}</div>
+          <div class="msg">${esc(f.msg)}</div>
+          ${f.fix ? `<div class="fix">→ ${esc(f.fix)}</div>` : ""}
+          <div class="rid">${esc(f.ruleId)}</div>
+        </div></div>`).join("")
+    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits need prior claim history.)</div>`;
+}
+
+function renderChecklist(codes) {
+  const list = codes.filter(Boolean);
+  if (!list.length) { $("checklist").innerHTML = `<div class="empty">Add codes to see documentation requirements.</div>`; return; }
+  $("checklist").innerHTML = docChecklist(list, DOC_ASSIST).map((r) => {
     if (!r.known) return `<div class="chk"><span class="mk">•</span><div><span class="cd">${esc(r.code)}</span> — <span class="mini">no doc-assist entry yet (extend doc-assist.json)</span></div></div>`;
     const mods = Object.entries(r.modifiers).map(([m, why]) => `<div class="mini">Mod ${esc(m)}: ${esc(why)}</div>`).join("");
     return `<div class="chk"><span class="mk">✓</span><div>
       <span class="cd">${esc(r.code)}</span>
       <div class="mini">${r.supports.map(esc).join(" · ")}</div>${mods}
-      ${r.source ? `<div class="mini" style="opacity:.7">${esc(r.source)}</div>` : ""}
-    </div></div>`;
+      ${r.source ? `<div class="mini" style="opacity:.7">${esc(r.source)}</div>` : ""}</div></div>`;
   }).join("");
 }
 
-function renderEM() {
-  const min = $("minutes").value ? +$("minutes").value : null;
-  const mdm = $("mdm").value || null;
-  if (min == null && !mdm) { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "Enter time and/or MDM"; $("emDetail").textContent = ""; return; }
-  const r = suggestEM({ patientType: state.patientType, totalMinutes: min, mdmLevel: mdm }, PACK);
+function renderEM(claim) {
+  if (claim._minutes == null && !$("mdm").value) { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "Enter time and/or MDM"; $("emDetail").textContent = ""; return; }
+  const r = suggestEM({ patientType: S.patientType, totalMinutes: claim._minutes, mdmLevel: $("mdm").value || null }, DOC_ASSIST);
   if (r.inactive) { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "—"; $("emDetail").textContent = "E/M thresholds not loaded."; return; }
-  if (r.suggestion) { $("emSuggest").className = "suggest"; $("emSuggest").textContent = r.suggestion; }
-  else { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "—"; }
+  $("emSuggest").className = r.suggestion ? "suggest" : "suggest none";
+  $("emSuggest").textContent = r.suggestion || "—";
   $("emDetail").textContent = r.detail;
 }
 
-/* ---- Run --------------------------------------------------------------- */
 function run() {
-  if (!PACK) return;
-  const claim = { payer: state.payer, dx: state.dx, lines: state.lines.filter((l) => l.code) };
-  renderFindings(scrubClaim(claim, PACK));
-  renderChecklist();
-  renderEM();
+  const claim = readClaim();
+  renderFindings(window.scrubClaim(claim));
+  renderChecklist([claim.em, claim.sameDayProc]);
+  renderEM(claim);
 }
 
-/* ---- Wiring ------------------------------------------------------------ */
 function wire() {
   document.querySelectorAll("#ptype button").forEach((b) => b.onclick = () => {
     document.querySelectorAll("#ptype button").forEach((x) => x.classList.remove("on"));
-    b.classList.add("on"); state.patientType = b.dataset.v; run();
+    b.classList.add("on"); S.patientType = b.dataset.v; run();
   });
-  $("payer").onchange = () => { state.payer = $("payer").value; run(); };
-  $("dxInput").onkeydown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      $("dxInput").value.split(/[,\s]+/).map((d) => d.trim().toUpperCase()).filter(Boolean).forEach((d) => { if (!state.dx.includes(d)) state.dx.push(d); });
-      $("dxInput").value = ""; renderDx(); run();
-    }
-  };
-  $("addLine").onclick = () => { state.lines.push({ code: "", units: 1, mods: [] }); renderLines(); };
-  $("minutes").oninput = renderEM; $("mdm").onchange = renderEM;
+  ["payer", "em", "proc", "dx", "mods", "units", "awv", "minutes", "mdm"].forEach((id) => {
+    $(id).addEventListener("input", run); $(id).addEventListener("change", run);
+  });
+  ["f_tele", "f_audio", "f_seen3y", "f_g2211"].forEach((id) => $(id).addEventListener("change", run));
   $("runBtn").onclick = run;
   $("themeBtn").onclick = () => {
     const dark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -377,8 +320,11 @@ function wire() {
 }
 
 (async function init() {
-  renderPayers(); renderDx(); renderLines(); wire();
-  await loadPack();
+  initStatic(); wire();
+  try {
+    const res = await fetch("../engine/data/doc-assist.json");
+    if (res.ok) DOC_ASSIST = await res.json();
+  } catch (e) { /* checklist/E-M assist degrade to "not loaded" */ }
   run();
 })();
 </script>

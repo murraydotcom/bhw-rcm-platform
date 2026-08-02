@@ -1,9 +1,0 @@
-{
-  "_meta": {
-    "name": "Medically Unlikely Edits (MUE)",
-    "status": "EMPTY — must be populated from real CMS MUE files, filtered to BHW's codes.",
-    "shape": "{ \"CODE\": [cap, MAI] } where cap = max units and MAI = adjudication indicator (1 line, 2 date, 3 per-day).",
-    "guardrail": "Load from CMS Practitioner MUE tables (Medicare + Medicaid differ). The engine reports rule 'ncci-mue' as inactive until this is non-empty."
-  },
-  "caps": {}
-}
