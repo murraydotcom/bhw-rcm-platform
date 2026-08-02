@@ -16,6 +16,7 @@ export const MIPS_CATEGORIES = Object.freeze({
   cost: "Cost",
   improvementActivities: "Improvement Activities",
   promotingInteroperability: "Promoting Interoperability",
+  populationHealth: "Population Health",
 });
 
 const norm = (s) => String(s || "").toLowerCase().trim();
@@ -63,4 +64,31 @@ export function coverageSummary(MIPS = {}) {
   for (const cat of Object.keys(MIPS_CATEGORIES)) out[cat] = (MIPS[cat] || []).length;
   out.total = Object.values(out).reduce((a, b) => a + b, 0);
   return out;
+}
+
+const idOf = (m) => String(m.number || m.id);
+
+/* listMVPs(MIPS) → the MIPS Value Pathways defined in the data. */
+export function listMVPs(MIPS = {}) {
+  return (MIPS.mvps || []).map((m) => ({ id: m.id, title: m.title, specialties: m.specialties || [] }));
+}
+
+/* getMVP(id, MIPS) → an MVP with its member measures resolved from each
+ * category, so the UI can render the pathway with full measure detail. */
+export function getMVP(id, MIPS = {}) {
+  const mvp = (MIPS.mvps || []).find((m) => m.id === id);
+  if (!mvp) return null;
+  const resolve = (cat) => (mvp[cat] || []).map((ref) => {
+    const found = (MIPS[cat] || []).find((m) => idOf(m) === String(ref));
+    return found ? { category: cat, categoryLabel: MIPS_CATEGORIES[cat], ...found } : { category: cat, categoryLabel: MIPS_CATEGORIES[cat], id: String(ref), title: `(${ref} — not in measure set)`, unresolved: true };
+  });
+  return {
+    ...mvp,
+    measures: {
+      quality: resolve("quality"),
+      improvementActivities: resolve("improvementActivities"),
+      cost: resolve("cost"),
+      populationHealth: resolve("populationHealth"),
+    },
+  };
 }

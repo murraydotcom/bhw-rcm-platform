@@ -167,6 +167,13 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
         </div>
       </div>
 
+      <!-- ============ MVP ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>MIPS Value Pathway (MVP)</h3>
+          <select id="mvpSel" style="width:auto;min-width:220px"></select></div>
+        <div id="mvpOut"><div class="empty">Select a pathway.</div></div>
+      </div>
+
       <!-- ============ MIPS ============ -->
       <div class="card" style="margin-top:16px">
         <div class="card-head"><h3>MIPS measure lookup</h3><span class="pill" id="mipsPill"></span></div>
@@ -180,7 +187,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 
 <script type="module">
 import { calcRAF } from "../engine/hcc.mjs";
-import { searchMeasures, coverageSummary } from "../engine/mips.mjs";
+import { searchMeasures, coverageSummary, listMVPs, getMVP } from "../engine/mips.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -248,6 +255,32 @@ function runMIPS() {
   }).join("");
 }
 
+/* ---- MVP ---------------------------------------------------------------- */
+function renderMVP(id) {
+  const mvp = getMVP(id, MIPS);
+  if (!mvp) { $("mvpOut").innerHTML = `<div class="empty">Pathway not found.</div>`; return; }
+  const hp = (m) => m.highPriority ? `<span class="tag hp">High priority</span>` : "";
+  const grp = (label, list, tag) => list.length ? `
+    <div class="mini" style="margin:12px 0 4px;font-weight:700;text-transform:uppercase;letter-spacing:.6px">${esc(label)} <span style="opacity:.6">(${list.length})</span></div>
+    ${list.map((m) => `<div class="chk"><span class="mk" style="color:var(--blue-d)">▸</span><div>
+      <span class="cd">${esc(m.number ? "#" + m.number : m.id)}</span> ${esc(m.title)}
+      ${m.type ? `<span class="tag ${tag}">${esc(m.type)}</span>` : ""}${hp(m)}
+      ${m.collectionTypes ? `<div class="mini">${esc(m.collectionTypes.join(", "))}</div>` : ""}</div></div>`).join("")}` : "";
+  $("mvpOut").innerHTML = `
+    <div class="mini" style="margin-bottom:6px"><b>${esc(mvp.id)}</b> · ${esc(mvp.theme)}</div>
+    <div class="mini" style="margin-bottom:10px">Applies to: ${esc(mvp.specialties.join(", "))}</div>
+    <div class="bd">
+      <div>Quality<b>Report 4</b>≥1 outcome</div>
+      <div>Improvement<b>Report 1</b>activity</div>
+      <div>Cost<b>CMS-calc</b>claims</div>
+      <div>Pop. Health<b>CMS-calc</b>in Quality</div>
+    </div>
+    ${grp("Quality measures", mvp.measures.quality, "q")}
+    ${grp("Improvement activities", mvp.measures.improvementActivities, "ia")}
+    ${grp("Cost measures", mvp.measures.cost, "cost")}
+    ${grp("Population health", mvp.measures.populationHealth, "q")}`;
+}
+
 /* ---- Load data + wire --------------------------------------------------- */
 async function loadModel(obj) {
   MODEL = obj;
@@ -262,6 +295,11 @@ async function loadModel(obj) {
   try { const r = await fetch("../engine/data/mips.json"); if (r.ok) MIPS = await r.json(); } catch (e) {}
   const s = coverageSummary(MIPS);
   $("mipsPill").textContent = `${s.total} measures loaded`;
+
+  const mvps = listMVPs(MIPS);
+  $("mvpSel").innerHTML = mvps.map((m) => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.title)}</option>`).join("") || `<option>none loaded</option>`;
+  if (mvps.length) renderMVP(mvps[0].id);
+  $("mvpSel").addEventListener("change", (e) => renderMVP(e.target.value));
 
   $("calcBtn").onclick = runRAF;
   $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
