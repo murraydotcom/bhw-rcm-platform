@@ -119,10 +119,11 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
       </div>
 
       <div class="note">
-        <b>CMS-HCC v22 is loaded from the official CMS package</b> — real relative factors, hierarchies,
-        interactions and the full ICD-10→HCC crosswalk (~9,800 codes). ESRD-/Rx-HCC and HHS-HCC are still
-        seeds pending their official data; the "seed model" tag flags those. Always confirm against the CMS
-        software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
+        <b>CMS-HCC v28 and v22 are loaded from the official CMS packages</b> — real relative factors,
+        hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured HCCs and the
+        payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-/Rx-HCC and HHS-HCC
+        are still seeds pending their official data; the "seed model" tag flags those. Always confirm against
+        the CMS software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
       </div>
 
       <div class="grid g2">
@@ -244,6 +245,7 @@ function runRAF() {
       <div>Demographic<b>${r.breakdown.demographic.toFixed(3)}</b>${esc(r.demographic.cell || "—")}</div>
       <div>Disease (HCC)<b>${r.breakdown.disease.toFixed(3)}</b>${r.hccs.length} kept</div>
       <div>Interactions<b>${r.breakdown.interactions.toFixed(3)}</b>${r.interactions.length}</div>
+      ${r.diseaseCount ? `<div>Count factor<b>${(r.breakdown.counts || 0).toFixed(3)}</b>${esc(r.diseaseCount.variable)}</div>` : ""}
     </div>
     <div style="margin-top:8px">${hccRows}${intRows}${dropRows}</div>
     ${unmapped}${notes}
@@ -313,18 +315,28 @@ async function loadModel(obj) {
 
 (async function init() {
   try { const r = await fetch("../engine/data/hcc-model.json"); if (r.ok) await loadModel(await r.json()); } catch (e) { $("rafOut").innerHTML = `<div class="empty">Could not load hcc-model.json.</div>`; }
-  // Register the real CMS-HCC v22 package as a selectable (default) model.
-  try {
-    const r = await fetch("../engine/data/hcc-v22.json");
-    if (r.ok) {
-      const v22 = await r.json();
+  // Register the real CMS-HCC packages as selectable models. v28 (the 2024
+  // restructured model, phased in for current payment years) leads; v22 stays
+  // available for the legacy blend.
+  const OFFICIAL = [
+    { name: "CMS-HCC v28", file: "../engine/data/hcc-v28.json" },
+    { name: "CMS-HCC v22", file: "../engine/data/hcc-v22.json" },
+  ];
+  const loaded = [];
+  for (const pkg of OFFICIAL) {
+    try {
+      const r = await fetch(pkg.file);
+      if (!r.ok) continue;
       MODEL.byModel = MODEL.byModel || {};
-      MODEL.byModel["CMS-HCC v22"] = v22;
-      MODEL.models = ["CMS-HCC v22", ...(MODEL.models || []).filter((m) => m !== "CMS-HCC v22")];
-      $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
-      updateModelPill();
-    }
-  } catch (e) { /* falls back to the seed CMS-HCC */ }
+      MODEL.byModel[pkg.name] = await r.json();
+      loaded.push(pkg.name);
+    } catch (e) { /* skip this package */ }
+  }
+  if (loaded.length) {
+    MODEL.models = [...loaded, ...(MODEL.models || []).filter((m) => !loaded.includes(m))];
+    $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
+    updateModelPill();
+  }
   try { const r = await fetch("../engine/data/mips.json"); if (r.ok) MIPS = await r.json(); } catch (e) {}
   const s = coverageSummary(MIPS);
   $("mipsPill").textContent = `${s.total} measures loaded`;

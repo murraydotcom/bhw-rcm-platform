@@ -12,6 +12,7 @@ import { calcRAF, ageBand, demoCell, segmentFor, hhsAgeModel } from "../hcc.mjs"
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const MODEL = JSON.parse(readFileSync(join(dataDir, "hcc-model.json"), "utf8"));
 const V22 = JSON.parse(readFileSync(join(dataDir, "hcc-v22.json"), "utf8"));
+const V28 = JSON.parse(readFileSync(join(dataDir, "hcc-v28.json"), "utf8"));
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≈ ${b}`);
 
 test("age bands and demographic cells", () => {
@@ -146,4 +147,40 @@ test("v22: group-based interaction fires (CHF × diabetes group)", () => {
   assert.ok(r.interactions.some((i) => i.id === "HCC85_gDiabetesMellit"));
   near(r.breakdown.interactions, 0.154); // official CNA interaction coefficient
   near(r.raf, 0.374 + 0.318 + 0.323 + 0.154);
+});
+
+/* ---- Real CMS-HCC v28 package (2024 restructured HCCs + count factors) --- */
+test("v28: real dx→HCC crosswalk + demographic + single HCC coefficient", () => {
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.9"] }, V28); // HCC38, non-dual aged
+  assert.equal(r.illustrative, false);
+  assert.equal(r.segment, "CNA");
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC38"]);
+  near(r.raf, 0.395 + 0.166);            // official CNA F70_74 + HCC38
+  assert.equal(r.interactions.length, 0);
+  assert.equal(r.breakdown.counts, 0);   // one HCC → no count factor
+});
+
+test("v28: hierarchy map — acute diabetes supersedes chronic", () => {
+  const r = calcRAF({ age: 70, sex: "M", dxCodes: ["E10.10", "E11.22"] }, V28); // HCC36 > HCC37
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC36"]);
+  assert.equal(r.dropped[0].hcc, "HCC37");
+  assert.equal(r.dropped[0].supersededBy, "HCC36");
+  near(r.raf, 0.396 + 0.166);            // demo M70_74 + HCC36 CNA
+});
+
+test("v28: group-based interaction fires (diabetes × heart failure)", () => {
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.65", "I50.9"] }, V28); // HCC38 + HCC226
+  assert.ok(r.interactions.some((i) => i.id === "DIABETES_HF_V28"));
+  near(r.breakdown.interactions, 0.112); // official CNA interaction coefficient
+  near(r.raf, 0.395 + 0.166 + 0.36 + 0.112);
+});
+
+test("v28: payment-HCC count factor applies once five HCCs are present", () => {
+  // five distinct, non-interacting payment HCCs → D5 count factor
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.9", "M06.9", "E66.01", "I48.0", "F14.20"] }, V28);
+  assert.equal(r.hccs.length, 5);
+  assert.equal(r.interactions.length, 0);
+  assert.equal(r.diseaseCount.variable, "D5");
+  near(r.breakdown.counts, 0.05);        // official CNA D5 count factor
+  near(r.raf, r.breakdown.demographic + r.breakdown.disease + 0.05);
 });

@@ -141,12 +141,24 @@ export function calcRAF(bene = {}, MODEL = {}) {
     if (reqsOk && flagOk) { interactionSum += it.coeff || 0; interactions.push({ id: it.id, coeff: it.coeff || 0 }); }
   }
 
-  const raf = round3(demoFactor + diseaseSum + interactionSum);
+  /* 6) Payment-HCC count factor (v28+; absent in v22) ---------------------- */
+  let countFactor = 0, countVar = null;
+  if (M.diseaseCounts && M.diseaseCounts[seg]) {
+    const n = keptSet.size;
+    if (n >= 1) {
+      const table = M.diseaseCounts[seg];
+      countVar = "D" + n in table ? "D" + n : ("D" + n + "P" in table ? "D" + n + "P" : "D10P" in table ? "D10P" : null);
+      if (countVar && countVar in table) countFactor = table[countVar];
+    }
+  }
+
+  const raf = round3(demoFactor + diseaseSum + interactionSum + countFactor);
   return {
     model: modelName, segment: seg, segmentLabel: (M.segments && M.segments[seg]) || seg,
+    diseaseCount: countVar ? { variable: countVar, factor: round3(countFactor) } : undefined,
     demographic: { cell, factor: round3(demoFactor) },
     hccs, dropped, interactions, unmapped,
-    breakdown: { demographic: round3(demoFactor), disease: round3(diseaseSum), interactions: round3(interactionSum) },
+    breakdown: { demographic: round3(demoFactor), disease: round3(diseaseSum), interactions: round3(interactionSum), counts: round3(countFactor) },
     raf, notes,
     illustrative: modelIllustrative(M, MODEL),
   };
