@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "name": "Preventive / AWV frequency limits",
+    "source": "AWV cadence is well-established CMS policy and already encoded in this repo (providers.js extractAwv). Only widely-established, repo-consistent entries are seeded here; add others only from real CMS frequency files.",
+    "shape": "{ \"CODE\": { \"perMonths\": n, \"note\": \"...\" } }",
+    "guardrail": "The 271/claims interval is the proof, not this table — findings are INFO-level reminders to confirm before billing."
+  },
+  "limits": {
+    "G0438": { "perMonths": 999, "note": "Initial AWV — once per lifetime; not within 12 months of G0402 (Welcome to Medicare)" },
+    "G0439": { "perMonths": 12, "note": "Subsequent AWV — once per 12 months after an initial AWV" }
+  }
+}

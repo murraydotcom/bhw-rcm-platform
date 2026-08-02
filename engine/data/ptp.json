@@ -1,0 +1,9 @@
+{
+  "_meta": {
+    "name": "NCCI Procedure-to-Procedure (PTP) edits",
+    "status": "EMPTY — must be populated from real CMS NCCI PTP files, filtered to BHW's codes.",
+    "shape": "{ \"Col1Code|Col2Code\": \"0\"|\"1\"|\"9\" } where the value is the NCCI modifier indicator (0 = never unbundle, 1 = allowed with a documented override modifier, 9 = deleted/NA).",
+    "guardrail": "Do NOT hand-type or guess pairs. Load them from the CMS quarterly NCCI PTP tables (Medicare and Medicaid have different tables — key by payer or keep two files). The engine reports rule 'ncci-ptp' as inactive until this is non-empty."
+  },
+  "pairs": {}
+}

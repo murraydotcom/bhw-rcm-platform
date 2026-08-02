@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "name": "BHW charge master (CDM)",
+    "source": "Extracted verbatim from index.html DATA.cdm (the only charge codes committed to this repo).",
+    "warning": "This is the 8-code demo set present in index.html — NOT the 137-code master the project brief describes. Do NOT add codes here without the user confirming BHW bills them (guardrail §5). Columns: [code, description, program, rate, allowed, paid]; null rate = 'rate not set', never $0.",
+    "columns": ["code", "description", "program", "rate", "allowed", "paid"]
+  },
+  "codes": [
+    ["G0557", "Chronic care mgmt, add'l 20 min", "Population Health (CCM)", 125, null, null],
+    ["99484", "Behavioral health care mgmt", "Mind & Mood", 100, null, null],
+    ["99213", "Office visit, established, low", "Primary Care (BHW)", null, null, null],
+    ["99214", "Office visit, established, moderate", "Primary Care (BHW)", null, null, null],
+    ["90837", "Psychotherapy, 60 min", "Mind & Mood", null, null, null],
+    ["99490", "Chronic care mgmt, 20 min", "Population Health (CCM)", null, null, null],
+    ["99483", "Cognitive assessment & care plan", "CharmEd Minds", null, null, null],
+    ["93923", "Extremity vascular study, bilateral", "Flow Vascular Stabilization", null, null, null]
+  ]
+}

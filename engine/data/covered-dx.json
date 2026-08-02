@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "name": "Payer/policy-specific covered-diagnosis lists",
+    "status": "EMPTY — populate each list from the real LCD/NCD/CPB it cites.",
+    "shape": "{ \"listName\": [\"I10\", \"E11.9\", ...] } — ICD-10 codes (dots optional). List names are referenced by dx-gate rules in rules.json (coveredDxKey).",
+    "lists_expected_by_rules": {
+      "novitas_autonomic": "Novitas LCD L35395 covered dx for autonomic testing 95921-95924",
+      "abpm": "CMS ABPM NCD 20.19 covered dx for 93784-93790",
+      "cigna_rpm": "Cigna RPM coverage policy covered dx for 99453-99458"
+    },
+    "guardrail": "Never invent covered diagnoses. Each list must come from the cited policy. dx-gate rules report inactive (not 'pass') until their list is loaded."
+  },
+  "novitas_autonomic": [],
+  "abpm": [],
+  "cigna_rpm": []
+}

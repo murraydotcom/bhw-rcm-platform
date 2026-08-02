@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "name": "Themis rulepack",
+    "purpose": "Declarative edits interpreted by engine/themis.mjs EVALUATORS (rule.type selects the evaluator).",
+    "note": "Data-gated rules (ptp/mue/addon-primary/dx-gate/frequency) fire ONLY when their table is loaded into the pack; until then the engine reports them under meta.inactiveRules — it never fabricates a pass. The dx-gate rules below are payer-aware placeholders wired to real policy numbers (L35395 etc.); populate covered-dx.json from the real LCDs/CPBs to activate them.",
+    "fields": ["id", "type", "label", "sev", "scope", "payer", "source", "fix"]
+  },
+  "rules": [
+    {
+      "id": "mod25-em-proc",
+      "type": "modifier-prompt",
+      "trigger": "em+proc-same-day",
+      "label": "E/M + same-day procedure — modifier 25?",
+      "sev": "info",
+      "scope": "national",
+      "source": "CPT modifier 25 guidance",
+      "fix": "If the E/M is significant and separately identifiable from the same-day procedure, append modifier 25 and document the separate service. If it is not, do not bill the E/M."
+    },
+    {
+      "id": "ncci-ptp",
+      "type": "ptp",
+      "label": "NCCI Procedure-to-Procedure edit",
+      "sev": "block",
+      "scope": "national",
+      "source": "CMS NCCI PTP",
+      "fix": "Indicator 0: do not bill the pair. Indicator 1: bill only with a documented override modifier (59/XE/XS/XP/XU) and supporting notes."
+    },
+    {
+      "id": "ncci-mue",
+      "type": "mue",
+      "label": "Units exceed MUE",
+      "sev": "block",
+      "scope": "national",
+      "source": "CMS MUE",
+      "fix": "Reduce units to the MUE cap, split across dates of service, or document a valid MUE exception where the MAI allows it."
+    },
+    {
+      "id": "addon-needs-primary",
+      "type": "addon-primary",
+      "label": "Add-on code without a primary",
+      "sev": "block",
+      "scope": "national",
+      "source": "CMS add-on code edits",
+      "fix": "Add the eligible primary procedure to the claim, or remove the add-on code."
+    },
+    {
+      "id": "freq-preventive",
+      "type": "frequency",
+      "label": "Preventive/AWV frequency",
+      "sev": "info",
+      "scope": "national",
+      "source": "CMS frequency limits",
+      "fix": "Confirm the covered interval against claims history / MAC before billing."
+    },
+    {
+      "id": "novitas-autonomic-dx",
+      "type": "dx-gate",
+      "codes": ["95921", "95922", "95923", "95924"],
+      "coveredDxKey": "novitas_autonomic",
+      "label": "Autonomic testing — covered diagnosis (Novitas L35395)",
+      "sev": "block",
+      "scope": "payer",
+      "payer": "Medicare (Novitas)",
+      "source": "Novitas LCD L35395",
+      "fix": "Bill only when the encounter carries a diagnosis on the L35395 covered list; otherwise expect a medical-necessity denial."
+    },
+    {
+      "id": "abpm-dx",
+      "type": "dx-gate",
+      "codes": ["93784", "93786", "93788", "93790"],
+      "coveredDxKey": "abpm",
+      "label": "Ambulatory BP monitoring — covered diagnosis",
+      "sev": "block",
+      "scope": "payer",
+      "payer": "Medicare",
+      "source": "CMS ABPM NCD 20.19",
+      "fix": "Confirm the encounter dx is on the ABPM covered list before billing."
+    },
+    {
+      "id": "cigna-rpm-dx",
+      "type": "dx-gate",
+      "codes": ["99453", "99454", "99457", "99458"],
+      "coveredDxKey": "cigna_rpm",
+      "label": "Remote physiologic monitoring — Cigna covered diagnosis",
+      "sev": "warn",
+      "scope": "payer",
+      "payer": "Cigna",
+      "source": "Cigna coverage policy",
+      "fix": "Confirm the encounter dx is on Cigna's RPM covered list before billing."
+    }
+  ]
+}
