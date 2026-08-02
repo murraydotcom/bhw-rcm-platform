@@ -1322,7 +1322,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
           <div class="card-head split"><div><h3>Pre-Bill Scrub Queue</h3><div class="card-sub" id="thQueueSummary">&nbsp;</div></div>
             <div class="btn-row"><button class="btn btn-sm btn-primary" data-scrubsrc="sample" onclick="setScrubSource('sample')">Sample</button><button class="btn btn-sm" data-scrubsrc="live" onclick="setScrubSource('live')">Live claims</button></div>
           </div>
-          <div class="note" id="thLiveNote" style="display:none;margin:0 0 12px">Running on your <b>live Notion claims</b> — this feed carries payer, code &amp; charge, so payer-behavior, high-level-E/M, add-on and coding rules apply. Line-level <b>modifiers, POS, units and visit history</b> aren&rsquo;t in the claims feed yet, so bundling / MUE / frequency / modifier-25 checks stay limited until claim-line detail is added.</div>
+          <div class="note" id="thLiveNote" style="display:none;margin:0 0 12px">Running on your <b>live Notion claims</b> — this feed carries payer, code, charge &amp; <b>primary diagnosis</b>, so payer-behavior, high-level-E/M, add-on, coding <b>and medical-necessity dx-gating</b> (autonomic 95921-95924, ABPM, Cigna RPM) apply as hard pre-bill blocks. Line-level <b>modifiers, POS, units and visit history</b> aren&rsquo;t in the claims feed yet, so bundling / MUE / frequency / modifier-25 checks stay limited until claim-line detail is added.</div>
           <div class="table-scroll"><table id="tblScrubQueue">
             <thead><tr><th>Claim #</th><th>Patient</th><th>Payer</th><th>E/M</th><th>Findings</th><th>Top fix</th><th class="num">Charge</th><th>Status</th></tr></thead>
             <tbody></tbody>
@@ -4003,6 +4003,17 @@ function claimField(row){
   return o;
 }
 function deriveScrubFromClaims(){
+  // Live path: map the clean Notion objects (named fields, incl. the primary dx)
+  // — no content-detection guesswork. Falls back to the display array in sample mode.
+  const raw = DATA.claimsRaw;
+  if(Array.isArray(raw) && raw.length){
+    return raw.map(r=>({
+      id:r.ctlNo||r.claimNo||'—', patient:r.patient||'—', payer:r.payer||'—', program:r.program||'—',
+      em:String(r.cpt||'').trim(), dx:r.dx||null,
+      newPt:false, seenWithin3y:false, mods:[], sameDayProc:null, awv:null, telePOS:null,
+      timeDoc:true, emCount:1, charge:Number(r.charge)||0
+    })).filter(c=>c.em);
+  }
   return (DATA.claims||[]).map(r=>{
     const f=claimField(r);
     return {id:f.claim||'—', patient:f.patient||'—', payer:f.payer||'—', program:f.program||'—',
