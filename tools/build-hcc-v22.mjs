@@ -81,15 +81,44 @@ for (const seg of segCols) {
   interactions[seg] = Object.keys(interactionCoeff[seg]).map((id) => ({ id, requires: interactionDefs[id], coeff: interactionCoeff[seg][id] }));
 }
 
-/* ---- 5) ICD-10 → HCC crosswalk (only payment HCCs) ---------------------- */
-const paymentHCCs = new Set(Object.keys(hccCoeff.CNA || {}));
+/* ---- 5) ICD-10 → HCC crosswalk (only payment HCCs) ---------------------- *
+ * Some ICD codes carry an age edit (e.g. J44.9 → HCC111 for age ≥ 18, HCC112
+ * for age < 18). This is a Medicare model (adults 65+), so we resolve each
+ * mapping at a representative adult age (67) — which matches CMS's published
+ * payment-year crosswalk. */
+const ADULT_AGE = 67;
+function ageConditionHolds(cond, age) {
+  const c = String(cond || "").trim().toLowerCase();
+  if (!c) return true;
+  let m;
+  if ((m = c.match(/^(\d+)\s*<=\s*age\s*<=\s*(\d+)$/))) return age >= +m[1] && age <= +m[2];
+  if ((m = c.match(/^age\s*>=\s*(\d+)$/))) return age >= +m[1];
+  if ((m = c.match(/^age\s*>\s*(\d+)$/))) return age > +m[1];
+  if ((m = c.match(/^age\s*<=\s*(\d+)$/))) return age <= +m[1];
+  if ((m = c.match(/^age\s*<\s*(\d+)$/))) return age < +m[1];
+  return true; // unrecognized condition → don't exclude
+}
+const paymentHCCs = new Set();
 for (const seg of segCols) for (const h of Object.keys(hccCoeff[seg])) paymentHCCs.add(h);
-const dxToHcc = {};
-let mapped = 0, skipped = 0;
-for (const [icd, cc] of parseCSV(read("ICD10_CC_mappings_CMS_HCC_2027_v22_initial.csv")).slice(1)) {
+/* An ICD can map to MULTIPLE HCCs (e.g. diabetic retinopathy → diabetes + eye
+ * HCC). Collect all rows per ICD, keep those whose age edit holds for an adult
+ * (this is a Medicare 65+ model), and store an array of payment HCCs. */
+const rawByIcd = {};
+for (const row of parseCSV(read("ICD10_CC_mappings_CMS_HCC_2027_v22_initial.csv")).slice(1)) {
+  const icd = (row[0] || "").trim().toUpperCase(), cc = row[1], ageCond = row[3];
   if (!icd || !cc) continue;
-  const hcc = "HCC" + parseInt(cc, 10);
-  if (paymentHCCs.has(hcc)) { dxToHcc[icd.trim().toUpperCase()] = hcc; mapped++; } else skipped++;
+  (rawByIcd[icd] ||= []).push({ hcc: "HCC" + parseInt(cc, 10), ageCond });
+}
+const dxToHcc = {};
+let mapped = 0, skipped = 0, multi = 0;
+for (const [icd, rows] of Object.entries(rawByIcd)) {
+  let applicable = rows.filter((r) => ageConditionHolds(r.ageCond, ADULT_AGE));
+  if (!applicable.length) applicable = rows;                       // pediatric-only code → keep as-is
+  const hccs = [...new Set(applicable.map((r) => r.hcc).filter((h) => paymentHCCs.has(h)))];
+  if (!hccs.length) { skipped++; continue; }
+  dxToHcc[icd] = hccs;
+  mapped++;
+  if (hccs.length > 1) multi++;
 }
 
 /* label any grouped HCC that lacks its own label with the group name */
@@ -100,7 +129,7 @@ const model = {
     model: "CMS-HCC v22 (2027 initial)", illustrative: false,
     source: "Official CMS-HCC v22 2027 O1 initial package (regenerate: node tools/build-hcc-v22.mjs)",
     note: "Continuing-Enrollee community + institutional model. New-Enrollee model + MCE age/sex edits not applied.",
-    stats: { hccs: Object.keys(hccCoeff.CNA || {}).length, interactions: Object.keys(interactionDefs).length, dxMapped: mapped, dxSkippedNonPayment: skipped },
+    stats: { hccs: Object.keys(hccCoeff.CNA || {}).length, interactions: Object.keys(interactionDefs).length, dxMapped: mapped, dxMultiHcc: multi, dxSkippedNonPayment: skipped },
   },
   type: "cms-hcc",
   models: ["CMS-HCC v22"],
@@ -110,4 +139,4 @@ const model = {
 writeFileSync(OUT, JSON.stringify(model) + "\n");
 console.log(`wrote ${OUT}`);
 console.log(`  segments: ${segCols.join(", ")}`);
-console.log(`  HCCs: ${model._meta.stats.hccs} · interactions: ${model._meta.stats.interactions} · dx mapped: ${mapped} (skipped ${skipped} non-payment)`);
+console.log(`  HCCs: ${model._meta.stats.hccs} · interactions: ${model._meta.stats.interactions} · dx mapped: ${mapped} (${multi} multi-HCC, skipped ${skipped} non-payment)`);

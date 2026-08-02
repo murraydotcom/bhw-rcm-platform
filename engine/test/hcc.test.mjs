@@ -129,6 +129,18 @@ test("v22: hierarchy map — acute diabetes supersedes chronic and uncomplicated
   near(r.raf, 0.374 + 0.318);            // demo + HCC17 CNA
 });
 
+test("v22: a diagnosis mapping to multiple HCCs adds all of them", () => {
+  // E08.3593 → diabetes (HCC18) AND proliferative retinopathy (HCC122)
+  const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E08.3593"] }, V22);
+  assert.deepEqual(r.hccs.map((h) => h.hcc).sort(), ["HCC122", "HCC18"]);
+  near(r.raf, 0.374 + 0.318 + 0.217);
+});
+
+test("v22: age edits resolve to the adult mapping (COPD → HCC111, not HCC112)", () => {
+  const r = calcRAF({ age: 70, sex: "M", dxCodes: ["J44.9"] }, V22);
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC111"]);
+});
+
 test("v22: group-based interaction fires (CHF × diabetes group)", () => {
   const r = calcRAF({ age: 70, sex: "F", dxCodes: ["E11.65", "I50.9"] }, V22); // HCC18 + HCC85
   assert.ok(r.interactions.some((i) => i.id === "HCC85_gDiabetesMellit"));

@@ -76,16 +76,17 @@ export function calcRAF(bene = {}, MODEL = {}) {
   }
   if (bene.medicaid && seg === "INS" && add.ltiMcaid && seg in add.ltiMcaid) demoFactor += add.ltiMcaid[seg];
 
-  /* 2) Map dx → HCCs ------------------------------------------------------- */
+  /* 2) Map dx → HCCs (a dx may map to several HCCs) ------------------------ */
   const dxToHcc = M.dxToHcc || {};
   const present = new Map();           // hcc → [source dx...]
   const unmapped = [];
   for (const raw of bene.dxCodes || []) {
     const dx = normDx(raw);
     if (!dx) continue;
-    const hcc = dxToHcc[dx];
-    if (!hcc) { unmapped.push(dx); continue; }
-    (present.get(hcc) || present.set(hcc, []).get(hcc)).push(dx);
+    const mapping = dxToHcc[dx];
+    if (!mapping) { unmapped.push(dx); continue; }
+    for (const hcc of Array.isArray(mapping) ? mapping : [mapping])
+      (present.get(hcc) || present.set(hcc, []).get(hcc)).push(dx);
   }
 
   /* 3) Apply disease hierarchies (keep most-severe, zero the rest) --------- */
@@ -216,9 +217,10 @@ function calcHHS(bene, M, MODEL, modelName) {
   for (const raw of bene.dxCodes || []) {
     const dx = normDx(raw);
     if (!dx) continue;
-    const hcc = dxToHcc[dx];
-    if (!hcc) { unmapped.push(dx); continue; }
-    (present.get(hcc) || present.set(hcc, []).get(hcc)).push(dx);
+    const mapping = dxToHcc[dx];
+    if (!mapping) { unmapped.push(dx); continue; }
+    for (const hcc of Array.isArray(mapping) ? mapping : [mapping])
+      (present.get(hcc) || present.set(hcc, []).get(hcc)).push(dx);
   }
 
   /* Hierarchies (sub-model specific) */
