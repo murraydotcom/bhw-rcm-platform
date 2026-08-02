@@ -116,6 +116,22 @@
     "modifiers": {},
     "source": "CPT group psychotherapy — validate vs BHW Coders' Specialty Guide"
   },
+  "90875": {
+    "supports": [
+      "Individual psychophysiological therapy incorporating biofeedback with psychotherapy (approx. 20-30 minutes)",
+      "NOT covered by Medicare (LCD A56937) — report only to payers that cover it; verify coverage before billing"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "90876": {
+    "supports": [
+      "Individual psychophysiological therapy incorporating biofeedback with psychotherapy (approx. 45 minutes)",
+      "NOT covered by Medicare (LCD A56937) — report only to payers that cover it; verify coverage before billing"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
   "93660": {
     "supports": [
       "Head-up tilt table testing",
@@ -346,6 +362,22 @@
     "modifiers": {},
     "source": "Developmental screening documentation — validate vs BHW Coders' Specialty Guide"
   },
+  "96112": {
+    "supports": [
+      "Developmental test administration (e.g., developmental screening/assessment instruments) by a physician or other QHP, with interpretation and report — first hour",
+      "Document the instrument(s) used, interpretation, medical necessity, and the qualifying time; rendered by a qualified provider (LCD A56937 documentation requirements)"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96113": {
+    "supports": [
+      "Add-on to 96112 — each additional 30 minutes of developmental test administration by a physician/QHP; report with 96112",
+      "Document the additional time; the primary service (96112) must be documented"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
   "96116": {
     "supports": [
       "Neurobehavioral status exam — clinical assessment of thinking, reasoning and judgment (acquired knowledge, attention, language, memory, planning, problem-solving, visual-spatial abilities)",
@@ -397,6 +429,14 @@
     ],
     "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 96116; MUE 1"
   },
+  "96121": {
+    "supports": [
+      "Add-on to 96116 — each additional hour of neurobehavioral status exam (assessment of thinking, reasoning, judgment) by a physician/QHP; report with 96116",
+      "Document the additional face-to-face and interpretation time"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
   "96127": {
     "supports": [
       "Standardized instrument (a validated test administered and scored in a consistent manner) to assess emotional/behavioral symptoms — e.g. depression/anxiety inventory or ADHD rating scale",
@@ -437,6 +477,68 @@
       "XU"
     ],
     "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 96127; MUE 3"
+  },
+  "96130": {
+    "supports": [
+      "Psychological testing evaluation services by a physician/QHP — integration of patient data, interpretation of standardized test results, clinical decision making, treatment planning, and report, including interactive feedback — first hour",
+      "Document the instrument(s) used, interpretation, medical necessity, and the qualifying time; rendered by a qualified provider (LCD A56937 documentation requirements)"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96131": {
+    "supports": [
+      "Add-on to 96130 — each additional hour of psychological testing evaluation services by a physician/QHP; report with 96130",
+      "Document the additional time"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96132": {
+    "supports": [
+      "Neuropsychological testing evaluation services by a physician/QHP — integration of patient data, interpretation, clinical decision making, treatment planning, and report, including interactive feedback — first hour",
+      "Document the instrument(s) used, interpretation, medical necessity, and the qualifying time; rendered by a qualified provider (LCD A56937 documentation requirements)"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96133": {
+    "supports": [
+      "Add-on to 96132 — each additional hour of neuropsychological testing evaluation services by a physician/QHP; report with 96132",
+      "Document the additional time"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96136": {
+    "supports": [
+      "Psychological or neuropsychological test administration and scoring by a physician/QHP, two or more tests — first 30 minutes",
+      "Document the instrument(s) used, interpretation, medical necessity, and the qualifying time; rendered by a qualified provider (LCD A56937 documentation requirements)"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96137": {
+    "supports": [
+      "Add-on to 96136 — each additional 30 minutes of test administration and scoring by a physician/QHP; report with 96136"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96138": {
+    "supports": [
+      "Psychological or neuropsychological test administration and scoring by a technician, two or more tests — first 30 minutes",
+      "Document the instrument(s) used, interpretation, medical necessity, and the qualifying time; rendered by a qualified provider (LCD A56937 documentation requirements)"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
+  },
+  "96139": {
+    "supports": [
+      "Add-on to 96138 — each additional 30 minutes of test administration and scoring by a technician; report with 96138"
+    ],
+    "modifiers": {},
+    "source": "CMS LCD/Article A56937 (Psychiatry & Psychology Services) + CPT — validate modifiers vs BHW Coders' Specialty Guide"
   },
   "99091": {
     "supports": [
