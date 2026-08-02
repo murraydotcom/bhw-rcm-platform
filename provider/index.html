@@ -95,6 +95,15 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
 .chk .cd{font-weight:700}
 .suggest{font-size:26px;font-weight:800;letter-spacing:-.5px}
 .suggest.none{font-size:15px;color:var(--ink-soft);font-weight:600}
+textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%;resize:vertical;line-height:1.55}
+.readiness{font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px}
+.nchk{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px}
+.nchk:last-child{border-bottom:none}
+.nchk .ic{font-weight:800;flex-shrink:0;width:16px;text-align:center}
+.nchk.present .ic{color:#5c7050}.nchk.missing .ic{color:var(--denied)}.nchk.review .ic{color:#9a6f16}.nchk.na .ic{color:var(--ink-soft)}
+.nchk .lbl{font-weight:700}.nchk .dt{color:var(--ink-soft)}.nchk .sr{font-size:10px;color:var(--ink-soft);opacity:.7;margin-top:2px}
+.notegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1000px){.notegrid{grid-template-columns:1fr}}
 .note{background:#fdf7ef;border:1px solid #ecd9c1;border-left:4px solid var(--bronze);border-radius:10px;padding:12px 14px;font-size:12px;color:#6b5233;margin-bottom:18px}
 :root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
 .note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
@@ -205,6 +214,22 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
           </div>
         </div>
       </div>
+
+      <!-- ============ CLINICAL NOTE ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Clinical note</h3><span id="readiness"></span></div>
+        <div class="notegrid">
+          <div>
+            <label class="fld" for="note">Paste the visit note</label>
+            <textarea id="note" rows="15" placeholder="Paste the encounter note here to check its documentation against the billed codes…"></textarea>
+            <div class="mini" style="margin-top:6px">Keyword-based decision support — a miss is a prompt to verify in the chart, not a coding call. Each line cites its source standard.</div>
+          </div>
+          <div>
+            <label class="fld">Documentation readiness</label>
+            <div id="noteReport"><div class="empty">Paste a note and it'll be checked against the entered codes.</div></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -213,6 +238,7 @@ select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;
 <script src="../engine/themis.js"></script>
 <script type="module">
 import { suggestEM, docChecklist } from "../engine/assist.mjs";
+import { analyzeNote } from "../engine/note-analyze.mjs";
 
 /* Payer options use the exact strings the engine's payer-specific rules key off,
  * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
@@ -296,11 +322,31 @@ function renderEM(claim) {
   $("emDetail").textContent = r.detail;
 }
 
+function renderNote(claim) {
+  const r = analyzeNote($("note").value, {
+    codes: [claim.em, claim.sameDayProc].filter(Boolean),
+    hasSameDayProc: !!claim.sameDayProc,
+    minutes: claim._minutes,
+    mdmLevel: $("mdm").value || null,
+  });
+  const rd = $("readiness");
+  if (r.empty) { rd.textContent = ""; rd.className = "readiness"; $("noteReport").innerHTML = `<div class="empty">Paste a note and it'll be checked against the entered codes.</div>`; return; }
+  const tone = r.summary.readiness >= 90 ? "st-clean" : r.summary.readiness >= 60 ? "st-flag" : "st-block";
+  rd.className = "readiness " + tone; rd.textContent = `${r.summary.readiness}% documented`;
+  const icon = { present: "✓", missing: "✕", review: "⚠", na: "–" };
+  $("noteReport").innerHTML = r.checks.map((c) => `
+    <div class="nchk ${c.status}"><span class="ic">${icon[c.status] || "–"}</span><div>
+      <span class="lbl">${esc(c.label)}</span>
+      <div class="dt">${esc(c.detail)}</div>
+      <div class="sr">${esc(c.source)}</div></div></div>`).join("");
+}
+
 function run() {
   const claim = readClaim();
   renderFindings(window.scrubClaim(claim));
   renderChecklist([claim.em, claim.sameDayProc]);
   renderEM(claim);
+  renderNote(claim);
 }
 
 function wire() {
@@ -312,6 +358,7 @@ function wire() {
     $(id).addEventListener("input", run); $(id).addEventListener("change", run);
   });
   ["f_tele", "f_audio", "f_seen3y", "f_g2211"].forEach((id) => $(id).addEventListener("change", run));
+  $("note").addEventListener("input", run);
   $("runBtn").onclick = run;
   $("themeBtn").onclick = () => {
     const dark = document.documentElement.getAttribute("data-theme") === "dark";

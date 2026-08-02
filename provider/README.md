@@ -21,7 +21,9 @@ engine/
                        thStatus(f), TH_SEV. Shared with the RCM Command Center.
   assist.mjs        ← the NEW layer this app adds: suggestEM() + docChecklist()
                        (pillars 1 & 3 — not in the scrub engine). Pure ESM.
-  data/doc-assist.json  ← note↔code map (E/M + AWV; validate vs Coders' Guide).
+  note-analyze.mjs  ← analyzeNote(text, ctx): checks a pasted clinical note for
+                       documentation supporting the billed codes. Pure ESM.
+  data/doc-assist.json  ← note↔code map (E/M, AWV, behavioral; validate vs Coders' Guide).
   test/themis.test.mjs  ← node --test over the real engine + the assist layer.
 tools/extract-engine.js ← regenerates engine/themis.js from index.html.
 provider/index.html     ← this app: loads themis.js (global) + assist.mjs (module).
@@ -61,12 +63,29 @@ node tools/extract-engine.js
 > to regenerate. After changing `scrubClaim()` or a `DATA` table, re-run it —
 > the RCM app and this app then stay in lockstep.
 
+## Clinical-note analysis
+
+Paste the visit note into the **Clinical note** panel and it's checked against
+the codes being billed, with a documentation-readiness score and a per-line
+report (present ✓ / missing ✕ / verify ⚠), each citing its source standard:
+
+- **CareFirst Medical Record Documentation Standards** — general note elements
+  (patient ID, dated entries, chief complaint, history, exam, assessment/plan,
+  allergies or NKA, meds, legible signature, tobacco/substance hx).
+- **CPT® 2021 Office/Outpatient E/M** — level supported by total time OR MDM;
+  level-4/5 sanity check; modifier-25 justification for same-day E/M + procedure.
+- **Aetna E/M + Psychotherapy (BH00903)** — E/M billed with a psych add-on must
+  be MDM-based (not time); standalone psychotherapy shouldn't be billed with E/M.
+
+It's keyword/structure heuristics, not NLP — a miss is a prompt to verify in the
+chart, never a definitive coding call.
+
 ## Status & next steps
 
 Working now: the real scrub engine + full CMS data, the point-of-care UX, E/M
-suggestion, and the documentation checklist.
+suggestion, the documentation checklist, and clinical-note analysis.
 
-Next: (1) validate + extend `doc-assist.json` beyond office E/M + AWV to the
-highest-volume codes (behavioral, CCM, cognitive, Flow); (2) surface the
-`cdm` rates in the UI; (3) wire live eligibility / claim-history reads (for the
-frequency edits) via the existing Netlify function pattern.
+Next: (1) validate + extend `doc-assist.json` / note checks to the remaining
+high-volume codes (CCM, cognitive, Flow); (2) surface the `cdm` rates in the UI;
+(3) wire live eligibility / claim-history reads (for the frequency edits) via the
+existing Netlify function pattern.
