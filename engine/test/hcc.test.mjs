@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { calcRAF, ageBand, demoCell, segmentFor } from "../hcc.mjs";
+import { calcRAF, ageBand, demoCell, segmentFor, hhsAgeModel } from "../hcc.mjs";
 
 const MODEL = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "data", "hcc-model.json"), "utf8"));
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≈ ${b}`);
@@ -75,4 +75,37 @@ test("missing age → demographic omitted with a note, disease still counts", ()
 test("seed is flagged illustrative so the UI can warn", () => {
   const r = calcRAF({ age: 72, sex: "F", dxCodes: ["E11.9"] }, MODEL);
   assert.equal(r.illustrative, true);
+});
+
+/* ---- HHS-HCC (ACA marketplace) model ------------------------------------ */
+test("HHS age sub-model routes by age (Adult/Child/Infant)", () => {
+  assert.equal(hhsAgeModel(40), "Adult");
+  assert.equal(hhsAgeModel(10), "Child");
+  assert.equal(hhsAgeModel(1), "Infant");
+});
+
+test("HHS-HCC RAF indexes every coefficient by metal level", () => {
+  const silver = calcRAF({ model: "HHS-HCC", metalLevel: "Silver", age: 42, sex: "F", dxCodes: ["I50.9"] }, MODEL); // demo F40_44 + HCC130
+  assert.equal(silver.ageModel, "Adult");
+  assert.equal(silver.metal, "Silver");
+  near(silver.raf, 0.195 + 1.190);
+  const bronze = calcRAF({ model: "HHS-HCC", metalLevel: "Bronze", age: 42, sex: "F", dxCodes: ["I50.9"] }, MODEL);
+  near(bronze.raf, 0.170 + 1.130); // lower metal → lower coefficients
+  assert.ok(bronze.raf < silver.raf);
+});
+
+test("HHS-HCC applies hierarchy + interaction at the chosen metal level", () => {
+  // E10.10 → HCC020 (acute) supersedes E11.65 → HCC019 (chronic); with I50.9 → HCC130
+  const r = calcRAF({ model: "HHS-HCC", metalLevel: "Gold", age: 42, sex: "M", dxCodes: ["E10.10", "E11.65", "I50.9"] }, MODEL);
+  assert.deepEqual(r.hccs.map((h) => h.hcc).sort(), ["HHS_HCC020", "HHS_HCC130"]);
+  assert.ok(r.dropped.some((d) => d.hcc === "HHS_HCC019"));
+  // interaction requires HCC130 + HCC019, but HCC019 was superseded → interaction does NOT fire
+  assert.equal(r.interactions.length, 0);
+  near(r.raf, 0.185 + 1.040 + 1.230); // demo M40_44 Gold + HCC020 Gold + HCC130 Gold
+});
+
+test("HHS-HCC defaults to Silver and notes a missing metal level", () => {
+  const r = calcRAF({ model: "HHS-HCC", age: 42, sex: "F", dxCodes: [] }, MODEL);
+  assert.equal(r.metal, "Silver");
+  assert.ok(r.notes.some((n) => /Silver/.test(n)));
 });

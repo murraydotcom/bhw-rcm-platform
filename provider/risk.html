@@ -142,7 +142,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
               <select id="sex"><option value="F">Female</option><option value="M">Male</option></select></div>
           </div>
 
-          <div class="row r2">
+          <div class="row r2" id="cmsInputs">
             <div><label class="fld" for="dual">Dual status</label>
               <select id="dual"><option value="none">Non-dual</option><option value="full">Full-benefit dual</option><option value="partial">Partial-benefit dual</option></select></div>
             <div><label class="fld">Enrollment</label>
@@ -151,6 +151,11 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
                 <label><input type="checkbox" id="institutional"> Institutional</label>
               </div></div>
           </div>
+
+          <div class="row" id="hhsInputs" style="display:none"><div>
+            <label class="fld" for="metal">Metal level <span class="mini">(HHS-HCC / marketplace)</span></label>
+            <select id="metal"><option>Platinum</option><option>Gold</option><option selected>Silver</option><option>Bronze</option><option>Catastrophic</option></select>
+          </div></div>
 
           <div class="row"><div>
             <label class="fld" for="dx">Diagnosis codes (ICD-10) — comma or newline separated</label>
@@ -204,10 +209,18 @@ let MODEL = {}, MIPS = {};
 /* ---- HCC ---------------------------------------------------------------- */
 function parseDx(s) { return String(s || "").split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean); }
 
+function isHHS() { return $("model").value === "HHS-HCC"; }
+function syncModelInputs() {
+  const hhs = isHHS();
+  $("cmsInputs").style.display = hhs ? "none" : "grid";
+  $("hhsInputs").style.display = hhs ? "grid" : "none";
+}
+
 function runRAF() {
   const bene = {
     model: $("model").value, age: $("age").value, sex: $("sex").value,
     dualStatus: $("dual").value, disabled: $("disabled").checked, institutional: $("institutional").checked,
+    metalLevel: $("metal").value,
     dxCodes: parseDx($("dx").value),
   };
   const r = calcRAF(bene, MODEL);
@@ -301,6 +314,9 @@ async function loadModel(obj) {
   if (mvps.length) renderMVP(mvps[0].id);
   $("mvpSel").addEventListener("change", (e) => renderMVP(e.target.value));
 
+  syncModelInputs();
+  $("model").addEventListener("change", () => { syncModelInputs(); runRAF(); });
+  $("metal").addEventListener("change", runRAF);
   $("calcBtn").onclick = runRAF;
   $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
   $("mipsQ").addEventListener("input", runMIPS);

@@ -58,6 +58,7 @@ export function calcRAF(bene = {}, MODEL = {}) {
   const notes = [];
   const modelName = bene.model || (MODEL.models && MODEL.models[0]) || "CMS-HCC";
   const M = (MODEL.byModel && MODEL.byModel[modelName]) || MODEL; // support multi-model or flat
+  if (M && M.type === "hhs-hcc") return calcHHS(bene, M, MODEL, modelName);
   const seg = segmentFor(bene);
   const cell = demoCell(bene.age, bene.sex);
 
@@ -127,3 +128,105 @@ export function calcRAF(bene = {}, MODEL = {}) {
 
 function label(M, hcc) { return (M.hccLabels && M.hccLabels[hcc]) || hcc; }
 function round3(n) { return Math.round((Number(n) + Number.EPSILON) * 1000) / 1000; }
+
+/* ---- HHS-HCC (ACA marketplace) risk model ------------------------------- *
+ * Structurally different from CMS-HCC: three age sub-models (Adult ≥21, Child
+ * 2-20, Infant 0-1), and every factor carries one value per metal level
+ * (Platinum/Gold/Silver/Bronze/Catastrophic) instead of Medicare segments.
+ * Same generic flow — demographic + Σ HCC (after hierarchies) + Σ interactions
+ * — but each coefficient is indexed by the enrollee's metal level.
+ * Data-driven from byModel["HHS-HCC"]; see engine/data/hcc-model.json spec. */
+export const HHS_METAL_LEVELS = ["Platinum", "Gold", "Silver", "Bronze", "Catastrophic"];
+
+export function hhsAgeModel(age) {
+  const a = Number(age);
+  if (!Number.isFinite(a)) return null;
+  return a >= 21 ? "Adult" : a >= 2 ? "Child" : "Infant";
+}
+/* Pick a coefficient at a metal level: a factor is either a flat number or an
+ * object keyed by metal level. Missing → 0. */
+function pickMetal(v, metal) {
+  if (v == null) return 0;
+  if (typeof v === "number") return v;
+  return Number(v[metal] || 0);
+}
+/* Age/sex cell from a data-driven band list ([lo, hi, key]) so key naming
+ * follows the loaded CSV exactly (e.g. "F21_24"). */
+function hhsCell(age, sex, bands) {
+  const a = Number(age);
+  if (!Number.isFinite(a) || !bands) return null;
+  const s = String(sex || "").toUpperCase().startsWith("F") ? "F" : "M";
+  for (const [lo, hi, key] of bands) if (a >= lo && a <= hi) return s + key;
+  return null;
+}
+
+function calcHHS(bene, M, MODEL, modelName) {
+  const notes = [];
+  const metals = M.metalLevels || HHS_METAL_LEVELS;
+  let metal = metals.find((x) => x.toLowerCase() === String(bene.metalLevel || "").toLowerCase()) || "Silver";
+  if (!bene.metalLevel) notes.push("No metal level provided — defaulting to Silver.");
+  const ageModel = hhsAgeModel(bene.age);
+  const sub = (M.subModels && M.subModels[ageModel]) || {};
+  const base = {
+    model: modelName, segment: `${ageModel} · ${metal}`, segmentLabel: `HHS-HCC ${ageModel} model, ${metal}`,
+    illustrative: !!(MODEL._meta && MODEL._meta.illustrative),
+  };
+  if (ageModel == null) { notes.push("Age not provided — cannot select HHS-HCC sub-model."); return { ...base, demographic: { cell: null, factor: 0 }, hccs: [], dropped: [], interactions: [], unmapped: [], breakdown: { demographic: 0, disease: 0, interactions: 0 }, raf: 0, notes }; }
+  if (ageModel === "Infant" && !sub.hccCoeff) notes.push("Infant model uses a maturity × severity structure — load the Infant tables to score infants.");
+
+  /* Demographic (age-sex), indexed by metal */
+  const cell = hhsCell(bene.age, bene.sex, sub.ageSexBands);
+  const demoFactor = cell && sub.demographic ? pickMetal(sub.demographic[cell], metal) : 0;
+  if (cell && sub.demographic && !(cell in sub.demographic)) notes.push(`No demographic factor for ${ageModel}/${cell}.`);
+
+  /* Map dx → HHS-HCCs (crosswalk shared at the model root) */
+  const dxToHcc = M.dxToHcc || {};
+  const present = new Map();
+  const unmapped = [];
+  for (const raw of bene.dxCodes || []) {
+    const dx = normDx(raw);
+    if (!dx) continue;
+    const hcc = dxToHcc[dx];
+    if (!hcc) { unmapped.push(dx); continue; }
+    (present.get(hcc) || present.set(hcc, []).get(hcc)).push(dx);
+  }
+
+  /* Hierarchies (sub-model specific) */
+  const dropped = [];
+  for (const ordered of sub.hierarchies || []) {
+    const inList = ordered.filter((h) => present.has(h));
+    if (inList.length <= 1) continue;
+    for (const h of inList.slice(1)) { dropped.push({ hcc: h, label: label(M, h), supersededBy: inList[0] }); present.delete(h); }
+  }
+
+  /* HCC coefficients at the metal level */
+  const hccs = [];
+  let diseaseSum = 0;
+  for (const [hcc, srcDx] of present) {
+    const coeff = pickMetal(sub.hccCoeff && sub.hccCoeff[hcc], metal);
+    if (sub.hccCoeff && !(hcc in sub.hccCoeff)) notes.push(`No ${ageModel} coefficient for ${hcc}.`);
+    diseaseSum += coeff;
+    hccs.push({ hcc, label: label(M, hcc), coeff, fromDx: srcDx });
+  }
+  hccs.sort((a, b) => b.coeff - a.coeff);
+
+  /* Interactions at the metal level */
+  const keptSet = new Set(present.keys());
+  const interactions = [];
+  let interactionSum = 0;
+  for (const it of sub.interactions || []) {
+    if ((it.requires || []).every((h) => keptSet.has(h))) {
+      const c = pickMetal(it.coeff, metal);
+      interactionSum += c; interactions.push({ id: it.id, coeff: c });
+    }
+  }
+
+  const raf = round3(demoFactor + diseaseSum + interactionSum);
+  return {
+    ...base, metal, ageModel,
+    demographic: { cell, factor: round3(demoFactor) },
+    hccs, dropped, interactions, unmapped,
+    breakdown: { demographic: round3(demoFactor), disease: round3(diseaseSum), interactions: round3(interactionSum) },
+    raf, notes,
+  };
+}

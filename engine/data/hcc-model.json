@@ -6,7 +6,7 @@
     "howToPopulate": "Replace demographic[], hccCoeff[] and dxToHcc{} with the official CMS values (same shape). ESRD-HCC and Rx-HCC live under byModel; populate the same way. The engine (engine/hcc.mjs) needs no code change.",
     "source": "CMS Risk Adjustment model software / Rate Announcement"
   },
-  "models": ["CMS-HCC", "ESRD-HCC", "Rx-HCC"],
+  "models": ["CMS-HCC", "ESRD-HCC", "Rx-HCC", "HHS-HCC"],
   "segments": {
     "CNA": "Community, Non-Dual, Aged",
     "CND": "Community, Non-Dual, Disabled",
@@ -97,6 +97,53 @@
   },
   "byModel": {
     "ESRD-HCC": { "_note": "Load official ESRD-HCC dialysis/functioning-graft tables here (same shape)." },
-    "Rx-HCC": { "_note": "Load official Rx-HCC (Part D) coefficient + RXHCC mapping tables here (same shape)." }
+    "Rx-HCC": { "_note": "Load official Rx-HCC (Part D) coefficient + RXHCC mapping tables here (same shape)." },
+    "HHS-HCC": {
+      "type": "hhs-hcc",
+      "_meta": {
+        "illustrative": true,
+        "status": "SCAFFOLD — engine plumbing is real and tested; the numbers below are placeholders. Fill from the official CMS 2026 HHS-HCC coefficient CSVs.",
+        "howToPopulateFromCSV": [
+          "The engine expects, per age sub-model (Adult ≥21, Child 2-20, Infant 0-1):",
+          "1) ageSexBands: [[loAge, hiAge, 'KEY'], ...] matching the CSV's age-sex factor rows (e.g. [21,24,'21_24']).",
+          "2) demographic: { 'F21_24': {Platinum, Gold, Silver, Bronze, Catastrophic}, ... } — the age-sex factor row, one value per metal level.",
+          "3) hccCoeff: { 'HHS_HCC001': {Platinum..Catastrophic}, ... } — each HHS-HCC's factor per metal level.",
+          "4) hierarchies: [[most-severe, ..., least], ...] from the HHS-HCC hierarchy file.",
+          "5) interactions: [{id, requires:[HCC...], coeff:{Platinum..Catastrophic}}] — severity/interaction terms (Adult).",
+          "Model root: dxToHcc { 'ICD10': 'HHS_HCC###' } from the ICD-10→CC crosswalk, and hccLabels.",
+          "The Infant model is a maturity × severity matrix — provide subModels.Infant with that structure (separate handling)."
+        ],
+        "csvColumnsNeeded": "factor name/label + one coefficient column per metal level (Platinum, Gold, Silver, Bronze, Catastrophic), for each of: age-sex, HCC, hierarchy, interaction/severity, and (adult) enrollment-duration and RXC tables."
+      },
+      "metalLevels": ["Platinum", "Gold", "Silver", "Bronze", "Catastrophic"],
+      "hccLabels": {
+        "HHS_HCC019": "Diabetes with Chronic Complications (illustrative)",
+        "HHS_HCC020": "Diabetes with Acute Complications (illustrative)",
+        "HHS_HCC130": "Congestive Heart Failure (illustrative)"
+      },
+      "dxToHcc": {
+        "E1122": "HHS_HCC019", "E1165": "HHS_HCC019", "E1010": "HHS_HCC020", "I509": "HHS_HCC130"
+      },
+      "subModels": {
+        "Adult": {
+          "ageSexBands": [[21, 24, "21_24"], [25, 29, "25_29"], [30, 34, "30_34"], [35, 39, "35_39"], [40, 44, "40_44"], [45, 49, "45_49"], [50, 54, "50_54"], [55, 59, "55_59"], [60, 120, "60_GT"]],
+          "demographic": {
+            "F40_44": { "Platinum": 0.240, "Gold": 0.210, "Silver": 0.195, "Bronze": 0.170, "Catastrophic": 0.150 },
+            "M40_44": { "Platinum": 0.210, "Gold": 0.185, "Silver": 0.170, "Bronze": 0.150, "Catastrophic": 0.130 }
+          },
+          "hccCoeff": {
+            "HHS_HCC019": { "Platinum": 0.900, "Gold": 0.850, "Silver": 0.820, "Bronze": 0.780, "Catastrophic": 0.740 },
+            "HHS_HCC020": { "Platinum": 1.100, "Gold": 1.040, "Silver": 1.000, "Bronze": 0.950, "Catastrophic": 0.900 },
+            "HHS_HCC130": { "Platinum": 1.300, "Gold": 1.230, "Silver": 1.190, "Bronze": 1.130, "Catastrophic": 1.070 }
+          },
+          "hierarchies": [["HHS_HCC020", "HHS_HCC019"]],
+          "interactions": [
+            { "id": "HHS_HCC130_x_HHS_HCC019", "requires": ["HHS_HCC130", "HHS_HCC019"], "coeff": { "Platinum": 0.200, "Gold": 0.190, "Silver": 0.180, "Bronze": 0.170, "Catastrophic": 0.160 } }
+          ]
+        },
+        "Child": { "_note": "Populate age-sex + HCC tables (per metal level) for ages 2-20 from the CSV.", "ageSexBands": [], "demographic": {}, "hccCoeff": {}, "hierarchies": [], "interactions": [] },
+        "Infant": { "_note": "Maturity × severity matrix for ages 0-1 — provide this structure from the CSV; needs dedicated handling." }
+      }
+    }
   }
 }
