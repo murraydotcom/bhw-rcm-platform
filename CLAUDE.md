@@ -21,6 +21,17 @@ feed for TCM). EHR upstream is **ChARM**.
   `stedi.js` + `stedi-*.js` (clearinghouse feeds), `crisp.js` (ADT), `albert.js`
   (the "Albert Murray" AI CFO — Claude). `netlify.toml` at root sets
   `functions = "netlify/functions"`, `publish = "."`.
+- **`coding-worksheet.html`** — provider-facing pre-bill **Coding Worksheet** (linked
+  from the sidebar). Enter payer + diagnosis + CPT(s) → live scrub findings + charge-
+  master/MUE reference. It loads the shared engine (below), so it runs the *same*
+  edits as the RCM app. This is the first piece of the provider coding/scrub/docs app
+  (see `docs/provider-app-brief.md`). Served statically — no build step.
+- **`engine/themis.js`** — the clean-claim scrub engine **auto-extracted** from
+  `index.html` by `tools/extract-engine.js` (runs the page JS in a DOM-stubbed VM,
+  captures `DATA` subset + `scrubClaim` + `TH_SEV` + `thStatus`). `index.html` stays
+  the **source of truth**; re-run `node tools/extract-engine.js` after editing
+  `scrubClaim()` or any DATA table, so the worksheet never drifts. Do **not** hand-
+  edit `engine/themis.js`.
 - **`data/*.json`** — filtered CMS reference data committed to the repo: NCCI PTP +
   MUE for **both Medicare and Medicaid**, filtered to BHW's code set.
 - **`docs/`** — `themis-build-sheet.md` (how the scrub was built from free CMS data)
