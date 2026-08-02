@@ -216,13 +216,97 @@
     "modifiers": {},
     "source": "Developmental screening documentation — validate vs BHW Coders' Specialty Guide"
   },
+  "96116": {
+    "supports": [
+      "Neurobehavioral status exam — clinical assessment of thinking, reasoning and judgment (acquired knowledge, attention, language, memory, planning, problem-solving, visual-spatial abilities)",
+      "Both face-to-face time with the patient AND time interpreting test results and preparing the report; reported per hour (first hour)",
+      "If reported with an E/M, the exam must be separate & distinct — do not count its time/effort toward the E/M key components, history, exam, MDM or time (append modifier 59 to 96116)"
+    ],
+    "modifiers": {
+      "59": "Append to 96116 to differentiate the neurobehavioral testing from a same-visit E/M service"
+    },
+    "modifiersAllowed": [
+      "52",
+      "53",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "93",
+      "95",
+      "99",
+      "AH",
+      "AQ",
+      "AR",
+      "AS",
+      "CR",
+      "ET",
+      "FQ",
+      "FR",
+      "G0",
+      "GA",
+      "GC",
+      "GJ",
+      "GQ",
+      "GR",
+      "GT",
+      "HW",
+      "KX",
+      "PD",
+      "Q0",
+      "Q5",
+      "Q6",
+      "QJ",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 96116; MUE 1"
+  },
   "96127": {
     "supports": [
-      "Brief emotional/behavioral assessment with a standardized instrument (e.g., PHQ-9), scored",
-      "Name the instrument and record the score"
+      "Standardized instrument (a validated test administered and scored in a consistent manner) to assess emotional/behavioral symptoms — e.g. depression/anxiety inventory or ADHD rating scale",
+      "Provider scores and documents the results; may use them to determine whether the patient requires additional work-up or intervention",
+      "Reported per standardized instrument (up to 3 per date — MUE 3)"
     ],
     "modifiers": {},
-    "source": "Emotional/behavioral assessment documentation — validate vs BHW Coders' Specialty Guide"
+    "modifiersAllowed": [
+      "52",
+      "53",
+      "59",
+      "76",
+      "77",
+      "79",
+      "80",
+      "81",
+      "82",
+      "93",
+      "99",
+      "AQ",
+      "AS",
+      "CR",
+      "ET",
+      "FQ",
+      "GA",
+      "GC",
+      "GJ",
+      "GR",
+      "GY",
+      "GZ",
+      "KX",
+      "Q5",
+      "Q6",
+      "QJ",
+      "XE",
+      "XP",
+      "XS",
+      "XU"
+    ],
+    "source": "Coders' Specialty Guide 2026 (Family Practice / Primary Care) — CPT 96127; MUE 3"
   },
   "99091": {
     "supports": [
