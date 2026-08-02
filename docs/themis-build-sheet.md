@@ -127,7 +127,33 @@ NCCI/MUE JSON, then applies the payer-custom rules on top.
 3. Specialty Guide, code-by-code → validate subset + capture modifiers/globals/crosswalks → rule table.
 4. Documentation Guide → per-code documentation requirements → doc-assist map.
 5. Feed both into `scrubClaim()` (already takes a claim object + rule set).
+6. **Turn on the hard pre-bill dx-gating** by adding the primary-diagnosis column
+   to the Notion Claims database → see **Notion setup** below.
 
 *Payer-specific proprietary edits (Aetna/Cigna quirks) are never in NCCI —
 those stay in the hand-written/learned-from-denials rule layer, fed by the
 835 Downcoding Watch feedback loop.*
+
+---
+
+## Notion setup — turn on the live dx-gating
+
+The medical-necessity blocks (autonomic 95921-95924, ABPM, Cigna RPM, psych/
+neuropsych testing) key off the claim's **primary diagnosis**. The app already
+reads it end-to-end (`notion.js` `firstDx()` → `DATA.claimsRaw` →
+`deriveScrubFromClaims()` → `scrubClaim`); the only remaining action is one
+column in the Notion **Claims & Denials Tracker**.
+
+**Full hand-off guide (column names, formatting, verification test, per-payer
+covered-dx table):** [`notion-claims-diagnosis.md`](./notion-claims-diagnosis.md)
+
+Quick version:
+- Add a **Primary Diagnosis** property (Text or Select) to the Claims DB.
+  The reader also accepts *Primary Dx, Dx 1, ICD-1, Diagnosis, Diagnosis Code,
+  ICD-10, ICD Code, Dx…* — first match wins.
+- Value = the primary **ICD-10-CM** with its decimal (`E11.43`, `G90.09`, `I10`,
+  `R55`, `U09.9`). A comma/semicolon list is fine — the first code is taken as
+  primary (Box 24E pointer A). Blank/`--` = simply not dx-gated.
+- Verify on the **Themis** page → **Live claims**: the note should mention
+  "primary diagnosis," and a `95923` + `I10` Medicare claim should **Block**
+  (change dx to `G90.09` and it clears).
