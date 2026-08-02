@@ -215,6 +215,13 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
         </div>
       </div>
 
+      <!-- ============ COVERAGE ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Documentation coverage</h3><span id="covPill" class="readiness"></span></div>
+        <div class="mini" style="margin-bottom:10px">The scrub engine covers every code with CMS data; this tracks the note↔code documentation map across the 137-code charge master. Codes without an entry still need a guide.</div>
+        <div id="coverage"></div>
+      </div>
+
       <!-- ============ CLINICAL NOTE ============ -->
       <div class="card" style="margin-top:16px">
         <div class="card-head"><h3>Clinical note</h3><span id="readiness"></span></div>
@@ -306,9 +313,10 @@ function renderChecklist(codes) {
   $("checklist").innerHTML = docChecklist(list, DOC_ASSIST).map((r) => {
     if (!r.known) return `<div class="chk"><span class="mk">•</span><div><span class="cd">${esc(r.code)}</span> — <span class="mini">no doc-assist entry yet (extend doc-assist.json)</span></div></div>`;
     const mods = Object.entries(r.modifiers).map(([m, why]) => `<div class="mini">Mod ${esc(m)}: ${esc(why)}</div>`).join("");
+    const allowed = r.modifiersAllowed.length ? `<div class="mini" style="opacity:.85">Allowed modifiers: ${r.modifiersAllowed.map(esc).join(", ")}</div>` : "";
     return `<div class="chk"><span class="mk">✓</span><div>
       <span class="cd">${esc(r.code)}</span>
-      <div class="mini">${r.supports.map(esc).join(" · ")}</div>${mods}
+      <div class="mini">${r.supports.map(esc).join(" · ")}</div>${mods}${allowed}
       ${r.source ? `<div class="mini" style="opacity:.7">${esc(r.source)}</div>` : ""}</div></div>`;
   }).join("");
 }
@@ -366,12 +374,31 @@ function wire() {
   };
 }
 
+function renderCoverage() {
+  const have = new Set(Object.keys(DOC_ASSIST).filter((k) => !k.startsWith("_")));
+  if (!CDM.length) { $("coverage").innerHTML = `<div class="mini">Charge master not loaded.</div>`; return; }
+  const byProg = {};
+  for (const r of CDM) { const p = r[2] || "—"; (byProg[p] ||= []).push([r[0], have.has(r[0])]); }
+  const covered = CDM.filter((r) => have.has(r[0])).length;
+  const tone = covered / CDM.length >= 0.9 ? "st-clean" : covered / CDM.length >= 0.5 ? "st-flag" : "st-block";
+  $("covPill").className = "readiness " + tone;
+  $("covPill").textContent = `${covered} / ${CDM.length} codes`;
+  $("coverage").innerHTML = Object.keys(byProg).sort().map((p) => {
+    const rows = byProg[p]; const cov = rows.filter((x) => x[1]).length;
+    const missing = rows.filter((x) => !x[1]).map((x) => x[0]);
+    return `<div class="chk"><span class="mk" style="color:${cov === rows.length ? "#5c7050" : "#9a6f16"}">${cov === rows.length ? "✓" : "•"}</span><div>
+      <span class="cd">${esc(p)}</span> <span class="mini">${cov}/${rows.length}</span>
+      ${missing.length ? `<div class="mini">needs a guide: ${missing.map(esc).join(", ")}</div>` : `<div class="mini" style="opacity:.7">fully mapped</div>`}</div></div>`;
+  }).join("");
+}
+
 (async function init() {
   initStatic(); wire();
   try {
     const res = await fetch("../engine/data/doc-assist.json");
     if (res.ok) DOC_ASSIST = await res.json();
   } catch (e) { /* checklist/E-M assist degrade to "not loaded" */ }
+  renderCoverage();
   run();
 })();
 </script>

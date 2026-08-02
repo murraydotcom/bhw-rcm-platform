@@ -1,4 +1,620 @@
 {
+  "90785": {
+    "supports": [
+      "Interactive complexity ADD-ON — communication difficulties during the session",
+      "Document the specific complicating factor (e.g., third party, caregiver conflict)"
+    ],
+    "modifiers": {},
+    "source": "CPT interactive complexity — validate vs BHW Coders' Specialty Guide"
+  },
+  "90791": {
+    "supports": [
+      "Psychiatric diagnostic evaluation (no medical services)",
+      "History, mental status, and a treatment recommendation/plan"
+    ],
+    "modifiers": {},
+    "source": "CPT psychiatric diagnostic evaluation — validate vs BHW Coders' Specialty Guide"
+  },
+  "90792": {
+    "supports": [
+      "Psychiatric diagnostic evaluation WITH medical services",
+      "Includes medical assessment; document the medical component"
+    ],
+    "modifiers": {},
+    "source": "CPT psychiatric diagnostic evaluation — validate vs BHW Coders' Specialty Guide"
+  },
+  "90832": {
+    "supports": [
+      "Psychotherapy, ~30 min (16–37 min) with patient",
+      "Document therapy time separate from any E/M, and the type & content of therapy",
+      "Standalone — do NOT report with an E/M (use add-on 90833 instead)"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90833": {
+    "supports": [
+      "Psychotherapy, ~30 min — ADD-ON to an E/M service",
+      "Requires a reportable E/M on the same day; the E/M must be selected by MDM (time cannot be used when a psych add-on is billed)",
+      "Separately identify the medical and psychotherapeutic components in the note"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90834": {
+    "supports": [
+      "Psychotherapy, ~45 min (38–52 min) with patient",
+      "Document therapy time (separate from E/M) and the type & content of therapy",
+      "Standalone — do NOT report with an E/M (use add-on 90836 instead)"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90836": {
+    "supports": [
+      "Psychotherapy, ~45 min — ADD-ON to an E/M service",
+      "Requires a same-day E/M selected by MDM (not time)",
+      "Separately identify the E/M and psychotherapy components in the note"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90837": {
+    "supports": [
+      "Psychotherapy, ~60 min (53+ min) with patient",
+      "Document therapy time (separate from E/M) and the type & content of therapy",
+      "Standalone — do NOT report with an E/M (use add-on 90838 instead)"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90838": {
+    "supports": [
+      "Psychotherapy, ~60 min — ADD-ON to an E/M service",
+      "Requires a same-day E/M selected by MDM (not time)",
+      "Separately identify the E/M and psychotherapy components in the note"
+    ],
+    "modifiers": {},
+    "source": "Aetna E/M + Psychotherapy (BH00903)"
+  },
+  "90839": {
+    "supports": [
+      "Psychotherapy for crisis — first 60 minutes",
+      "Document the crisis, urgency, and the time spent"
+    ],
+    "modifiers": {},
+    "source": "CPT crisis psychotherapy — validate vs BHW Coders' Specialty Guide"
+  },
+  "90840": {
+    "supports": [
+      "Add-on to 90839 — each additional 30 minutes of crisis psychotherapy"
+    ],
+    "modifiers": {},
+    "source": "CPT crisis psychotherapy add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "90846": {
+    "supports": [
+      "Family psychotherapy WITHOUT the patient present, ~50 minutes",
+      "Document the therapy time and content"
+    ],
+    "modifiers": {},
+    "source": "CPT family psychotherapy — validate vs BHW Coders' Specialty Guide"
+  },
+  "90847": {
+    "supports": [
+      "Family psychotherapy WITH the patient present, ~50 minutes",
+      "Document the therapy time and content"
+    ],
+    "modifiers": {},
+    "source": "CPT family psychotherapy — validate vs BHW Coders' Specialty Guide"
+  },
+  "90853": {
+    "supports": [
+      "Group psychotherapy (other than multiple-family group)",
+      "Document the group session and the patient's participation"
+    ],
+    "modifiers": {},
+    "source": "CPT group psychotherapy — validate vs BHW Coders' Specialty Guide"
+  },
+  "93660": {
+    "supports": [
+      "Head-up tilt table testing",
+      "Indication (e.g., unexplained syncope); protocol, hemodynamic response, interpretation"
+    ],
+    "modifiers": {},
+    "source": "Tilt-table testing documentation — validate vs BHW Coders' Specialty Guide"
+  },
+  "93784": {
+    "supports": [
+      "Ambulatory blood pressure monitoring, ≥24 hours — recording, analysis, and interpretation",
+      "Indication (e.g., suspected white-coat/masked hypertension per NCD 20.19)"
+    ],
+    "modifiers": {},
+    "source": "CMS ABPM (NCD 20.19) — validate vs BHW Coders' Specialty Guide"
+  },
+  "93786": {
+    "supports": [
+      "ABPM — recording only component",
+      "Indication documented"
+    ],
+    "modifiers": {},
+    "source": "CMS ABPM (NCD 20.19) — validate vs BHW Coders' Specialty Guide"
+  },
+  "93788": {
+    "supports": [
+      "ABPM — scanning analysis with report component"
+    ],
+    "modifiers": {},
+    "source": "CMS ABPM (NCD 20.19) — validate vs BHW Coders' Specialty Guide"
+  },
+  "93790": {
+    "supports": [
+      "ABPM — physician review with interpretation and report"
+    ],
+    "modifiers": {},
+    "source": "CMS ABPM (NCD 20.19) — validate vs BHW Coders' Specialty Guide"
+  },
+  "93922": {
+    "supports": [
+      "Limited (1–2 levels) bilateral non-invasive physiologic study of extremity arteries",
+      "Clinical indication/symptoms (e.g., claudication, rest pain, non-healing ulcer)",
+      "Recorded measurements/waveforms at the studied levels + interpretation & report"
+    ],
+    "modifiers": {},
+    "source": "Non-invasive vascular study documentation — validate vs BHW Coders' Specialty Guide"
+  },
+  "93923": {
+    "supports": [
+      "Complete (3+ levels or provocative) bilateral non-invasive physiologic study of extremity arteries",
+      "Clinical indication/symptoms documented",
+      "Segmental measurements/waveforms at multiple levels + interpretation & report"
+    ],
+    "modifiers": {},
+    "source": "Non-invasive vascular study documentation — validate vs BHW Coders' Specialty Guide"
+  },
+  "95921": {
+    "supports": [
+      "Autonomic function test — cardiovagal innervation (parasympathetic)",
+      "Covered indication per Novitas LCD L35395 (diagnosis-gated in the scrub)",
+      "Test components and interpretation/report"
+    ],
+    "modifiers": {},
+    "source": "Novitas LCD L35395 autonomic testing — validate vs BHW Coders' Specialty Guide"
+  },
+  "95922": {
+    "supports": [
+      "Autonomic function test — vasomotor adrenergic innervation",
+      "Covered indication per Novitas LCD L35395",
+      "Test components and interpretation/report"
+    ],
+    "modifiers": {},
+    "source": "Novitas LCD L35395 autonomic testing — validate vs BHW Coders' Specialty Guide"
+  },
+  "95923": {
+    "supports": [
+      "Autonomic function test — sudomotor (e.g., QSART/sympathetic skin response)",
+      "Covered indication per Novitas LCD L35395",
+      "Test components and interpretation/report"
+    ],
+    "modifiers": {},
+    "source": "Novitas LCD L35395 autonomic testing — validate vs BHW Coders' Specialty Guide"
+  },
+  "95924": {
+    "supports": [
+      "Autonomic function test — combined parasympathetic & sympathetic with tilt",
+      "Covered indication per Novitas LCD L35395; do not duplicate 95921/95922 components",
+      "Interpretation/report"
+    ],
+    "modifiers": {},
+    "source": "Novitas LCD L35395 autonomic testing — validate vs BHW Coders' Specialty Guide"
+  },
+  "96110": {
+    "supports": [
+      "Developmental screening with a standardized instrument, scoring & documentation",
+      "Name the instrument and record the result"
+    ],
+    "modifiers": {},
+    "source": "Developmental screening documentation — validate vs BHW Coders' Specialty Guide"
+  },
+  "96127": {
+    "supports": [
+      "Brief emotional/behavioral assessment with a standardized instrument (e.g., PHQ-9), scored",
+      "Name the instrument and record the score"
+    ],
+    "modifiers": {},
+    "source": "Emotional/behavioral assessment documentation — validate vs BHW Coders' Specialty Guide"
+  },
+  "99091": {
+    "supports": [
+      "Collection & interpretation of physiologic data, ≥30 minutes in a 30-day period",
+      "Document the data reviewed and the ≥30 minutes"
+    ],
+    "modifiers": {},
+    "source": "CMS remote data interpretation — validate vs BHW Coders' Specialty Guide"
+  },
+  "99202": {
+    "supports": [
+      "New patient, office/outpatient",
+      "Straightforward MDM (2 of 3 elements), OR total time ≥ 15 min on the encounter date"
+    ],
+    "em": {
+      "patientType": "new",
+      "minMinutes": 15,
+      "mdm": "straightforward"
+    },
+    "modifiers": {},
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99203": {
+    "supports": [
+      "New patient, office/outpatient",
+      "Low MDM (2 of 3 elements), OR total time ≥ 30 min"
+    ],
+    "em": {
+      "patientType": "new",
+      "minMinutes": 30,
+      "mdm": "low"
+    },
+    "modifiers": {},
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99204": {
+    "supports": [
+      "New patient, office/outpatient",
+      "Moderate MDM (2 of 3 elements), OR total time ≥ 45 min"
+    ],
+    "em": {
+      "patientType": "new",
+      "minMinutes": 45,
+      "mdm": "moderate"
+    },
+    "modifiers": {},
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99205": {
+    "supports": [
+      "New patient, office/outpatient",
+      "High MDM (2 of 3 elements), OR total time ≥ 60 min"
+    ],
+    "em": {
+      "patientType": "new",
+      "minMinutes": 60,
+      "mdm": "high"
+    },
+    "modifiers": {},
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99212": {
+    "supports": [
+      "Established patient, office/outpatient",
+      "Straightforward MDM (2 of 3 elements), OR total time ≥ 10 min"
+    ],
+    "em": {
+      "patientType": "established",
+      "minMinutes": 10,
+      "mdm": "straightforward"
+    },
+    "modifiers": {
+      "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately."
+    },
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99213": {
+    "supports": [
+      "Established patient, office/outpatient",
+      "Low MDM (2 of 3 elements), OR total time ≥ 20 min"
+    ],
+    "em": {
+      "patientType": "established",
+      "minMinutes": 20,
+      "mdm": "low"
+    },
+    "modifiers": {
+      "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately."
+    },
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99214": {
+    "supports": [
+      "Established patient, office/outpatient",
+      "Moderate MDM (2 of 3 elements), OR total time ≥ 30 min"
+    ],
+    "em": {
+      "patientType": "established",
+      "minMinutes": 30,
+      "mdm": "moderate"
+    },
+    "modifiers": {
+      "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately."
+    },
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99215": {
+    "supports": [
+      "Established patient, office/outpatient",
+      "High MDM (2 of 3 elements), OR total time ≥ 40 min"
+    ],
+    "em": {
+      "patientType": "established",
+      "minMinutes": 40,
+      "mdm": "high"
+    },
+    "modifiers": {
+      "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately."
+    },
+    "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide"
+  },
+  "99385": {
+    "supports": [
+      "Initial comprehensive preventive medicine E/M, new patient (18–39 yrs)",
+      "Age/gender-appropriate history, exam, counseling, and screening orders"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99386": {
+    "supports": [
+      "Initial comprehensive preventive medicine E/M, new patient (40–64 yrs)"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99387": {
+    "supports": [
+      "Initial comprehensive preventive medicine E/M, new patient (65+ yrs)"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99395": {
+    "supports": [
+      "Periodic comprehensive preventive medicine E/M, established patient (18–39 yrs)"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99396": {
+    "supports": [
+      "Periodic comprehensive preventive medicine E/M, established patient (40–64 yrs)"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99397": {
+    "supports": [
+      "Periodic comprehensive preventive medicine E/M, established patient (65+ yrs)"
+    ],
+    "modifiers": {},
+    "source": "CPT preventive medicine — validate vs BHW Coders' Specialty Guide"
+  },
+  "99406": {
+    "supports": [
+      "Tobacco-use cessation counseling — 3 to 10 minutes",
+      "Document the counseling time and content"
+    ],
+    "modifiers": {},
+    "source": "CMS tobacco cessation counseling — validate vs BHW Coders' Specialty Guide"
+  },
+  "99407": {
+    "supports": [
+      "Tobacco-use cessation counseling — greater than 10 minutes",
+      "Document the counseling time and content"
+    ],
+    "modifiers": {},
+    "source": "CMS tobacco cessation counseling — validate vs BHW Coders' Specialty Guide"
+  },
+  "99408": {
+    "supports": [
+      "Alcohol/substance-use structured screening (e.g., AUDIT/DAST) & brief intervention — 15 to 30 minutes",
+      "Document the instrument, score, and intervention"
+    ],
+    "modifiers": {},
+    "source": "CMS SBIRT — validate vs BHW Coders' Specialty Guide"
+  },
+  "99409": {
+    "supports": [
+      "Alcohol/substance-use screening & brief intervention — greater than 30 minutes"
+    ],
+    "modifiers": {},
+    "source": "CMS SBIRT — validate vs BHW Coders' Specialty Guide"
+  },
+  "99417": {
+    "supports": [
+      "Prolonged outpatient E/M — each additional 15 minutes beyond the primary code's time",
+      "Only with 99205/99215 selected by TIME; document total time"
+    ],
+    "modifiers": {},
+    "source": "CPT prolonged services — validate vs BHW Coders' Specialty Guide",
+    "em": null
+  },
+  "99424": {
+    "supports": [
+      "Principal Care Management — one complex chronic condition (expected ≥3 months) at significant risk",
+      "Disease-specific care plan; ≥30 minutes physician/QHP time in the month"
+    ],
+    "modifiers": {},
+    "source": "CMS Principal Care Management — validate vs BHW Coders' Specialty Guide"
+  },
+  "99425": {
+    "supports": [
+      "Add-on to 99424 — each additional 30 minutes of physician/QHP time"
+    ],
+    "modifiers": {},
+    "source": "CMS PCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99426": {
+    "supports": [
+      "Principal Care Management — clinical staff time, ≥30 minutes in the month for one complex chronic condition"
+    ],
+    "modifiers": {},
+    "source": "CMS PCM (clinical staff) — validate vs BHW Coders' Specialty Guide"
+  },
+  "99427": {
+    "supports": [
+      "Add-on to 99426 — each additional 30 minutes of clinical staff time"
+    ],
+    "modifiers": {},
+    "source": "CMS PCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99437": {
+    "supports": [
+      "Add-on to 99491 — each additional 30 minutes of physician/QHP time in the month"
+    ],
+    "modifiers": {},
+    "source": "CMS CCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99439": {
+    "supports": [
+      "Add-on to 99490 — each additional 20 minutes of clinical staff time in the month",
+      "Requires 99490 met first; document the additional time"
+    ],
+    "modifiers": {},
+    "source": "CMS CCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99453": {
+    "supports": [
+      "RPM setup & patient education on use of the device",
+      "Ordered; document device and the education provided"
+    ],
+    "modifiers": {},
+    "source": "CMS RPM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99454": {
+    "supports": [
+      "RPM device supply with daily recording/programmed alerts",
+      "Requires ≥16 days of data within a 30-day period"
+    ],
+    "modifiers": {},
+    "source": "CMS RPM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99457": {
+    "supports": [
+      "RPM treatment management — first 20 minutes of interactive communication in the month",
+      "Document the interactive contact and management; consent on file"
+    ],
+    "modifiers": {},
+    "source": "CMS RPM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99458": {
+    "supports": [
+      "Add-on to 99457 — each additional 20 minutes of RPM management in the month"
+    ],
+    "modifiers": {},
+    "source": "CMS RPM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99483": {
+    "supports": [
+      "Cognitive testing with a standardized instrument (e.g., MoCA/MMSE/SLUMS/Mini-Cog)",
+      "Functional assessment (ADLs/IADLs) and level of independence",
+      "Medication reconciliation & review for high-risk medications",
+      "Evaluation of neuropsychiatric & behavioral symptoms",
+      "Assessment of safety (home and driving)",
+      "Identification of caregiver(s), their knowledge, needs, and capability",
+      "Advance care planning discussion",
+      "Staging of the dementia/cognitive impairment",
+      "A written care plan; typically ~50 minutes face-to-face"
+    ],
+    "modifiers": {},
+    "source": "CMS Cognitive Assessment & Care Plan (99483) — validate vs BHW Coders' Specialty Guide"
+  },
+  "99484": {
+    "supports": [
+      "General behavioral health integration (BHI) care management, ~20 min/month of clinical staff time directed by the provider",
+      "Document the monthly time, the systematic assessment/monitoring, care-plan revision, and continuity with a designated care team member"
+    ],
+    "modifiers": {},
+    "source": "CMS BHI (paraphrased) — validate vs BHW Coders' Guide"
+  },
+  "99487": {
+    "supports": [
+      "Complex CCM — ≥60 minutes of clinical staff time in the month",
+      "Moderate/high-complexity MDM and establishment/substantial revision of the care plan",
+      "≥2 chronic conditions + consent"
+    ],
+    "modifiers": {},
+    "source": "CMS Complex CCM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99489": {
+    "supports": [
+      "Add-on to 99487 — each additional 30 minutes of clinical staff time in the month"
+    ],
+    "modifiers": {},
+    "source": "CMS Complex CCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99490": {
+    "supports": [
+      "≥2 chronic conditions expected to last ≥12 months (or until death) placing the patient at significant risk",
+      "Comprehensive electronic care plan established/monitored/revised and shared with the care team",
+      "≥20 minutes of clinical staff time (directed by the provider) in the calendar month",
+      "Patient consent obtained & documented (once)"
+    ],
+    "modifiers": {},
+    "source": "CMS Chronic Care Management — validate vs BHW Coders' Specialty Guide"
+  },
+  "99491": {
+    "supports": [
+      "CCM performed personally by the physician/QHP, ≥30 minutes in the calendar month",
+      "Same ≥2 chronic conditions + comprehensive care plan + consent",
+      "Document the physician/QHP time (not clinical staff)"
+    ],
+    "modifiers": {},
+    "source": "CMS CCM (physician-provided) — validate vs BHW Coders' Specialty Guide"
+  },
+  "99492": {
+    "supports": [
+      "Initial psychiatric collaborative care management — first 70 minutes in the first month",
+      "Care directed by the treating provider with a behavioral care manager & psychiatric consultant; registry tracking"
+    ],
+    "modifiers": {},
+    "source": "CMS Psychiatric CoCM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99493": {
+    "supports": [
+      "Subsequent psychiatric collaborative care management — first 60 minutes in a subsequent month"
+    ],
+    "modifiers": {},
+    "source": "CMS Psychiatric CoCM — validate vs BHW Coders' Specialty Guide"
+  },
+  "99494": {
+    "supports": [
+      "Add-on to 99492/99493 — each additional 30 minutes in a month"
+    ],
+    "modifiers": {},
+    "source": "CMS Psychiatric CoCM add-on — validate vs BHW Coders' Specialty Guide"
+  },
+  "99495": {
+    "supports": [
+      "Transitional Care Management — moderate-complexity MDM",
+      "Interactive contact (phone/email/face-to-face) within 2 business days of discharge",
+      "Face-to-face visit within 14 days of discharge"
+    ],
+    "modifiers": {},
+    "source": "CMS Transitional Care Management — validate vs BHW Coders' Specialty Guide"
+  },
+  "99496": {
+    "supports": [
+      "Transitional Care Management — high-complexity MDM",
+      "Interactive contact within 2 business days of discharge",
+      "Face-to-face visit within 7 days of discharge"
+    ],
+    "modifiers": {},
+    "source": "CMS Transitional Care Management — validate vs BHW Coders' Specialty Guide"
+  },
+  "99497": {
+    "supports": [
+      "Advance care planning — first 30 minutes: discussion of advance directives with the patient/family/surrogate",
+      "Document the discussion and whether forms were completed"
+    ],
+    "modifiers": {},
+    "source": "CMS Advance Care Planning — validate vs BHW Coders' Specialty Guide"
+  },
+  "99498": {
+    "supports": [
+      "Add-on to 99497 — each additional 30 minutes of advance care planning"
+    ],
+    "modifiers": {},
+    "source": "CMS ACP add-on — validate vs BHW Coders' Specialty Guide"
+  },
   "_meta": {
     "name": "Documentation-assist map (note ↔ code linkage)",
     "purpose": "For each code: what the note must contain to support it. This is pillar 3 of the provider app — the piece Codify/Encoda don't do well.",
@@ -6,21 +622,85 @@
     "action_required": "VALIDATE every entry against BHW's own Coders' Specialty Guide / Documentation Guide before relying on it clinically. This seed covers only the office E/M family + AWV. Extend it (per the brief) to the highest-volume codes next: behavioral (90837/90834/99484), CCM (99490/99484/G0557), cognitive (99483), Flow (93923/93923-family).",
     "em_thresholds": "minMinutes = the lower bound of that code's published total-time range; mdm = the minimum MDM level that supports the code (2 of 3 elements)."
   },
-  "99202": { "supports": ["New patient, office/outpatient", "Straightforward MDM (2 of 3 elements), OR total time ≥ 15 min on the encounter date"], "em": { "patientType": "new", "minMinutes": 15, "mdm": "straightforward" }, "modifiers": {}, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99203": { "supports": ["New patient, office/outpatient", "Low MDM (2 of 3 elements), OR total time ≥ 30 min"], "em": { "patientType": "new", "minMinutes": 30, "mdm": "low" }, "modifiers": {}, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99204": { "supports": ["New patient, office/outpatient", "Moderate MDM (2 of 3 elements), OR total time ≥ 45 min"], "em": { "patientType": "new", "minMinutes": 45, "mdm": "moderate" }, "modifiers": {}, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99205": { "supports": ["New patient, office/outpatient", "High MDM (2 of 3 elements), OR total time ≥ 60 min"], "em": { "patientType": "new", "minMinutes": 60, "mdm": "high" }, "modifiers": {}, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99212": { "supports": ["Established patient, office/outpatient", "Straightforward MDM (2 of 3 elements), OR total time ≥ 10 min"], "em": { "patientType": "established", "minMinutes": 10, "mdm": "straightforward" }, "modifiers": { "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately." }, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99213": { "supports": ["Established patient, office/outpatient", "Low MDM (2 of 3 elements), OR total time ≥ 20 min"], "em": { "patientType": "established", "minMinutes": 20, "mdm": "low" }, "modifiers": { "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately." }, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99214": { "supports": ["Established patient, office/outpatient", "Moderate MDM (2 of 3 elements), OR total time ≥ 30 min"], "em": { "patientType": "established", "minMinutes": 30, "mdm": "moderate" }, "modifiers": { "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately." }, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "99215": { "supports": ["Established patient, office/outpatient", "High MDM (2 of 3 elements), OR total time ≥ 40 min"], "em": { "patientType": "established", "minMinutes": 40, "mdm": "high" }, "modifiers": { "25": "Significant, separately identifiable E/M on the same day as another service/procedure — document it separately." }, "source": "2021 AMA E/M guidance — validate vs BHW Coders' Guide" },
-  "G0438": { "supports": ["Medicare Annual Wellness Visit — INITIAL", "Only billable once per lifetime, and not within 12 months of the 'Welcome to Medicare' (G0402)", "Requires the AWV elements: HRA, medication review, screening schedule, cognitive assessment, etc."], "modifiers": {}, "source": "CMS AWV requirements — confirm interval vs claims/MAC (see providers.js extractAwv)" },
-  "G0439": { "supports": ["Medicare Annual Wellness Visit — SUBSEQUENT", "Billable once per 12 months after an initial AWV (G0438)", "Requires updated HRA + care plan"], "modifiers": {}, "source": "CMS AWV requirements — confirm interval vs claims/MAC (see providers.js extractAwv)" },
-  "90832": { "supports": ["Psychotherapy, ~30 min (16–37 min) with patient", "Document therapy time separate from any E/M, and the type & content of therapy", "Standalone — do NOT report with an E/M (use add-on 90833 instead)"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "90834": { "supports": ["Psychotherapy, ~45 min (38–52 min) with patient", "Document therapy time (separate from E/M) and the type & content of therapy", "Standalone — do NOT report with an E/M (use add-on 90836 instead)"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "90837": { "supports": ["Psychotherapy, ~60 min (53+ min) with patient", "Document therapy time (separate from E/M) and the type & content of therapy", "Standalone — do NOT report with an E/M (use add-on 90838 instead)"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "90833": { "supports": ["Psychotherapy, ~30 min — ADD-ON to an E/M service", "Requires a reportable E/M on the same day; the E/M must be selected by MDM (time cannot be used when a psych add-on is billed)", "Separately identify the medical and psychotherapeutic components in the note"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "90836": { "supports": ["Psychotherapy, ~45 min — ADD-ON to an E/M service", "Requires a same-day E/M selected by MDM (not time)", "Separately identify the E/M and psychotherapy components in the note"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "90838": { "supports": ["Psychotherapy, ~60 min — ADD-ON to an E/M service", "Requires a same-day E/M selected by MDM (not time)", "Separately identify the E/M and psychotherapy components in the note"], "modifiers": {}, "source": "Aetna E/M + Psychotherapy (BH00903)" },
-  "99484": { "supports": ["General behavioral health integration (BHI) care management, ~20 min/month of clinical staff time directed by the provider", "Document the monthly time, the systematic assessment/monitoring, care-plan revision, and continuity with a designated care team member"], "modifiers": {}, "source": "CMS BHI (paraphrased) — validate vs BHW Coders' Guide" }
+  "G0438": {
+    "supports": [
+      "Medicare Annual Wellness Visit — INITIAL",
+      "Only billable once per lifetime, and not within 12 months of the 'Welcome to Medicare' (G0402)",
+      "Requires the AWV elements: HRA, medication review, screening schedule, cognitive assessment, etc."
+    ],
+    "modifiers": {},
+    "source": "CMS AWV requirements — confirm interval vs claims/MAC (see providers.js extractAwv)"
+  },
+  "G0439": {
+    "supports": [
+      "Medicare Annual Wellness Visit — SUBSEQUENT",
+      "Billable once per 12 months after an initial AWV (G0438)",
+      "Requires updated HRA + care plan"
+    ],
+    "modifiers": {},
+    "source": "CMS AWV requirements — confirm interval vs claims/MAC (see providers.js extractAwv)"
+  },
+  "G0556": {
+    "supports": [
+      "Advanced Primary Care Management (APCM) — patient with 1 chronic condition",
+      "Care management + care plan + 24/7 access; document the elements furnished"
+    ],
+    "modifiers": {},
+    "source": "CMS APCM (2025) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G0557": {
+    "supports": [
+      "Advanced Primary Care Management (APCM) — patient with 2+ chronic conditions",
+      "Care management + comprehensive care plan; document the elements furnished"
+    ],
+    "modifiers": {},
+    "source": "CMS APCM (2025) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G0558": {
+    "supports": [
+      "Advanced Primary Care Management (APCM) — QMB patient with 2+ chronic conditions",
+      "Care management + comprehensive care plan; document the elements furnished"
+    ],
+    "modifiers": {},
+    "source": "CMS APCM (2025) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G2212": {
+    "supports": [
+      "Prolonged outpatient E/M (Medicare) — each additional 15 minutes beyond 99205/99215 time"
+    ],
+    "modifiers": {},
+    "source": "CMS prolonged services (G2212) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G2211": {
+    "supports": [
+      "Visit complexity add-on — ongoing, longitudinal care of a single serious/complex condition",
+      "Document the continuing relationship; not with modifier 25 on the same E/M"
+    ],
+    "modifiers": {},
+    "source": "CMS visit complexity add-on (G2211) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G0402": {
+    "supports": [
+      "Initial Preventive Physical Exam (\"Welcome to Medicare\") — within the first 12 months of Part B",
+      "Document the required IPPE elements"
+    ],
+    "modifiers": {},
+    "source": "CMS IPPE (G0402) — validate vs BHW Coders' Specialty Guide"
+  },
+  "G0442": {
+    "supports": [
+      "Annual alcohol misuse screening (~15 min)",
+      "Document the screening"
+    ],
+    "modifiers": {},
+    "source": "CMS alcohol screening — validate vs BHW Coders' Specialty Guide"
+  },
+  "G0444": {
+    "supports": [
+      "Annual depression screening (~15 min) in a setting with staff-assisted follow-up",
+      "Name the instrument and record the result"
+    ],
+    "modifiers": {},
+    "source": "CMS depression screening — validate vs BHW Coders' Specialty Guide"
+  }
 }

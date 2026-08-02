@@ -56,7 +56,9 @@ export function suggestEM(input, docAssist = {}) {
   };
 }
 
-/* docChecklist(codes, docAssist) → per-code documentation requirements. */
+/* docChecklist(codes, docAssist) → per-code documentation requirements.
+ * `modifiersAllowed` carries the CSG "Modifier Allowances" list when present
+ * (the codes for which a modifier is valid, i.e. the CSG "1 = allowed" set). */
 export function docChecklist(codes, docAssist = {}) {
   return codes.filter(Boolean).map((code) => {
     const entry = docAssist[code];
@@ -65,6 +67,7 @@ export function docChecklist(codes, docAssist = {}) {
       known: !!entry,
       supports: entry ? entry.supports || [] : [],
       modifiers: entry ? entry.modifiers || {} : {},
+      modifiersAllowed: entry ? entry.modifiersAllowed || [] : [],
       source: entry ? entry.source || "" : "",
     };
   });

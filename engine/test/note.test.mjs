@@ -4,16 +4,20 @@ import assert from "node:assert/strict";
 import { analyzeNote, NOTE_STATUS } from "../note-analyze.mjs";
 
 const get = (r, id) => r.checks.find((c) => c.id === id);
+const st = (r, id) => (get(r, id) || {}).status;
 
 const FULL_NOTE = `
 Patient: Jane Doe   DOB: 03/15/1965   Date of service: 08/02/2026
 Chief complaint: hypertension follow-up.
+Problem list: essential hypertension, hyperlipidemia.
 HPI: patient reports headaches; History reviewed.
 Exam: BP 148/92, general exam unremarkable. Mental status intact.
 Allergies: NKDA.
 Medications: lisinopril 10mg daily.
+Labs reviewed: BMP within normal limits.
 Assessment & plan: essential hypertension, adjust meds; total time 35 minutes.
 MDM: moderate complexity, differential considered.
+Return to clinic in 3 months.
 Electronically signed by A. Provider, MD.
 `;
 
@@ -21,47 +25,91 @@ test("empty note flags every general element missing, readiness 0", () => {
   const r = analyzeNote("", { codes: ["99214"] });
   assert.equal(r.empty, true);
   assert.equal(r.summary.readiness, 0);
-  assert.equal(get(r, "allergies").status, NOTE_STATUS.MISSING);
+  assert.equal(st(r, "allergies"), NOTE_STATUS.MISSING);
 });
 
 test("a complete note scores high and supports the E/M level", () => {
   const r = analyzeNote(FULL_NOTE, { codes: ["99214"], minutes: 35, mdmLevel: "moderate" });
   assert.ok(r.summary.readiness >= 90, `readiness ${r.summary.readiness}`);
-  assert.equal(get(r, "em_level_support").status, NOTE_STATUS.PRESENT);
-  assert.equal(get(r, "allergies").status, NOTE_STATUS.PRESENT);
-  assert.equal(get(r, "signature").status, NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "em_level_support"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "allergies"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "follow_up"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "signature"), NOTE_STATUS.PRESENT);
 });
 
 test("inflected words are detected (medications, allergies, exam, diagnosis)", () => {
   const r = analyzeNote("Medications: lisinopril. Allergies: penicillin. Examination normal. Diagnosis: HTN.", { codes: ["99213"] });
-  assert.equal(get(r, "medications").status, NOTE_STATUS.PRESENT);
-  assert.equal(get(r, "allergies").status, NOTE_STATUS.PRESENT);
-  assert.equal(get(r, "exam").status, NOTE_STATUS.PRESENT);
-  assert.equal(get(r, "assessment_plan").status, NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "medications"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "allergies"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "exam"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "assessment_plan"), NOTE_STATUS.PRESENT);
 });
 
 test("E/M with a psychotherapy add-on requires MDM (time not allowed)", () => {
   const r = analyzeNote(FULL_NOTE, { codes: ["99214", "90833"] });
   const c = get(r, "em_mdm_required");
-  assert.ok(c, "expected the MDM-required check");
-  assert.equal(c.status, NOTE_STATUS.PRESENT); // note documents MDM
+  assert.ok(c && c.status === NOTE_STATUS.PRESENT);
   assert.match(c.source, /Aetna/);
 });
 
 test("standalone psychotherapy billed with E/M is flagged for review", () => {
   const r = analyzeNote(FULL_NOTE, { codes: ["99214", "90837"] });
-  const c = get(r, "psy_standalone_with_em");
-  assert.ok(c && c.status === NOTE_STATUS.REVIEW);
+  assert.equal(st(r, "psy_standalone_with_em"), NOTE_STATUS.REVIEW);
 });
 
 test("missing E/M support is caught when neither time nor MDM is present", () => {
   const r = analyzeNote("Chief complaint: cough. Exam done. Plan: rest.", { codes: ["99215"] });
-  assert.equal(get(r, "em_level_support").status, NOTE_STATUS.MISSING);
+  assert.equal(st(r, "em_level_support"), NOTE_STATUS.MISSING);
 });
 
-test("modifier-25 justification is reviewed when a same-day procedure is present", () => {
+test("modifier-25 justification is reviewed/confirmed with a same-day procedure", () => {
   const withJust = analyzeNote(FULL_NOTE + "\nThe E/M was significant and separately identifiable.", { codes: ["99214"], hasSameDayProc: true });
-  assert.equal(get(withJust, "mod25_justification").status, NOTE_STATUS.PRESENT);
+  assert.equal(st(withJust, "mod25_justification"), NOTE_STATUS.PRESENT);
   const without = analyzeNote(FULL_NOTE, { codes: ["99214"], hasSameDayProc: true });
-  assert.equal(get(without, "mod25_justification").status, NOTE_STATUS.REVIEW);
+  assert.equal(st(without, "mod25_justification"), NOTE_STATUS.REVIEW);
+});
+
+/* ---- Time-based code needs a documented time (BHW P-8) ------------------ */
+test("time-based code (90837) requires a documented time", () => {
+  const no = analyzeNote("60 minute psychotherapy session, supportive therapy for anxiety.", { codes: ["90837"] });
+  assert.equal(st(no, "time_documented"), NOTE_STATUS.PRESENT); // "60 minute" counts
+  const missing = analyzeNote("Psychotherapy session, supportive therapy for anxiety.", { codes: ["90837"] });
+  assert.equal(st(missing, "time_documented"), NOTE_STATUS.MISSING);
+});
+
+/* ---- Category checks ---------------------------------------------------- */
+test("CCM checks fire for 99490", () => {
+  const r = analyzeNote("Two chronic conditions managed. Comprehensive care plan updated. 25 minutes this month. Consent on file.", { codes: ["99490"] });
+  assert.equal(st(r, "ccm_chronic"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "ccm_care_plan"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "ccm_time"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "ccm_consent"), NOTE_STATUS.PRESENT);
+});
+
+test("cognitive 99483 checks fire", () => {
+  const r = analyzeNote("MoCA administered. ADLs assessed. Medication reconciliation done. Home safety reviewed. Caregiver present. Advance care planning discussed. Written care plan created.", { codes: ["99483"] });
+  assert.equal(st(r, "cog_test"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "cog_functional"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "cog_caregiver"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "cog_care_plan"), NOTE_STATUS.PRESENT);
+});
+
+test("TCM checks fire for 99495", () => {
+  const r = analyzeNote("Hospital discharge 08/01. Interactive contact within 2 business days. Face-to-face office visit completed.", { codes: ["99495"] });
+  assert.equal(st(r, "tcm_discharge"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "tcm_contact"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "tcm_f2f"), NOTE_STATUS.PRESENT);
+});
+
+test("vascular checks fire for 93923", () => {
+  const r = analyzeNote("Indication: claudication. Segmental pressures and waveforms recorded bilaterally. Interpretation: moderate PAD.", { codes: ["93923"] });
+  assert.equal(st(r, "vasc_indication"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "vasc_measurements"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "vasc_interp"), NOTE_STATUS.PRESENT);
+});
+
+test("cloned-documentation heuristic flags a duplicated block", () => {
+  const dup = "The patient presents today for follow-up of chronic conditions and reports doing well overall.";
+  const r = analyzeNote(`${dup}\nExam normal.\n${dup}`, { codes: ["99214"] });
+  assert.equal(st(r, "cloned_note"), NOTE_STATUS.REVIEW);
 });

@@ -90,6 +90,6 @@ test("docChecklist returns note requirements for a known E/M code", () => {
 });
 
 test("docChecklist marks unknown codes so the map can be extended", () => {
-  const [row] = docChecklist(["93923"], DOC_ASSIST);
+  const [row] = docChecklist(["94010"], DOC_ASSIST); // spirometry — not yet in the map
   assert.equal(row.known, false);
 });
