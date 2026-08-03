@@ -129,16 +129,19 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
         uploaded or stored. Decision support: confirm each rejection against the clearinghouse before reworking.
       </div>
 
-      <div class="card">
-        <div class="card-head"><h3>Paste the clearinghouse export</h3>
-          <div style="display:flex;gap:8px">
+      <div class="card" id="dropCard">
+        <div class="card-head"><h3>Paste or drop the clearinghouse export</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label class="mini" style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="appendChk" checked> Append batches</label>
+            <button class="btn btn-ghost btn-sm" id="fileBtn">Choose file…</button>
+            <input type="file" id="fileInput" accept=".txt,.csv,.tsv,text/plain" hidden>
             <button class="btn btn-primary btn-sm" id="parseBtn">Parse claims</button>
             <button class="btn btn-ghost btn-sm" id="csvBtn" disabled>Export CSV</button>
             <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
           </div>
         </div>
-        <textarea id="raw" rows="7" placeholder="Paste the daily status rows here (e.g. 1–50 of 132)…"></textarea>
-        <div class="mini" id="parseNote" style="margin-top:6px"></div>
+        <textarea id="raw" rows="7" placeholder="Paste the daily status rows here (e.g. 1–50 of 132), or drop the exported file anywhere on this card…"></textarea>
+        <div class="mini" id="parseNote" style="margin-top:6px">Tip: with <b>Append batches</b> on, paste or drop each 50-row batch and they accumulate into one worklist (duplicate events are ignored).</div>
       </div>
 
       <div id="statsWrap"></div>
@@ -157,13 +160,14 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 </div>
 
 <script type="module">
-import { parseClaims, CLAIM_STAGE } from "../engine/claims-parse.mjs";
+import { parseClaimEvents, rollupClaims, summarize, CLAIM_STAGE } from "../engine/claims-parse.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const money = (n) => "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const STAGE_LABEL = { rejected: "Rejected", clearinghouse: "At clearinghouse", acknowledged: "Acknowledged", accepted: "In adjudication", unknown: "Unknown" };
-let CLAIMS = [], FILTER = "all";
+let CLAIMS = [], FILTER = "all", ALL_EVENTS = [];
+const evtKey = (e) => [e.invoice, e.status, e.asOnDate, e.ect, e.remarks].join("|");
 
 (function theme() {
   const KEY = "bhw-theme";
@@ -172,18 +176,33 @@ let CLAIMS = [], FILTER = "all";
   $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
 })();
 
-function run() {
-  const text = $("raw").value;
-  if (!text.trim()) { $("parseNote").textContent = "Paste the export first."; return; }
-  const { events, claims, summary } = parseClaims(text);
-  CLAIMS = claims;
-  $("parseNote").textContent = `${events.length} status event(s) → ${claims.length} claim(s).`;
-  $("countPill").textContent = `${claims.length} claims · ${summary.actionCount} need action`;
-  $("csvBtn").disabled = !claims.length;
+/* Ingest a chunk of export text. In append mode the events accumulate (deduped
+ * by event signature) so the 50-row batches build one worklist; otherwise the
+ * batch replaces what's loaded. */
+function ingest(text, sourceLabel) {
+  if (!text || !text.trim()) { $("parseNote").textContent = "Nothing to parse — paste or drop the export."; return; }
+  const append = $("appendChk").checked;
+  const incoming = parseClaimEvents(text);
+  if (!incoming.length) { $("parseNote").textContent = "No claim rows recognized in that text."; return; }
+  if (!append) ALL_EVENTS = [];
+  const seen = new Set(ALL_EVENTS.map(evtKey));
+  let added = 0;
+  for (const e of incoming) { const k = evtKey(e); if (!seen.has(k)) { seen.add(k); ALL_EVENTS.push(e); added++; } }
+  render();
+  $("parseNote").textContent = `${sourceLabel}: ${incoming.length} event(s) read, ${added} new · ${ALL_EVENTS.length} event(s) loaded → ${CLAIMS.length} claim(s).`;
+}
+
+function render() {
+  CLAIMS = rollupClaims(ALL_EVENTS);
+  const summary = summarize(CLAIMS);
+  $("countPill").textContent = CLAIMS.length ? `${CLAIMS.length} claims · ${summary.actionCount} need action` : "no claims loaded";
+  $("csvBtn").disabled = !CLAIMS.length;
   renderStats(summary);
-  $("filters").style.display = claims.length ? "flex" : "none";
+  $("filters").style.display = CLAIMS.length ? "flex" : "none";
   renderTable();
 }
+
+function run() { ingest($("raw").value, "Pasted"); }
 
 function renderStats(s) {
   const stage = (k) => (s.byStage[k] || { count: 0, amount: 0 });
@@ -241,7 +260,20 @@ function toCSV() {
 
 $("parseBtn").onclick = run;
 $("csvBtn").onclick = toCSV;
-$("clearBtn").onclick = () => { $("raw").value = ""; CLAIMS = []; $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none"; $("countPill").textContent = "no claims loaded"; $("parseNote").textContent = ""; $("csvBtn").disabled = true; };
+$("clearBtn").onclick = () => { $("raw").value = ""; ALL_EVENTS = []; CLAIMS = []; $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none"; $("countPill").textContent = "no claims loaded"; $("parseNote").textContent = ""; $("csvBtn").disabled = true; };
+
+/* File picker + drag-and-drop (reads the exported file's text; still local). */
+async function readFile(file) {
+  if (!file) return;
+  const text = await file.text();
+  ingest(text, `File “${file.name}”`);
+}
+$("fileBtn").onclick = () => $("fileInput").click();
+$("fileInput").addEventListener("change", (e) => readFile(e.target.files[0]));
+const drop = $("dropCard");
+["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.style.outline = "2px dashed var(--blue)"; }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.style.outline = ""; }));
+drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
 $("filters").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip"); if (!chip) return;
   FILTER = chip.dataset.f;
