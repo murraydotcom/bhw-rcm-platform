@@ -20,6 +20,11 @@ const CORS = {
 };
 
 exports.handler = async (event) => {
+  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
+  const { guard } = require("./lib/rcmAuth");
+  const _g = guard(event);
+  if (!_g.ok) return _g.resp;
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed" });
 

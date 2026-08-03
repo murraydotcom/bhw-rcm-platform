@@ -32,6 +32,11 @@ const NOTION_TOKEN  = process.env.NOTION_TOKEN;
 const NOTION_DB_ADT = process.env.NOTION_DB_ADT;
 
 exports.handler = async (event) => {
+  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
+  const { guard } = require("./lib/rcmAuth");
+  const _g = guard(event);
+  if (!_g.ok) return _g.resp;
+
   const q = event.queryStringParameters || {};
   const method = event.httpMethod || 'GET';
   try {
@@ -59,9 +64,12 @@ async function adtFeed() {
 
 /* ---- INGEST: one CRISP notification → a normalized event ----------------- */
 async function ingest(event) {
-  // Verify the shared secret CRISP is configured to send.
+  // Fail closed: require the shared secret CRISP sends — no anonymous ADT writes.
+  if (!process.env.CRISP_INGEST_TOKEN) {
+    return { statusCode: 503, body: JSON.stringify({ ok: false, error: 'CRISP_INGEST_TOKEN not set' }) };
+  }
   const token = (event.headers['x-crisp-token'] || event.headers['X-CRISP-Token'] || '');
-  if (process.env.CRISP_INGEST_TOKEN && token !== process.env.CRISP_INGEST_TOKEN) {
+  if (token !== process.env.CRISP_INGEST_TOKEN) {
     return { statusCode: 401, body: JSON.stringify({ ok: false, error: 'bad ingest token' }) };
   }
   const body = event.body || '';

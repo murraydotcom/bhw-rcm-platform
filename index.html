@@ -213,6 +213,188 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
 </style>
 </head>
 <body>
+<!-- ===================== RCM standalone access gate ===================== -->
+<!-- Independent of crewOS / welcometoBHW. Arms only when RCM_SESSION_SECRET
+     plus an access code are set in Netlify; until then the app opens normally
+     with an "access control is off" banner. -->
+<style>
+#rcmGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(1100px 700px at 78% -8%,rgba(95,179,172,.22),transparent 60%),
+    radial-gradient(1000px 720px at 12% 108%,rgba(224,183,94,.16),transparent 55%),
+    linear-gradient(180deg,#0b1c2b,#091722 60%,#081521);
+  font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#e9f0f2}
+#rcmGate .gcard{width:100%;max-width:400px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:34px 30px;box-shadow:0 30px 70px -30px rgba(0,0,0,.8);backdrop-filter:blur(8px)}
+#rcmGate .gbrand{display:flex;align-items:center;gap:11px;margin-bottom:20px}
+#rcmGate .gbrand .gg{width:34px;height:34px;flex:none}
+#rcmGate .gbrand .gt{font-weight:300;font-size:17px;letter-spacing:.02em;line-height:1.15}
+#rcmGate .gbrand .gt b{font-weight:800}
+#rcmGate .gbrand .gt small{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#9db4c2;font-weight:700;margin-top:3px}
+#rcmGate h2{font-weight:700;font-size:20px;color:#f4eede;letter-spacing:-.01em;margin:0 0 4px}
+#rcmGate p.gsub{font-size:12.5px;color:#9db4c2;margin:0 0 18px;line-height:1.5}
+#rcmGate label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9db4c2;margin:0 0 7px}
+#rcmGate .who{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+#rcmGate .who button{flex:1;min-width:90px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#e9f0f2;
+  border-radius:11px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+#rcmGate .who button:hover{background:rgba(255,255,255,.08)}
+#rcmGate .who button.on{border-color:#e0b75e;background:rgba(224,183,94,.14);color:#f4eede}
+#rcmGate input{width:100%;padding:12px 13px;border:1px solid rgba(255,255,255,.16);background:rgba(9,23,34,.5);color:#e9f0f2;
+  border-radius:11px;font-size:15px;font-family:inherit;letter-spacing:.08em}
+#rcmGate input:focus{outline:none;border-color:#5fb3ac}
+#rcmGate .gbtn{width:100%;margin-top:16px;border:none;border-radius:999px;padding:13px;font-size:12px;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:inherit;color:#20140a;
+  background:linear-gradient(100deg,#e0b75e,#c8933a);box-shadow:0 12px 28px -12px rgba(200,147,58,.7)}
+#rcmGate .gbtn:hover{transform:translateY(-1px)}
+#rcmGate .gbtn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+#rcmGate .gerr{color:#f0a58f;font-size:12px;font-weight:600;margin-top:12px;min-height:16px}
+#rcmGate .gfoot{margin-top:18px;font-size:10.5px;color:#6f8695;text-align:center;letter-spacing:.03em}
+#rcmSignout{position:fixed;left:14px;bottom:14px;z-index:9998;display:none;align-items:center;gap:8px;
+  background:rgba(11,28,43,.9);color:#cdd9df;border:1px solid rgba(255,255,255,.14);border-radius:999px;
+  padding:7px 13px;font-size:11px;font-weight:600;font-family:'Montserrat',system-ui,sans-serif;cursor:pointer}
+#rcmSignout:hover{background:rgba(11,28,43,1);color:#fff}
+#rcmOffBanner{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:9997;display:none;align-items:center;gap:10px;
+  background:#0b1c2b;color:#e9f0f2;border:1px solid rgba(224,183,94,.4);border-radius:12px;padding:9px 14px;
+  font-size:11.5px;font-family:'Montserrat',system-ui,sans-serif;max-width:92vw;box-shadow:0 18px 40px -20px rgba(0,0,0,.7)}
+#rcmOffBanner b{color:#e0b75e}
+#rcmOffBanner button{background:none;border:none;color:#9db4c2;font-size:15px;cursor:pointer;line-height:1;margin-left:4px}
+</style>
+
+<div id="rcmGate">
+  <div class="gcard">
+    <div class="gbrand">
+      <svg class="gg" viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="17" fill="#7fc98a"/>
+        <ellipse cx="110" cy="110" rx="92" ry="34" fill="none" stroke="#e0b75e" stroke-width="7"/>
+        <ellipse cx="110" cy="110" rx="92" ry="34" fill="none" stroke="#5fb3ac" stroke-width="7" transform="rotate(60 110 110)"/>
+        <ellipse cx="110" cy="110" rx="92" ry="34" fill="none" stroke="#8aa9d6" stroke-width="7" transform="rotate(120 110 110)"/>
+      </svg>
+      <div class="gt"><b>BHW</b> RCM<small>Command Center</small></div>
+    </div>
+    <h2>Sign in</h2>
+    <p class="gsub">This platform is limited to authorized billing staff. Choose your name and enter your access code.</p>
+    <label>Who's signing in?</label>
+    <div class="who" id="rcmWho"></div>
+    <label for="rcmCode">Access code</label>
+    <input id="rcmCode" type="password" inputmode="numeric" autocomplete="off" placeholder="••••••" aria-label="Access code">
+    <button class="gbtn" id="rcmGo" type="button" disabled>Enter</button>
+    <div class="gerr" id="rcmErr"></div>
+    <div class="gfoot">A program of The Foundation · Baltimore, MD</div>
+  </div>
+</div>
+<button id="rcmSignout" type="button" title="Sign out of the RCM Command Center">⎋ <span id="rcmWhoami">Sign out</span></button>
+<div id="rcmOffBanner"><span>🔓 <b>Access control is off.</b> Set <b>RCM_SESSION_SECRET</b> + an access code in Netlify to require sign-in.</span><button type="button" onclick="this.parentElement.style.display='none'" aria-label="Dismiss">×</button></div>
+
+<script>
+/* ---- RCM access gate: fetch auth injection + login flow ----
+   Installed before app scripts so the Authorization header is attached to
+   every /.netlify/functions/ call, and the UI stays hidden until authorized. */
+(function(){
+  var AUTH_URL = "/.netlify/functions/rcm-auth";
+  var KEY = "rcm_token";
+  var token = null;
+  try { token = sessionStorage.getItem(KEY); } catch(e){}
+
+  function decodeExp(t){
+    try { var b = t.split(".")[0]; var p = JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/'))); return p.exp||0; }
+    catch(e){ return 0; }
+  }
+  function tokenValid(){ return token && decodeExp(token) > Date.now(); }
+
+  // Patch fetch: attach Bearer to same-origin function calls; catch 401 to re-gate.
+  var _fetch = window.fetch;
+  window.fetch = function(url, opts){
+    opts = opts || {};
+    try {
+      var u = typeof url === "string" ? url : (url && url.url) || "";
+      if (u.indexOf("/.netlify/functions/") > -1 && u.indexOf("rcm-auth") === -1) {
+        var t = null; try { t = sessionStorage.getItem(KEY); } catch(e){}
+        if (t) opts.headers = Object.assign({}, opts.headers, { Authorization: "Bearer " + t });
+      }
+    } catch(e){}
+    return _fetch.call(this, url, opts).then(function(res){
+      if (res && res.status === 401 && String((typeof url==="string"?url:"")).indexOf("/.netlify/functions/") > -1) {
+        try { sessionStorage.removeItem(KEY); } catch(e){}
+        showGate();
+      }
+      return res;
+    });
+  };
+
+  var gate = null, whoBox = null, codeEl = null, goEl = null, errEl = null, signout = null, offBanner = null;
+  var chosen = null, users = [{key:"amaris",name:"Amaris"},{key:"shade",name:"Shade"}];
+
+  function showGate(){ if(gate){ gate.style.display="flex"; if(codeEl) codeEl.focus(); } if(signout) signout.style.display="none"; }
+  function hideGate(name){
+    if(gate) gate.style.display="none";
+    if(signout && name){ signout.style.display="inline-flex"; var w=document.getElementById("rcmWhoami"); if(w) w.textContent="Sign out · "+name; }
+  }
+  function renderWho(){
+    whoBox.innerHTML = users.map(function(u){ return '<button type="button" data-k="'+u.key+'">'+u.name+'</button>'; }).join("");
+    Array.prototype.forEach.call(whoBox.querySelectorAll("button"), function(b){
+      b.onclick = function(){ chosen = b.dataset.k;
+        Array.prototype.forEach.call(whoBox.querySelectorAll("button"), function(x){ x.classList.toggle("on", x.dataset.k===chosen); });
+        refreshGo(); if(codeEl) codeEl.focus(); };
+    });
+  }
+  function refreshGo(){ if(goEl) goEl.disabled = !(chosen && codeEl && codeEl.value.trim().length); }
+
+  async function doLogin(){
+    if(!chosen){ errEl.textContent="Pick your name first."; return; }
+    goEl.disabled = true; var label = goEl.textContent; goEl.textContent = "Checking…"; errEl.textContent="";
+    try {
+      var r = await _fetch(AUTH_URL, { method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ action:"login", user: chosen, code: codeEl.value }) });
+      var d = await r.json().catch(function(){ return {}; });
+      if (d.notConfigured){ // not armed — let them in, show the "off" banner
+        try { sessionStorage.removeItem(KEY); } catch(e){}
+        hideGate(null); if(offBanner) offBanner.style.display="flex"; return;
+      }
+      if (!r.ok || !d.ok){ throw new Error(d.error || "That didn't work. Try again."); }
+      token = d.token; try { sessionStorage.setItem(KEY, token); } catch(e){}
+      hideGate(d.name);
+    } catch(e){
+      errEl.textContent = e.message || "Sign-in failed. Check your connection.";
+    } finally {
+      goEl.textContent = label; refreshGo();
+    }
+  }
+
+  function boot(){
+    gate = document.getElementById("rcmGate");
+    whoBox = document.getElementById("rcmWho");
+    codeEl = document.getElementById("rcmCode");
+    goEl = document.getElementById("rcmGo");
+    errEl = document.getElementById("rcmErr");
+    signout = document.getElementById("rcmSignout");
+    offBanner = document.getElementById("rcmOffBanner");
+
+    renderWho();
+    if(codeEl){ codeEl.addEventListener("input", refreshGo);
+      codeEl.addEventListener("keydown", function(e){ if(e.key==="Enter" && !goEl.disabled) doLogin(); }); }
+    if(goEl) goEl.onclick = doLogin;
+    if(signout) signout.onclick = function(){ try{ sessionStorage.removeItem(KEY); }catch(e){} token=null; if(codeEl) codeEl.value=""; refreshGo(); showGate(); };
+
+    // Already have a live token? Skip the gate.
+    if (tokenValid()){ hideGate(); return; }
+
+    // Otherwise ask the server whether access control is armed.
+    _fetch(AUTH_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"status" }) })
+      .then(function(r){ return r.json(); })
+      .then(function(s){
+        if (s && Array.isArray(s.users) && s.users.length) { users = s.users; renderWho(); }
+        if (s && s.configured){ showGate(); }
+        else { hideGate(null); if(offBanner) offBanner.style.display="flex"; } // security off → open app
+      })
+      .catch(function(){ // if status can't be reached, fail open (don't brick the app)
+        hideGate(null); if(offBanner) offBanner.style.display="flex";
+      });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
+<!-- =================== end RCM standalone access gate =================== -->
 <div class="app">
 
   <!-- ============ SIDEBAR ============ -->
@@ -1648,7 +1830,8 @@ const CONFIG = {
     crisp:  "/.netlify/functions/crisp",  // CRISP CEND/ENS ADT feed + panel export
     paymentPost: "/.netlify/functions/payment-post",  // manual EOB / cash / check posting
     notePost: "/.netlify/functions/note-post",  // claim/remittance cycle notes → Notion
-    stripeBank: "/.netlify/functions/stripe-bank"  // Stripe Financial Connections (bank sync)
+    stripeBank: "/.netlify/functions/stripe-bank",  // Stripe Financial Connections (bank sync)
+    auth: "/.netlify/functions/rcm-auth"  // standalone RCM login (Amaris + Shade)
   },
   ai: { endpoint: "/.netlify/functions/albert" }   // Albert Murray CPA advisor (Claude)
 };

@@ -18,6 +18,11 @@ const NOTION_VERSION = "2022-06-28";
 const INSURANCE_DB_ID = process.env.NOTION_INSURANCE_DB || "6bf580758d30828098a101e533cbed4d";
 
 exports.handler = async (event) => {
+  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
+  const { guard } = require("./lib/rcmAuth");
+  const _g = guard(event);
+  if (!_g.ok) return _g.resp;
+
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",

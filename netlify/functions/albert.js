@@ -40,6 +40,11 @@ GUARDRAILS:
 - When you rely on figures the app didn't give you, or on time-sensitive policy, say what you'd need to verify and where.`;
 
 exports.handler = async (event) => {
+  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
+  const { guard } = require("./lib/rcmAuth");
+  const _g = guard(event);
+  if (!_g.ok) return _g.resp;
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
 
   const key = process.env.ANTHROPIC_API_KEY;

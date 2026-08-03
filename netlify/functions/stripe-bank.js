@@ -28,6 +28,11 @@ const BASE = "https://api.stripe.com/v1";
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Content-Type": "application/json" };
 
 exports.handler = async (event) => {
+  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
+  const { guard } = require("./lib/rcmAuth");
+  const _g = guard(event);
+  if (!_g.ok) return _g.resp;
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   const q = event.queryStringParameters || {};
   if (!KEY) return json(200, { ok: true, sampleMode: true });   // demo → front-end keeps sample data
