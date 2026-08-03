@@ -242,8 +242,12 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
         <div class="notegrid">
           <div>
             <label class="fld" for="note">Paste the visit note</label>
-            <textarea id="note" rows="15" placeholder="Paste the encounter note here to check its documentation against the billed codes…"></textarea>
-            <div class="mini" style="margin-top:6px">Keyword-based decision support — a miss is a prompt to verify in the chart, not a coding call. Each line cites its source standard.</div>
+            <textarea id="note" rows="15" placeholder="Paste the encounter note here (incl. the scribe's coded summary) to check documentation and pull the codes…"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="pullBtn" type="button">↑ Pull codes from note</button>
+              <span class="mini" id="pullStatus"></span>
+            </div>
+            <div class="mini" style="margin-top:6px">Pulls the CPT/HCPCS + ICD-10 the scribe (e.g. Freed) put on the note into the encounter fields — always confirm before billing. Keyword-based decision support; each line cites its source standard.</div>
           </div>
           <div>
             <label class="fld">Documentation readiness</label>
@@ -261,6 +265,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 import { suggestEM, docChecklist } from "../engine/assist.mjs";
 import { analyzeNote } from "../engine/note-analyze.mjs";
 import { checkPriorAuth } from "../engine/prior-auth.mjs";
+import { extractCodes } from "../engine/code-extract.mjs";
 
 /* Payer options use the exact strings the engine's payer-specific rules key off,
  * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
@@ -390,6 +395,26 @@ function renderPA(claim) {
     ${rows.join(" &nbsp;·&nbsp; ")} <a href="prior-auth.html" style="text-decoration:underline;opacity:.75">CRD workflow →</a></div>`;
 }
 
+/* Pull the CPT/HCPCS + ICD-10 codes the scribe put on the note into the
+ * encounter fields. Validated against the real charge master to drop stray
+ * numbers; the biller still confirms, then the scrub engine checks them. */
+function pullCodes() {
+  const note = $("note").value;
+  if (!note.trim()) { $("pullStatus").textContent = "Paste a note first."; return; }
+  // Extract unvalidated so no real scribe code is dropped; the scrub engine
+  // then flags anything unknown / not on BHW's charge master.
+  const r = extractCodes(note);
+  if (!r.all.length) { $("pullStatus").textContent = "No CPT/HCPCS or ICD-10 codes found in the note."; return; }
+  if (r.primary) $("em").value = r.primary;
+  if (r.sameDayProcs[0]) $("proc").value = r.sameDayProcs[0];
+  if (r.icd10[0]) $("dx").value = r.icd10[0];
+  if (r.modifiers.length) $("mods").value = r.modifiers.join(", ");
+  const extraDx = r.icd10.length > 1 ? ` (+${r.icd10.length - 1} more dx: ${r.icd10.slice(1).join(", ")})` : "";
+  const extraProc = r.sameDayProcs.length > 1 ? ` · other procs: ${r.sameDayProcs.slice(1).join(", ")}` : "";
+  $("pullStatus").innerHTML = `Pulled: <b>${esc([r.primary, r.sameDayProcs[0], r.icd10[0]].filter(Boolean).join(", "))}</b>${esc(extraDx + extraProc)} — confirm before billing.`;
+  run();
+}
+
 function run() {
   const claim = readClaim();
   updateFreqHint();
@@ -412,6 +437,7 @@ function wire() {
   ["priorDays", "priorCount"].forEach((id) => $(id).addEventListener("input", run));
   $("note").addEventListener("input", run);
   $("runBtn").onclick = run;
+  $("pullBtn").onclick = pullCodes;
   $("themeBtn").onclick = () => {
     const dark = document.documentElement.getAttribute("data-theme") === "dark";
     document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
