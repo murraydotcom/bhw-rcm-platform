@@ -31,6 +31,7 @@ const SRC = {
   P8: "BHW P&P Manual P-8 (billing integrity)",
   FWA: "CareFirst SIU / Payment Integrity",
   CPT_EM: "CPT® 2021 Office/Outpatient E/M",
+  CPT_EM23: "CPT® 2023 E/M — MDM or total time (extended to hospital, consult, ED, nursing-facility, home)",
   AETNA_PSY: "Aetna E/M + Psychotherapy (BH00903)",
   CCM: "CMS Chronic/Principal Care Management",
   RPM: "CMS Remote Physiologic Monitoring",
@@ -82,6 +83,12 @@ const rx = {
 const has = (v, re) => re.test(v);
 const inSet = (c, re) => re.test(c || "");
 const isEM = (c) => /^992(0[2-5]|1[1-5])$/.test(c || "");
+/* Other E/M families that, since 2023, are also selected by MDM OR total time
+ * (history/exam no longer drive the level): hospital inpatient/observation
+ * 99221-99223 & 99231-99239, consults 99242-99245 & 99252-99255, ED
+ * 99281-99285, nursing facility 99304-99310 & 99315-99316, home/residence
+ * 99341-99342, 99344-99345, 99347-99350. */
+const isExtendedEM = (c) => /^(9922[123]|9923[1-9]|9924[2-5]|9925[2-5]|9928[1-5]|993(0[4-9]|10)|9931[56]|9934[1245]|993(4[7-9]|50))$/.test(c || "");
 const isHighEM = (c) => /^(99204|99205|99214|99215)$/.test(c || "");
 const isStandalonePsych = (c) => /^(90832|90834|90837)$/.test(c || "");
 const isPsychAddon = (c) => /^(90833|90836|90838)$/.test(c || "");
@@ -147,6 +154,15 @@ export function analyzeNote(noteText = "", ctx = {}) {
         add("em_high_level", `${emCode} is a high-level E/M`, NOTE_STATUS.REVIEW,
           "Level 4/5 needs clear moderate/high MDM or the time threshold met — confirm before billing.", SRC.CPT_EM);
     }
+  }
+
+  /* ---- Other E/M families (CPT 2023: MDM or total time) ---------------- */
+  const extEmCode = codes.find(isExtendedEM);
+  if (extEmCode && !emCode) {
+    const hasTime = (ctx.minutes != null && ctx.minutes > 0) || hit(rx.timeStatement);
+    const hasMdm = !!ctx.mdmLevel || hit(rx.mdm);
+    add("em_level_support_2023", `E/M ${extEmCode} level support (time or MDM)`, pm(hasTime || hasMdm),
+      "Since 2023 this E/M family is selected by total time on the encounter date OR medical decision making — a medically-appropriate history/exam is expected but no longer sets the level. Document time or the MDM elements.", SRC.CPT_EM23);
   }
 
   /* ---- Psychotherapy (Aetna BH00903) ----------------------------------- */

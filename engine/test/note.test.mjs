@@ -62,6 +62,17 @@ test("missing E/M support is caught when neither time nor MDM is present", () =>
   assert.equal(st(r, "em_level_support"), NOTE_STATUS.MISSING);
 });
 
+test("2023 E/M families (inpatient/consult/ED/NF/home) are checked by time or MDM", () => {
+  // 99223 (hospital inpatient) with time → supported; without time or MDM → missing
+  const ok = analyzeNote("Admitted. Total time 75 minutes on the unit.", { codes: ["99223"] });
+  assert.equal(st(ok, "em_level_support_2023"), NOTE_STATUS.PRESENT);
+  const missing = analyzeNote("Chief complaint: chest pain. Exam done. Plan: admit.", { codes: ["99283"] });
+  assert.equal(st(missing, "em_level_support_2023"), NOTE_STATUS.MISSING);
+  // an office E/M does NOT trigger the extended-family check (it has its own)
+  const office = analyzeNote("Total time 30 minutes.", { codes: ["99214"] });
+  assert.equal(st(office, "em_level_support_2023"), undefined);
+});
+
 test("modifier-25 justification is reviewed/confirmed with a same-day procedure", () => {
   const withJust = analyzeNote(FULL_NOTE + "\nThe E/M was significant and separately identifiable.", { codes: ["99214"], hasSameDayProc: true });
   assert.equal(st(withJust, "mod25_justification"), NOTE_STATUS.PRESENT);
