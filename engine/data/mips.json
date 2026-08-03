@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "source": "CMS QPP — Value in Primary Care MVP (M0005) + Traditional MIPS Scoring Guide, 2026 Performance Year",
+    "performanceYear": "2026",
+    "note": "Quality/IA/Cost/PI/Population-Health sets below are the real M0005 MVP measures. CPT/HCPCS codes are included only where confidently known from the measure spec; others are left empty pending the official measure specifications.",
+    "scoring": {
+      "categoryWeights": { "quality": 0.30, "cost": 0.30, "improvementActivities": 0.15, "promotingInteroperability": 0.25 },
+      "performanceThreshold": 75,
+      "thresholdYears": "2026-2028",
+      "notes": ["Weights are the standard (non-reweighted) 2026 case. Reweighting redistributes a category's weight when it can't be scored (e.g., PI hardship, no cost measures met).", "Population Health measures are scored within the Quality category.", "Cost is CMS-calculated from Medicare claims; no data submission."]
+    }
+  },
+  "mvps": [
+    {
+      "id": "M0005",
+      "title": "Value in Primary Care",
+      "specialties": ["Preventive Medicine", "Internal Medicine", "Family Medicine", "Geriatrics", "Nonphysician Practitioners", "Nurse Practitioners", "Physician Assistants"],
+      "theme": "Promoting quality care for patients to reduce the risk of diseases, disabilities, and death.",
+      "requirements": {
+        "quality": "Report 4 quality measures from the MVP list; at least 1 must be an outcome measure (or a high-priority measure if no outcome applies). Full 12-month performance period.",
+        "improvementActivities": "Report 1 improvement activity from the MVP list. Activities no longer carry assigned weights.",
+        "cost": "No submission — CMS calculates all MVP cost measures from Medicare claims; scored where the case minimum is met.",
+        "promotingInteroperability": "Submit the required PI measures (same as traditional MIPS); subject to automatic reweighting / hardship exceptions.",
+        "populationHealth": "No submission — CMS calculates from administrative claims; scored within Quality."
+      },
+      "quality": ["001", "047", "134", "236", "305", "321", "438", "475", "483", "493", "497", "504"],
+      "improvementActivities": ["IA_AHW_1", "IA_BE_12", "IA_BE_26", "IA_BE_4", "IA_BE_6", "IA_CC_13", "IA_MVP", "IA_PCMH", "IA_PM_11", "IA_PM_16", "IA_PM_22", "IA_PM_23", "IA_PM_25"],
+      "cost": ["COST_ACOPD_1", "COST_D_1", "COST_DEP_1", "COST_HF_1", "TPCC_1"],
+      "populationHealth": ["479", "484"]
+    }
+  ],
+  "quality": [
+    { "number": "001", "title": "Diabetes: Glycemic Status Assessment Greater Than 9%", "type": "Intermediate Outcome", "highPriority": true, "collectionTypes": ["eCQM", "MIPS CQM", "Medicare Part B Claims"], "keywords": ["diabetes", "a1c", "hba1c", "glycemic"], "codes": ["3044F", "3046F", "3051F", "3052F"] },
+    { "number": "047", "title": "Advance Care Plan", "type": "Process", "highPriority": true, "collectionTypes": ["MIPS CQM", "Medicare Part B Claims"], "keywords": ["advance care plan", "surrogate", "acp", "geriatric"], "codes": ["1123F", "1124F", "1157F", "1158F"] },
+    { "number": "134", "title": "Preventive Care and Screening: Screening for Depression and Follow-Up Plan", "type": "Process", "highPriority": false, "collectionTypes": ["eCQM", "MIPS CQM", "Medicare Part B Claims"], "keywords": ["depression", "phq", "screening", "behavioral"], "codes": ["G8431", "G8510", "G8432"] },
+    { "number": "236", "title": "Controlling High Blood Pressure", "type": "Intermediate Outcome", "highPriority": true, "collectionTypes": ["eCQM", "MIPS CQM", "Medicare Part B Claims"], "keywords": ["hypertension", "blood pressure", "htn"], "codes": ["3074F", "3075F", "3077F", "3078F", "3079F", "3080F"] },
+    { "number": "305", "title": "Initiation and Engagement of Substance Use Disorder Treatment", "type": "Process", "highPriority": true, "collectionTypes": ["eCQM"], "keywords": ["substance use", "sud", "treatment", "behavioral"], "codes": [] },
+    { "number": "321", "title": "CAHPS for MIPS Clinician/Group Survey", "type": "Patient Engagement/Experience", "highPriority": true, "collectionTypes": ["CAHPS for MIPS Survey"], "keywords": ["cahps", "survey", "experience", "patient"], "codes": [] },
+    { "number": "438", "title": "Statin Therapy for the Prevention and Treatment of Cardiovascular Disease", "type": "Process", "highPriority": false, "collectionTypes": ["eCQM", "MIPS CQM"], "keywords": ["statin", "cardiovascular", "cholesterol", "cvd"], "codes": [] },
+    { "number": "475", "title": "HIV Screening", "type": "Process", "highPriority": false, "collectionTypes": ["eCQM"], "keywords": ["hiv", "screening"], "codes": [] },
+    { "number": "483", "title": "Person-Centered Primary Care Measure (PCPCM PRO-PM)", "type": "Patient-Reported Outcome", "highPriority": true, "collectionTypes": ["MIPS CQM"], "keywords": ["person-centered", "primary care", "pro", "pcpcm"], "codes": [] },
+    { "number": "493", "title": "Adult Immunization Status", "type": "Process", "highPriority": false, "collectionTypes": ["MIPS CQM"], "keywords": ["immunization", "vaccine", "adult"], "codes": [] },
+    { "number": "497", "title": "Preventive Care and Wellness (composite)", "type": "Process", "highPriority": false, "collectionTypes": ["MIPS CQM"], "keywords": ["preventive", "wellness", "composite", "screening"], "codes": [] },
+    { "number": "504", "title": "Initiation, Review, and/or Update to Suicide Safety Plan for Individuals with Suicidal Thoughts, Behavior, or Suicide Risk", "type": "Process", "highPriority": true, "collectionTypes": ["MIPS CQM"], "keywords": ["suicide", "safety plan", "ideation", "behavioral", "c-ssrs"], "codes": [] }
+  ],
+  "cost": [
+    { "id": "COST_ACOPD_1", "title": "Asthma / Chronic Obstructive Pulmonary Disease (COPD)", "measureKind": "Episode-based", "keywords": ["asthma", "copd"] },
+    { "id": "COST_D_1", "title": "Diabetes", "measureKind": "Chronic condition", "keywords": ["diabetes"] },
+    { "id": "COST_DEP_1", "title": "Depression", "measureKind": "Chronic condition", "keywords": ["depression", "behavioral"] },
+    { "id": "COST_HF_1", "title": "Heart Failure", "measureKind": "Chronic condition", "keywords": ["heart failure", "hf"] },
+    { "id": "TPCC_1", "title": "Total Per Capita Cost (TPCC)", "measureKind": "Population-based", "keywords": ["total cost", "per capita", "tpcc"] }
+  ],
+  "improvementActivities": [
+    { "id": "IA_AHW_1", "title": "Chronic Care and Preventative Care Management for Empaneled Patients", "keywords": ["chronic care", "preventive", "empanelment"] },
+    { "id": "IA_BE_12", "title": "Use evidence-based decision aids to support shared decision-making", "keywords": ["decision aids", "shared decision"] },
+    { "id": "IA_BE_26", "title": "Promote Use of Patient-Reported Outcome Tools", "keywords": ["patient-reported", "pro"] },
+    { "id": "IA_BE_4", "title": "Engagement of Patients through Implementation of New Patient Portal", "keywords": ["patient portal", "engagement"] },
+    { "id": "IA_BE_6", "title": "Regularly Assess Patient Experience of Care and Follow Up on Findings", "keywords": ["patient experience", "satisfaction"] },
+    { "id": "IA_CC_13", "title": "Practice Improvements to Align with OpenNotes Principles", "keywords": ["opennotes", "care coordination"] },
+    { "id": "IA_MVP", "title": "Practice-Wide Quality Improvement in MIPS Value Pathways", "keywords": ["quality improvement", "mvp"] },
+    { "id": "IA_PCMH", "title": "Electronic submission of Patient Centered Medical Home accreditation", "keywords": ["pcmh", "medical home"] },
+    { "id": "IA_PM_11", "title": "Regular review practices in place on targeted patient population needs", "keywords": ["population management", "case review"] },
+    { "id": "IA_PM_16", "title": "Implementation of medication management practice improvements", "keywords": ["medication management"] },
+    { "id": "IA_PM_22", "title": "Improving Practice Capacity for HIV Prevention Services", "keywords": ["hiv", "prevention"] },
+    { "id": "IA_PM_23", "title": "Use of Computable Guidelines and CDS for Cervical Cancer Screening and Management", "keywords": ["cervical cancer", "cds", "screening"] },
+    { "id": "IA_PM_25", "title": "Million Hearts: Standardization of Screening and Treatment for Cardiovascular Disease Risk", "keywords": ["million hearts", "cardiovascular", "risk"] }
+  ],
+  "promotingInteroperability": [
+    { "id": "PI_EP_1", "title": "e-Prescribing", "objective": "Electronic Prescribing", "required": "Required", "keywords": ["eprescribe", "erx"] },
+    { "id": "PI_EP_2", "title": "Query of the Prescription Drug Monitoring Program (PDMP)", "objective": "Electronic Prescribing", "required": "Required", "keywords": ["pdmp", "prescription monitoring"] },
+    { "id": "PI_HIE_1", "title": "Support Electronic Referral Loops by Sending Health Information", "objective": "Health Information Exchange", "required": "Required, unless PI_HIE_5 or PI_HIE_6", "keywords": ["hie", "referral", "sending"] },
+    { "id": "PI_HIE_4", "title": "Support Electronic Referral Loops by Receiving and Reconciling Health Information", "objective": "Health Information Exchange", "required": "Required, unless PI_HIE_5 or PI_HIE_6", "keywords": ["hie", "referral", "reconcile"] },
+    { "id": "PI_HIE_5", "title": "Health Information Exchange (HIE) Bi-Directional Exchange", "objective": "Health Information Exchange", "required": "Alternative to HIE_1+HIE_4", "keywords": ["hie", "bidirectional"] },
+    { "id": "PI_HIE_6", "title": "Enabling Exchange Under TEFCA", "objective": "Health Information Exchange", "required": "Alternative to HIE_1+HIE_4", "keywords": ["tefca", "hie", "exchange"] },
+    { "id": "PI_INFBLO_1", "title": "Actions to Limit or Restrict the Compatibility of CEHRT", "objective": "Attestation", "required": "Required", "keywords": ["information blocking", "attestation"] },
+    { "id": "PI_ONCDIR_1", "title": "ONC Direct Review Attestation", "objective": "Attestation", "required": "Required", "keywords": ["onc", "attestation"] },
+    { "id": "PI_PEA_1", "title": "Provide Patients Electronic Access to Their Health Information", "objective": "Provider to Patient Exchange", "required": "Required", "keywords": ["patient access", "portal"] },
+    { "id": "PI_PPHI_1", "title": "Security Risk Analysis", "objective": "Protect Patient Health Information", "required": "Required", "keywords": ["security risk analysis", "hipaa"] },
+    { "id": "PI_PPHI_2", "title": "High Priority Practices SAFER Guide", "objective": "Protect Patient Health Information", "required": "Required", "keywords": ["safer", "safety"] },
+    { "id": "PI_PHCDRR_1", "title": "Immunization Registry Reporting", "objective": "Public Health and Clinical Data Exchange", "required": "Required", "keywords": ["immunization", "registry", "public health"] },
+    { "id": "PI_PHCDRR_2", "title": "Syndromic Surveillance Reporting", "objective": "Public Health and Clinical Data Exchange", "required": "Optional", "keywords": ["syndromic", "surveillance"] },
+    { "id": "PI_PHCDRR_3", "title": "Electronic Case Reporting", "objective": "Public Health and Clinical Data Exchange", "required": "Required", "keywords": ["case reporting", "ecr"] },
+    { "id": "PI_PHCDRR_4", "title": "Public Health Registry Reporting", "objective": "Public Health and Clinical Data Exchange", "required": "Optional", "keywords": ["registry", "public health"] },
+    { "id": "PI_PHCDRR_5", "title": "Clinical Data Registry Reporting", "objective": "Public Health and Clinical Data Exchange", "required": "Optional", "keywords": ["clinical data registry"] },
+    { "id": "PI_PHCDRR_6", "title": "Public Health Reporting Using TEFCA", "objective": "Public Health and Clinical Data Exchange", "required": "Optional", "keywords": ["tefca", "public health"] }
+  ],
+  "populationHealth": [
+    { "number": "479", "title": "Hospital-Wide, 30-Day, All-Cause Unplanned Readmission (HWR) Rate for MIPS Groups", "type": "Outcome", "highPriority": true, "collectionTypes": ["Administrative Claims"], "keywords": ["readmission", "hospital-wide", "hwr"], "codes": [] },
+    { "number": "484", "title": "Clinician and Clinician Group Risk-standardized Hospital Admission Rates for Patients with Multiple Chronic Conditions (MCC)", "type": "Outcome", "highPriority": true, "collectionTypes": ["Administrative Claims"], "keywords": ["admission", "multiple chronic conditions", "mcc"], "codes": [] }
+  ]
+}

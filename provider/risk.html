@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHW Provider — Risk Adjustment (HCC) &amp; MIPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* BHW design system (shared with the RCM Command Center + Encounter Scrub) */
+:root{
+  --blue:#80abbd; --blue-d:#5f8b9d; --blue-l:#a9c8d5;
+  --base:#f7f5f2; --bronze:#b07a55; --sage:#a8b59a; --neutral:#dcc8b1;
+  --pending:#fab219; --denied:#c0503f; --billed:#b9b2a7;
+  --ink:#2f3a3f; --ink-soft:#5b686d; --line:#e7e1d9;
+  --sidebar:#243239; --sidebar-2:#2d3d45; --sidebar-ink:#c9d6db;
+  --card:#ffffff; --shadow:0 1px 3px rgba(36,50,57,.08),0 4px 14px rgba(36,50,57,.05);
+  --radius:14px;
+}
+:root[data-theme="dark"]{
+  --base:#141a1d; --card:#1e272b; --ink:#e6edf0; --ink-soft:#9db0b7; --line:#2b373c;
+  --blue-d:#8fb8c8; --blue-l:#6f97a8; --billed:#7f8a86; --neutral:#3a4b53;
+  --shadow:0 1px 3px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
+.brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
+.nav-group{padding:14px 12px 4px}
+.nav-group .label{font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#7d94a0;padding:0 10px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:500;color:var(--sidebar-ink);cursor:pointer;transition:background .15s,color .15s;margin-bottom:1px}
+.nav-item:hover{background:var(--sidebar-2);color:#fff}
+.nav-item.active{background:var(--blue);color:#fff;font-weight:600}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.9}
+.sidebar-foot{margin-top:auto;padding:16px 20px;font-size:10.5px;color:#6f8792;border-top:1px solid rgba(255,255,255,.07)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.topbar .crumb{font-size:12px;color:var(--ink-soft);font-weight:500}
+.topbar .crumb b{color:var(--ink);font-weight:700}
+.topbar .tools{display:flex;align-items:center;gap:10px}
+.pill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--neutral);color:#6b563f}
+.pill.warn{background:#fdf0d4;color:#9a6f16}
+.content{padding:26px 30px 60px;max-width:1400px;width:100%}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
+.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:820px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1.05fr .95fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h3{margin:0}
+label.fld{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
+select,input[type=text],input[type=number],input[type=search]{font-family:inherit;font-size:12.5px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
+.row{display:grid;gap:12px;margin-bottom:14px}
+.r2{grid-template-columns:1fr 1fr}.r3{grid-template-columns:1fr 1fr 1fr}
+.flags{display:flex;flex-wrap:wrap;gap:8px 16px;margin:2px 0 14px}
+.flags label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer}
+.btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.btn-ghost:hover{background:var(--base)}
+.btn-sm{padding:6px 11px;font-size:11.5px}
+textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%;resize:vertical;line-height:1.55}
+.note{background:#fdf7ef;border:1px solid #ecd9c1;border-left:4px solid var(--bronze);border-radius:10px;padding:12px 14px;font-size:12px;color:#6b5233;margin-bottom:18px}
+:root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
+.note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
+.mini{font-size:11px;color:var(--ink-soft)}
+.raf{font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1}
+.raf small{font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0}
+.bd{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 4px}
+.bd div{font-size:11px;color:var(--ink-soft)}.bd b{display:block;font-size:15px;color:var(--ink);font-weight:700}
+.chk{display:flex;gap:9px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.chk:last-child{border-bottom:none}
+.chk .mk{font-weight:800;flex-shrink:0}
+.chk .cd{font-weight:700}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--neutral);color:#6b563f;margin-left:6px}
+.tag.hp{background:#f7e0dc;color:#a53f30}
+.tag.q{background:#e2edf1;color:#4d7686}.tag.ia{background:#e8f0e3;color:#5c7050}.tag.pi{background:#efe7f1;color:#6b4d78}.tag.cost{background:#fdf1d6;color:#9a6f16}
+.empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.strike{opacity:.55}.strike .cd{text-decoration:line-through}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.sidebar{display:none}.r2,.r3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div>
+    <nav class="nav-group">
+      <div class="label">Pre-Bill</div>
+      <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
+      <div class="nav-item active"><span class="ic">◑</span> Risk &amp; Quality</div>
+      <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
+      <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
+    </nav>
+    <div class="sidebar-foot">HCC &amp; MIPS engines · shared with the RCM app.<br>Decision support — validate before billing.</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Risk &amp; Quality · <b>HCC Calculator &amp; MIPS Manager</b></div>
+      <div class="tools">
+        <span class="pill warn" id="modelPill">seed model</span>
+        <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <h2>Risk Adjustment (HCC) &amp; MIPS</h2>
+        <p>The AAPC-style add-ons on our own engine: a CMS-HCC / ESRD-HCC / Rx-HCC risk-score (RAF)
+           calculator, and a MIPS measures lookup by code, keyword, or measure number.</p>
+      </div>
+
+      <div class="note">
+        <b>CMS-HCC v28 and v22 are loaded from the official CMS packages</b> — real relative factors,
+        hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured HCCs and the
+        payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-/Rx-HCC and HHS-HCC
+        are still seeds pending their official data; the "seed model" tag flags those. Always confirm against
+        the CMS software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
+      </div>
+
+      <div class="grid g2">
+        <!-- ============ HCC CALCULATOR ============ -->
+        <div class="card">
+          <div class="card-head"><h3>HCC Risk Calculator</h3>
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer">Load official model
+              <input type="file" id="modelFile" accept="application/json" hidden></label>
+          </div>
+
+          <div class="row r3">
+            <div><label class="fld" for="model">Model</label>
+              <select id="model"></select></div>
+            <div><label class="fld" for="age">Age</label>
+              <input type="number" id="age" min="0" max="120" value="72"></div>
+            <div><label class="fld" for="sex">Sex</label>
+              <select id="sex"><option value="F">Female</option><option value="M">Male</option></select></div>
+          </div>
+
+          <div class="row r2" id="cmsInputs">
+            <div><label class="fld" for="dual">Dual status</label>
+              <select id="dual"><option value="none">Non-dual</option><option value="full">Full-benefit dual</option><option value="partial">Partial-benefit dual</option></select></div>
+            <div><label class="fld">Enrollment</label>
+              <div class="flags" style="margin:0">
+                <label><input type="checkbox" id="disabled"> Disabled</label>
+                <label><input type="checkbox" id="institutional"> Institutional</label>
+              </div></div>
+          </div>
+
+          <div class="row" id="hhsInputs" style="display:none"><div>
+            <label class="fld" for="metal">Metal level <span class="mini">(HHS-HCC / marketplace)</span></label>
+            <select id="metal"><option>Platinum</option><option>Gold</option><option selected>Silver</option><option>Bronze</option><option>Catastrophic</option></select>
+          </div></div>
+
+          <div class="row"><div>
+            <label class="fld" for="dx">Diagnosis codes (ICD-10) — comma or newline separated</label>
+            <textarea id="dx" rows="4" placeholder="e.g. E11.65, I50.9, J44.9, N18.4"></textarea>
+          </div></div>
+
+          <button class="btn btn-primary" id="calcBtn">Calculate RAF</button>
+        </div>
+
+        <!-- ============ HCC RESULT ============ -->
+        <div class="card">
+          <div class="card-head"><h3>Risk score</h3><span class="pill" id="segPill"></span></div>
+          <div id="rafOut"><div class="empty">Enter demographics + diagnoses, then Calculate RAF.</div></div>
+        </div>
+      </div>
+
+      <!-- ============ MVP ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>MIPS Value Pathway (MVP)</h3>
+          <select id="mvpSel" style="width:auto;min-width:220px"></select></div>
+        <div id="mvpOut"><div class="empty">Select a pathway.</div></div>
+      </div>
+
+      <!-- ============ MIPS ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>MIPS measure lookup</h3><span class="pill" id="mipsPill"></span></div>
+        <div class="mini" style="margin-bottom:10px">Search Quality / Cost / Improvement Activities / Promoting Interoperability by measure number, keyword, or CPT/HCPCS code.</div>
+        <input type="search" id="mipsQ" placeholder="e.g. 134, depression, G8431, tobacco, kidney">
+        <div id="mipsOut" style="margin-top:12px"><div class="empty">Type to search the measure set.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { calcRAF } from "../engine/hcc.mjs";
+import { searchMeasures, coverageSummary, listMVPs, getMVP } from "../engine/mips.mjs";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let MODEL = {}, MIPS = {};
+
+/* ---- Theme (persisted, shared convention with the other pages) ---------- */
+(function theme() {
+  const KEY = "bhw-theme";
+  const set = (t) => { document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem(KEY, t); } catch (e) {} };
+  try { if (localStorage.getItem(KEY)) set(localStorage.getItem(KEY)); } catch (e) {}
+  $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+})();
+
+/* ---- HCC ---------------------------------------------------------------- */
+function parseDx(s) { return String(s || "").split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean); }
+
+function isHHS() { return $("model").value === "HHS-HCC"; }
+function syncModelInputs() {
+  const hhs = isHHS();
+  $("cmsInputs").style.display = hhs ? "none" : "grid";
+  $("hhsInputs").style.display = hhs ? "grid" : "none";
+}
+
+function runRAF() {
+  const bene = {
+    model: $("model").value, age: $("age").value, sex: $("sex").value,
+    dualStatus: $("dual").value, disabled: $("disabled").checked, institutional: $("institutional").checked,
+    metalLevel: $("metal").value,
+    dxCodes: parseDx($("dx").value),
+  };
+  const r = calcRAF(bene, MODEL);
+  $("segPill").textContent = r.segmentLabel || r.segment;
+  const hccRows = r.hccs.length ? r.hccs.map((h) =>
+    `<div class="chk"><span class="mk" style="color:var(--sage)">＋</span><div><span class="cd">${esc(h.hcc)}</span> ${esc(h.label)}
+      <div class="mini">coefficient ${h.coeff.toFixed(3)} · from ${esc(h.fromDx.join(", "))}</div></div></div>`).join("") :
+    `<div class="mini">No diagnoses mapped to an HCC.</div>`;
+  const dropRows = r.dropped.map((d) =>
+    `<div class="chk strike"><span class="mk" style="color:var(--ink-soft)">−</span><div><span class="cd">${esc(d.hcc)}</span> ${esc(d.label)}
+      <div class="mini">superseded by ${esc(d.supersededBy)} (hierarchy)</div></div></div>`).join("");
+  const intRows = r.interactions.map((i) =>
+    `<div class="chk"><span class="mk" style="color:var(--blue-d)">×</span><div><span class="cd">${esc(i.id)}</span>
+      <div class="mini">interaction +${i.coeff.toFixed(3)}</div></div></div>`).join("");
+  const notes = r.notes.length ? `<div class="mini" style="margin-top:10px">⚠ ${r.notes.map(esc).join("<br>⚠ ")}</div>` : "";
+  const unmapped = r.unmapped.length ? `<div class="mini" style="margin-top:8px">Not risk-adjusting (no HCC): ${r.unmapped.map(esc).join(", ")}</div>` : "";
+
+  $("rafOut").innerHTML = `
+    <div class="raf">${r.raf.toFixed(3)} <small>RAF · ${esc(r.model)}</small></div>
+    <div class="bd">
+      <div>Demographic<b>${r.breakdown.demographic.toFixed(3)}</b>${esc(r.demographic.cell || "—")}</div>
+      <div>Disease (HCC)<b>${r.breakdown.disease.toFixed(3)}</b>${r.hccs.length} kept</div>
+      <div>Interactions<b>${r.breakdown.interactions.toFixed(3)}</b>${r.interactions.length}</div>
+      ${r.diseaseCount ? `<div>Count factor<b>${(r.breakdown.counts || 0).toFixed(3)}</b>${esc(r.diseaseCount.variable)}</div>` : ""}
+    </div>
+    <div style="margin-top:8px">${hccRows}${intRows}${dropRows}</div>
+    ${unmapped}${notes}
+    ${r.illustrative ? `<div class="mini" style="margin-top:10px;opacity:.8">Seed coefficients — load the official CMS model for payment-grade RAF.</div>` : ""}`;
+}
+
+/* ---- MIPS --------------------------------------------------------------- */
+function runMIPS() {
+  const q = $("mipsQ").value.trim();
+  if (!q) { $("mipsOut").innerHTML = `<div class="empty">Type to search the measure set.</div>`; return; }
+  const res = searchMeasures(q, MIPS, { limit: 25 });
+  if (!res.length) { $("mipsOut").innerHTML = `<div class="empty">No measures match “${esc(q)}”.</div>`; return; }
+  const tagClass = { quality: "q", improvementActivities: "ia", promotingInteroperability: "pi", cost: "cost" };
+  $("mipsOut").innerHTML = res.map((m) => {
+    const id = m.number ? `#${m.number}` : m.id;
+    const method = (m.method || []).length ? ` · ${m.method.join(", ")}` : "";
+    const codes = (m.codes || []).length ? `<div class="mini">codes: ${m.codes.map(esc).join(", ")}</div>` : "";
+    return `<div class="chk"><span class="mk" style="color:var(--blue-d)">▸</span><div>
+      <span class="cd">${esc(id)}</span> ${esc(m.title)}
+      <span class="tag ${tagClass[m.category] || ""}">${esc(m.categoryLabel)}</span>${m.highPriority ? `<span class="tag hp">High priority</span>` : ""}
+      <div class="mini">${esc(m.weight || "")}${esc(method)}</div>${codes}</div></div>`;
+  }).join("");
+}
+
+/* ---- MVP ---------------------------------------------------------------- */
+function renderMVP(id) {
+  const mvp = getMVP(id, MIPS);
+  if (!mvp) { $("mvpOut").innerHTML = `<div class="empty">Pathway not found.</div>`; return; }
+  const hp = (m) => m.highPriority ? `<span class="tag hp">High priority</span>` : "";
+  const grp = (label, list, tag) => list.length ? `
+    <div class="mini" style="margin:12px 0 4px;font-weight:700;text-transform:uppercase;letter-spacing:.6px">${esc(label)} <span style="opacity:.6">(${list.length})</span></div>
+    ${list.map((m) => `<div class="chk"><span class="mk" style="color:var(--blue-d)">▸</span><div>
+      <span class="cd">${esc(m.number ? "#" + m.number : m.id)}</span> ${esc(m.title)}
+      ${m.type ? `<span class="tag ${tag}">${esc(m.type)}</span>` : ""}${hp(m)}
+      ${m.collectionTypes ? `<div class="mini">${esc(m.collectionTypes.join(", "))}</div>` : ""}</div></div>`).join("")}` : "";
+  $("mvpOut").innerHTML = `
+    <div class="mini" style="margin-bottom:6px"><b>${esc(mvp.id)}</b> · ${esc(mvp.theme)}</div>
+    <div class="mini" style="margin-bottom:10px">Applies to: ${esc(mvp.specialties.join(", "))}</div>
+    <div class="bd">
+      <div>Quality<b>Report 4</b>≥1 outcome</div>
+      <div>Improvement<b>Report 1</b>activity</div>
+      <div>Cost<b>CMS-calc</b>claims</div>
+      <div>Pop. Health<b>CMS-calc</b>in Quality</div>
+    </div>
+    ${grp("Quality measures", mvp.measures.quality, "q")}
+    ${grp("Improvement activities", mvp.measures.improvementActivities, "ia")}
+    ${grp("Cost measures", mvp.measures.cost, "cost")}
+    ${grp("Population health", mvp.measures.populationHealth, "q")}`;
+}
+
+/* ---- Load data + wire --------------------------------------------------- */
+function activeModelMeta() {
+  const name = $("model").value;
+  const M = (MODEL.byModel && MODEL.byModel[name]) || MODEL;
+  return M._meta || MODEL._meta || {};
+}
+function updateModelPill() {
+  const seed = !!activeModelMeta().illustrative;
+  $("modelPill").className = "pill " + (seed ? "warn" : "");
+  $("modelPill").textContent = seed ? "seed model" : "official model";
+}
+async function loadModel(obj) {
+  MODEL = obj;
+  $("model").innerHTML = (MODEL.models || ["CMS-HCC"]).map((m) => `<option>${esc(m)}</option>`).join("");
+  updateModelPill();
+}
+
+(async function init() {
+  try { const r = await fetch("../engine/data/hcc-model.json"); if (r.ok) await loadModel(await r.json()); } catch (e) { $("rafOut").innerHTML = `<div class="empty">Could not load hcc-model.json.</div>`; }
+  // Register the real CMS-HCC packages as selectable models. v28 (the 2024
+  // restructured model, phased in for current payment years) leads; v22 stays
+  // available for the legacy blend.
+  const OFFICIAL = [
+    { name: "CMS-HCC v28", file: "../engine/data/hcc-v28.json" },
+    { name: "CMS-HCC v22", file: "../engine/data/hcc-v22.json" },
+  ];
+  const loaded = [];
+  for (const pkg of OFFICIAL) {
+    try {
+      const r = await fetch(pkg.file);
+      if (!r.ok) continue;
+      MODEL.byModel = MODEL.byModel || {};
+      MODEL.byModel[pkg.name] = await r.json();
+      loaded.push(pkg.name);
+    } catch (e) { /* skip this package */ }
+  }
+  if (loaded.length) {
+    MODEL.models = [...loaded, ...(MODEL.models || []).filter((m) => !loaded.includes(m))];
+    $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
+    updateModelPill();
+  }
+  try { const r = await fetch("../engine/data/mips.json"); if (r.ok) MIPS = await r.json(); } catch (e) {}
+  const s = coverageSummary(MIPS);
+  $("mipsPill").textContent = `${s.total} measures loaded`;
+
+  const mvps = listMVPs(MIPS);
+  $("mvpSel").innerHTML = mvps.map((m) => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.title)}</option>`).join("") || `<option>none loaded</option>`;
+  if (mvps.length) renderMVP(mvps[0].id);
+  $("mvpSel").addEventListener("change", (e) => renderMVP(e.target.value));
+
+  syncModelInputs();
+  $("model").addEventListener("change", () => { syncModelInputs(); updateModelPill(); runRAF(); });
+  $("metal").addEventListener("change", runRAF);
+  $("calcBtn").onclick = runRAF;
+  $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
+  $("mipsQ").addEventListener("input", runMIPS);
+  $("modelFile").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { await loadModel(JSON.parse(await f.text())); runRAF(); } catch (err) { alert("Invalid model JSON: " + err.message); }
+  });
+})();
+</script>
+</body>
+</html>
