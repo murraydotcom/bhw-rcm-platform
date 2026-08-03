@@ -1,7 +1,7 @@
 # BHW Mind & Mood — BH visit note templates
 
 Editable, print-ready templates for the face-to-face behavioral-health visits.
-Each is a self-contained HTML file (inline CSS) — open it in a browser and
+Each is a self-contained HTML file (inline CSS, embedded logo) — open it in a browser and
 **Print → Save as PDF** (Letter, default margins) to produce the clinician form.
 
 | File | Note | Codes |
