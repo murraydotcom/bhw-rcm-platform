@@ -62,6 +62,16 @@ test("missing E/M support is caught when neither time nor MDM is present", () =>
   assert.equal(st(r, "em_level_support"), NOTE_STATUS.MISSING);
 });
 
+test("office E/M time threshold: documented minutes must meet the code's total-time floor", () => {
+  const meets = analyzeNote("visit", { codes: ["99214"], minutes: 35 });
+  assert.equal(st(meets, "em_time_threshold"), NOTE_STATUS.PRESENT);   // 35 ≥ 30
+  const short = analyzeNote("visit", { codes: ["99214"], minutes: 20 });
+  assert.equal(st(short, "em_time_threshold"), NOTE_STATUS.REVIEW);    // 20 < 30
+  assert.match(short.checks.find((c) => c.id === "em_time_threshold").detail, /below the 30-min/);
+  const noMinutes = analyzeNote("visit", { codes: ["99214"] });
+  assert.equal(st(noMinutes, "em_time_threshold"), undefined);         // only when minutes given
+});
+
 test("medical-necessity A&P depth: management, dx status, and test rationale", () => {
   const good = analyzeNote("A/P: Type 2 diabetes, stable and well-controlled. Continue metformin, increased lisinopril. Labs ordered to monitor.", { codes: ["99214"] });
   assert.equal(st(good, "ap_management"), NOTE_STATUS.PRESENT);   // "continue/increased" management

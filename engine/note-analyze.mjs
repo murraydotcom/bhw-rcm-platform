@@ -89,6 +89,9 @@ const rx = {
 const has = (v, re) => re.test(v);
 const inSet = (c, re) => re.test(c || "");
 const isEM = (c) => /^992(0[2-5]|1[1-5])$/.test(c || "");
+/* Office/outpatient E/M total-time thresholds (minutes met-or-exceeded), per
+ * the 2021+ AMA/CPT E/M time parameters. Mirrors doc-assist.json em.minMinutes. */
+const EM_TIME_MIN = { "99202": 15, "99203": 30, "99204": 45, "99205": 60, "99212": 10, "99213": 20, "99214": 30, "99215": 40 };
 /* Other E/M families that, since 2023, are also selected by MDM OR total time
  * (history/exam no longer drive the level): hospital inpatient/observation
  * 99221-99223 & 99231-99239, consults 99242-99245 & 99252-99255, ED
@@ -160,6 +163,16 @@ export function analyzeNote(noteText = "", ctx = {}) {
     } else {
       add("em_level_support", `E/M ${emCode} level support (time or MDM)`, pm(hasTime || hasMdm),
         "Office E/M is selected by total time on the encounter date OR MDM (2 of 3). Document at least one.", SRC.CPT_EM);
+      // When minutes are given, verify they meet the code's total-time threshold.
+      if (ctx.minutes != null && EM_TIME_MIN[emCode]) {
+        const thr = EM_TIME_MIN[emCode];
+        add("em_time_threshold", `Documented time vs ${emCode} threshold (${thr} min)`,
+          ctx.minutes >= thr ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW,
+          ctx.minutes >= thr
+            ? `Documented ${ctx.minutes} min meets the ${thr}-min total-time threshold for ${emCode}.`
+            : `Documented ${ctx.minutes} min is below the ${thr}-min total-time threshold for ${emCode} — time alone won't support this level; select by MDM or document the full time.`,
+          SRC.CPT_EM);
+      }
       if (isHighEM(emCode) && !hasTime && !hasMdm)
         add("em_high_level", `${emCode} is a high-level E/M`, NOTE_STATUS.REVIEW,
           "Level 4/5 needs clear moderate/high MDM or the time threshold met — confirm before billing.", SRC.CPT_EM);
