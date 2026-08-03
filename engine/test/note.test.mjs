@@ -156,3 +156,38 @@ test("cloned-documentation heuristic flags a duplicated block", () => {
   const r = analyzeNote(`${dup}\nExam normal.\n${dup}`, { codes: ["99214"] });
   assert.equal(st(r, "cloned_note"), NOTE_STATUS.REVIEW);
 });
+
+/* ---- Behavioral-health note families (BHW Mind & Mood templates) -------- */
+test("90791 intake requires MSE, risk, measures, dx, necessity, plan", () => {
+  const full = analyzeNote("MSE: mood euthymic, affect full, thought process linear, insight good. Risk: C-SSRS negative, no SI/HI, protective factors. PHQ-9 12 GAD-7 8. Diagnosis F33.1 (DSM-5). Medical necessity: needed now. Treatment plan: weekly CBT, goals.", { codes: ["90791"] });
+  for (const id of ["bh_mse", "bh_risk", "bh_measures", "bh_dx", "bh_medical_necessity", "bh_tx_plan"])
+    assert.equal(st(full, id), NOTE_STATUS.PRESENT, id);
+  const bare = analyzeNote("Patient seen for evaluation.", { codes: ["90791"] });
+  assert.equal(st(bare, "bh_mse"), NOTE_STATUS.MISSING);
+  assert.equal(st(bare, "bh_risk"), NOTE_STATUS.MISSING);
+});
+
+test("individual psychotherapy: named modality + time-band vs the billed code", () => {
+  const r = analyzeNote("Mood anxious, affect congruent. SI/HI screened negative. Interventions: CBT. Progress toward goals. Total time 55 minutes.", { codes: ["90837"], minutes: 55 });
+  assert.equal(st(r, "bh_modality"), NOTE_STATUS.PRESENT);
+  assert.equal(st(r, "bh_psy_time_band"), NOTE_STATUS.PRESENT);  // 55 fits 90837 (53+)
+  const short = analyzeNote("Supportive therapy.", { codes: ["90837"], minutes: 30 });
+  assert.equal(st(short, "bh_psy_time_band"), NOTE_STATUS.REVIEW); // 30 is below 90837's band
+});
+
+test("crisis note requires a safety plan and a follow-up contact", () => {
+  const r = analyzeNote("Crisis. C-SSRS: ideation, plan, means. MSE complete. De-escalation, safety planning. Disposition outpatient. Safety plan documented, copy given. Follow-up within 24-48h, provider notified.", { codes: ["90839"] });
+  for (const id of ["bh_crisis_risk", "bh_safety_plan", "bh_disposition", "bh_crisis_followup"])
+    assert.equal(st(r, id), NOTE_STATUS.PRESENT, id);
+  const missing = analyzeNote("Patient in crisis, de-escalated.", { codes: ["90839"] });
+  assert.equal(st(missing, "bh_safety_plan"), NOTE_STATUS.MISSING);
+});
+
+test("BHI 99484 and CoCM require monthly measure + care-team elements", () => {
+  const bhi = analyzeNote("BH dx F41.1. 25 minutes this month. PHQ-9 10. Behavioral care plan reviewed. Case reviewed with billing provider.", { codes: ["99484"], minutes: 25 });
+  assert.equal(st(bhi, "bh_bhi_measure"), NOTE_STATUS.PRESENT);
+  assert.equal(st(bhi, "bh_bhi_collab"), NOTE_STATUS.PRESENT);
+  const cocm = analyzeNote("Registry reviewed. PHQ-9 8 trend improving. Psychiatric consultant case review with recommendations. 60 min.", { codes: ["99493"], minutes: 60 });
+  assert.equal(st(cocm, "bh_cocm_registry"), NOTE_STATUS.PRESENT);
+  assert.equal(st(cocm, "bh_cocm_consult"), NOTE_STATUS.PRESENT);
+});
