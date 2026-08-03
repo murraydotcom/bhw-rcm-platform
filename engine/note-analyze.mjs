@@ -38,6 +38,8 @@ const SRC = {
   TCM: "CMS Transitional Care Management",
   COG: "CMS Cognitive Assessment & Care Plan (99483)",
   VASC: "Non-invasive vascular / autonomic study documentation",
+  MEDNEC: "Medical necessity — A&P must justify the service (CMS Program Integrity Manual, Pub 100-08 Ch. 3)",
+  CERT: "CERT / RAC common documentation errors (CMS)",
 };
 
 /* Patterns that match a word STEM (allerg, medicat, exam, diagnos, psychotherap…)
@@ -78,6 +80,10 @@ const rx = {
   vascInd: /claudication|rest pain|ulcer|ischemi|\bpvd\b|\bpad\b|\babi\b|syncope|dysautonomia|orthostat/i,
   vascMeas: /segmental|waveform|\babi\b|doppler|bilateral|pressure|amplitude|tilt/i,
   interp: /interpret|impression|\bfindings\b|conclusion|read as/i,
+  // medical-necessity A&P depth (CMS PIM Ch.3 / CERT-RAC)
+  management: /prescrib|\brx\b|start(ed|ing)?|continu|increase|decrease|titrat|discontinu|\bd\/c(ed)?\b|refer(red|ral)?|order(ed|ing)?|administer|inject|treatment plan|plan of care|will (start|continue|order|refer|obtain|monitor)|counsel|educat/i,
+  dxStatus: /\bstable\b|improv|worsen|unchanged|well[- ]controlled|uncontrolled|\bcontrolled\b|resolv|exacerbat|in remission|progress|deteriorat|responding|at goal|not at goal/i,
+  testOrder: /order(ed|ing)?|\br\/o\b|rule out|to (evaluate|assess|monitor|confirm)|indicated (for|to)|work[- ]?up|obtain(ed|ing)?|\bpanel\b|will (order|obtain|draw|check)|referred for/i,
 };
 
 const has = (v, re) => re.test(v);
@@ -118,6 +124,10 @@ export function analyzeNote(noteText = "", ctx = {}) {
   add("history", "History", pm(hit(rx.history)), "History of present illness / relevant history.", SRC.P3);
   add("exam", "Exam / objective findings", pm(hit(rx.exam)), "Physical or mental-status exam / vitals.", SRC.P3);
   add("assessment_plan", "Assessment & plan", pm(hit(rx.assessmentPlan)), "Clinical assessment consistent with the working diagnosis; plan that follows it.", SRC.P3);
+  add("ap_management", "Management documented (supports medical necessity)", pm(hit(rx.management)), "The plan states how each problem is managed — medication (start/continue/adjust), order, referral, procedure or counseling. Medical necessity is proven in the A&P, not the history/exam.", SRC.MEDNEC);
+  add("dx_status", "Status of managed conditions", hit(rx.dxStatus) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "For an established diagnosis, note whether the condition is stable / improved / worsening — this justifies the level of service.", SRC.MEDNEC);
+  if (!empty && hit(rx.results))
+    add("test_rationale", "Rationale / order for tests", hit(rx.testOrder) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "When diagnostics are ordered, the intent/rationale (or a signed order) should be documented — a missing signed order describing intent is a top CERT/RAC error.", SRC.CERT);
   add("medications", "Medications", pm(hit(rx.meds)), "Current medication list (P-3: in every prescriber note).", SRC.P3);
   add("allergies", "Allergies (or NKA)", pm(hit(rx.allergies)), "Allergies/adverse reactions prominently, or noted as none/NKA.", SRC.P3);
   add("problem_list", "Problem list", hit(rx.problemList) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "Updated problem list summarizing major diagnoses — verify in chart if not in this note.", SRC.P3);

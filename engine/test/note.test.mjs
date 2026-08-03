@@ -62,6 +62,17 @@ test("missing E/M support is caught when neither time nor MDM is present", () =>
   assert.equal(st(r, "em_level_support"), NOTE_STATUS.MISSING);
 });
 
+test("medical-necessity A&P depth: management, dx status, and test rationale", () => {
+  const good = analyzeNote("A/P: Type 2 diabetes, stable and well-controlled. Continue metformin, increased lisinopril. Labs ordered to monitor.", { codes: ["99214"] });
+  assert.equal(st(good, "ap_management"), NOTE_STATUS.PRESENT);   // "continue/increased" management
+  assert.equal(st(good, "dx_status"), NOTE_STATUS.PRESENT);       // "stable / controlled"
+  assert.equal(st(good, "test_rationale"), NOTE_STATUS.PRESENT);  // labs + "ordered to monitor"
+  const bare = analyzeNote("Patient seen today. Doing fine.", { codes: ["99213"] });
+  assert.equal(st(bare, "ap_management"), NOTE_STATUS.MISSING);
+  assert.equal(st(bare, "dx_status"), NOTE_STATUS.REVIEW);        // review, not counted against readiness
+  assert.equal(st(bare, "test_rationale"), undefined);           // only surfaces when tests are mentioned
+});
+
 test("2023 E/M families (inpatient/consult/ED/NF/home) are checked by time or MDM", () => {
   // 99223 (hospital inpatient) with time → supported; without time or MDM → missing
   const ok = analyzeNote("Admitted. Total time 75 minutes on the unit.", { codes: ["99223"] });
