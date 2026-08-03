@@ -250,7 +250,7 @@ function runDTR() {
   const code = $("code").value.trim();
   const note = $("note").value;
   if (!code) { $("dtrOut").innerHTML = `<div class="empty">Check a code first.</div>`; return; }
-  const doc = analyzeNote(note, { codes: [code] });
+  const doc = analyzeNote(note, { codes: [code], dx: $("dx").value.trim() });
   lastDoc = doc;
   if (doc.empty) { $("dtrOut").innerHTML = `<div class="empty">Paste the note to answer the DTR questionnaire.</div>`; return; }
   const missing = doc.checks.filter((c) => c.status === "missing");

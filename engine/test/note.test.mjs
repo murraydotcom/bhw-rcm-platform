@@ -62,6 +62,17 @@ test("missing E/M support is caught when neither time nor MDM is present", () =>
   assert.equal(st(r, "em_level_support"), NOTE_STATUS.MISSING);
 });
 
+test("diagnosis specificity: injury/external-cause codes need a 7th character", () => {
+  const short = analyzeNote("note", { codes: ["99213"], dx: "S52.501" });   // 6 chars → needs 7th
+  assert.equal(st(short, "dx_7th_character"), NOTE_STATUS.REVIEW);
+  const abuse = analyzeNote("note", { codes: ["99213"], dxCodes: ["T74.11"] }); // abuse, needs 7th
+  assert.equal(st(abuse, "dx_7th_character"), NOTE_STATUS.REVIEW);
+  const complete = analyzeNote("note", { codes: ["99213"], dx: "S52.501A" });   // has 7th
+  assert.equal(st(complete, "dx_7th_character"), undefined);
+  const behavioral = analyzeNote("note", { codes: ["99213"], dx: "F33.1" });    // not an injury code
+  assert.equal(st(behavioral, "dx_7th_character"), undefined);
+});
+
 test("office E/M time threshold: documented minutes must meet the code's total-time floor", () => {
   const meets = analyzeNote("visit", { codes: ["99214"], minutes: 35 });
   assert.equal(st(meets, "em_time_threshold"), NOTE_STATUS.PRESENT);   // 35 ≥ 30

@@ -40,6 +40,7 @@ const SRC = {
   VASC: "Non-invasive vascular / autonomic study documentation",
   MEDNEC: "Medical necessity — A&P must justify the service (CMS Program Integrity Manual, Pub 100-08 Ch. 3)",
   CERT: "CERT / RAC common documentation errors (CMS)",
+  ICD10: "ICD-10-CM Official Guidelines — code to the highest specificity (7th character for injuries)",
 };
 
 /* Patterns that match a word STEM (allerg, medicat, exam, diagnos, psychotherap…)
@@ -84,6 +85,16 @@ const rx = {
   management: /prescrib|\brx\b|start(ed|ing)?|continu|increase|decrease|titrat|discontinu|\bd\/c(ed)?\b|refer(red|ral)?|order(ed|ing)?|administer|inject|treatment plan|plan of care|will (start|continue|order|refer|obtain|monitor)|counsel|educat/i,
   dxStatus: /\bstable\b|improv|worsen|unchanged|well[- ]controlled|uncontrolled|\bcontrolled\b|resolv|exacerbat|in remission|progress|deteriorat|responding|at goal|not at goal/i,
   testOrder: /order(ed|ing)?|\br\/o\b|rule out|to (evaluate|assess|monitor|confirm)|indicated (for|to)|work[- ]?up|obtain(ed|ing)?|\bpanel\b|will (order|obtain|draw|check)|referred for/i,
+};
+
+/* ICD-10-CM injury/poisoning/external-cause codes (chapters S, T, and V-Y)
+ * require a 7th character (A = initial, D = subsequent, S = sequela). A
+ * normalized code shorter than 7 alphanumerics is missing it. Behaviorally
+ * relevant for self-harm (T14.91, T36-T50 poisonings) and abuse (T74/T76). */
+const normIcd = (d) => String(d || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const injuryNeeds7th = (dx) => {
+  const c = normIcd(dx);
+  return /^[STVWXY]\d/.test(c) && c.length >= 3 && c.length < 7;
 };
 
 const has = (v, re) => re.test(v);
@@ -131,6 +142,13 @@ export function analyzeNote(noteText = "", ctx = {}) {
   add("dx_status", "Status of managed conditions", hit(rx.dxStatus) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "For an established diagnosis, note whether the condition is stable / improved / worsening — this justifies the level of service.", SRC.MEDNEC);
   if (!empty && hit(rx.results))
     add("test_rationale", "Rationale / order for tests", hit(rx.testOrder) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "When diagnostics are ordered, the intent/rationale (or a signed order) should be documented — a missing signed order describing intent is a top CERT/RAC error.", SRC.CERT);
+
+  /* ---- Diagnosis specificity: injury codes need a 7th character --------- */
+  const dxList = [].concat(ctx.dx || [], ctx.dxCodes || []).filter(Boolean);
+  const incomplete = [...new Set(dxList.filter(injuryNeeds7th).map((d) => String(d).toUpperCase()))];
+  if (incomplete.length)
+    add("dx_7th_character", "Injury diagnosis needs a 7th character", NOTE_STATUS.REVIEW,
+      `${incomplete.join(", ")} — injury / external-cause codes require a 7th character (A = initial, D = subsequent, S = sequela). Coding to the highest specificity avoids denials for unspecified codes.`, SRC.ICD10);
   add("medications", "Medications", pm(hit(rx.meds)), "Current medication list (P-3: in every prescriber note).", SRC.P3);
   add("allergies", "Allergies (or NKA)", pm(hit(rx.allergies)), "Allergies/adverse reactions prominently, or noted as none/NKA.", SRC.P3);
   add("problem_list", "Problem list", hit(rx.problemList) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "Updated problem list summarizing major diagnoses — verify in chart if not in this note.", SRC.P3);
