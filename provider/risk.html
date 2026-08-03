@@ -122,11 +122,13 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
       </div>
 
       <div class="note">
-        <b>CMS-HCC v28 and v22 are loaded from the official CMS packages</b> — real relative factors,
-        hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured HCCs and the
-        payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-/Rx-HCC and HHS-HCC
-        are still seeds pending their official data; the "seed model" tag flags those. Always confirm against
-        the CMS software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
+        <b>CMS-HCC v28/v22, ESRD-HCC v24 and RxHCC v8 are loaded from the official CMS packages</b> — real
+        relative factors, hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured
+        HCCs and the payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-HCC and
+        RxHCC use continuing-enrollee segments — pick the segment (dialysis / graft state, or Part&nbsp;D LIS
+        status) that matches the enrollee. HHS-HCC (marketplace) is still a seed; the "seed model" tag flags it.
+        Always confirm against the CMS software before payment use. MIPS is a starter measure set — replace with
+        the full QPP/AAPC list.
       </div>
 
       <div class="grid g2">
@@ -160,6 +162,15 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
             <label class="fld" for="metal">Metal level <span class="mini">(HHS-HCC / marketplace)</span></label>
             <select id="metal"><option>Platinum</option><option>Gold</option><option selected>Silver</option><option>Bronze</option><option>Catastrophic</option></select>
           </div></div>
+
+          <div class="row r2" id="segInputs" style="display:none">
+            <div><label class="fld" for="seg">Risk segment <span class="mini" id="segHint"></span></label>
+              <select id="seg"></select></div>
+            <div><label class="fld">Status</label>
+              <div class="flags" style="margin:0">
+                <label id="origESRDWrap"><input type="checkbox" id="origESRD"> Originally ESRD</label>
+              </div></div>
+          </div>
 
           <div class="row"><div>
             <label class="fld" for="dx">Diagnosis codes (ICD-10) — comma or newline separated</label>
@@ -213,11 +224,33 @@ let MODEL = {}, MIPS = {};
 /* ---- HCC ---------------------------------------------------------------- */
 function parseDx(s) { return String(s || "").split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean); }
 
-function isHHS() { return $("model").value === "HHS-HCC"; }
+function activeModel() {
+  const name = $("model").value;
+  return (MODEL.byModel && MODEL.byModel[name]) || MODEL;
+}
+/* "hhs" (metal levels), "explicit" (ESRD/Rx — caller picks the segment), or
+ * "cms" (community/institutional derived from dual/disabled/institutional). */
+function modelKind() {
+  const M = activeModel();
+  if (M && M.type === "hhs-hcc") return "hhs";
+  if (M && M.segmentSelect === "explicit") return "explicit";
+  return "cms";
+}
+function populateSegments() {
+  const M = activeModel();
+  const segs = M.segments || {};
+  const keys = Object.keys(segs);
+  $("seg").innerHTML = keys.map((k) => `<option value="${esc(k)}"${k === M.defaultSegment ? " selected" : ""}>${esc(segs[k])}</option>`).join("");
+  // The originally-ESRD flag only applies to the ESRD model.
+  $("origESRDWrap").style.display = M.type === "esrd-hcc" ? "" : "none";
+  $("segHint").textContent = M.type === "rx-hcc" ? "(Part D / LIS status)" : M.type === "esrd-hcc" ? "(dialysis / graft state)" : "";
+}
 function syncModelInputs() {
-  const hhs = isHHS();
-  $("cmsInputs").style.display = hhs ? "none" : "grid";
-  $("hhsInputs").style.display = hhs ? "grid" : "none";
+  const k = modelKind();
+  $("cmsInputs").style.display = k === "cms" ? "grid" : "none";
+  $("hhsInputs").style.display = k === "hhs" ? "grid" : "none";
+  $("segInputs").style.display = k === "explicit" ? "grid" : "none";
+  if (k === "explicit") populateSegments();
 }
 
 function runRAF() {
@@ -225,6 +258,7 @@ function runRAF() {
     model: $("model").value, age: $("age").value, sex: $("sex").value,
     dualStatus: $("dual").value, disabled: $("disabled").checked, institutional: $("institutional").checked,
     metalLevel: $("metal").value,
+    segment: $("seg").value, origESRD: $("origESRD").checked,
     dxCodes: parseDx($("dx").value),
   };
   const r = calcRAF(bene, MODEL);
@@ -324,6 +358,8 @@ async function loadModel(obj) {
   const OFFICIAL = [
     { name: "CMS-HCC v28", file: "../engine/data/hcc-v28.json" },
     { name: "CMS-HCC v22", file: "../engine/data/hcc-v22.json" },
+    { name: "ESRD-HCC v24", file: "../engine/data/hcc-esrd.json" },
+    { name: "RxHCC v8 (Part D)", file: "../engine/data/hcc-rxhcc.json" },
   ];
   const loaded = [];
   for (const pkg of OFFICIAL) {
@@ -336,7 +372,11 @@ async function loadModel(obj) {
     } catch (e) { /* skip this package */ }
   }
   if (loaded.length) {
-    MODEL.models = [...loaded, ...(MODEL.models || []).filter((m) => !loaded.includes(m))];
+    // Real packages supersede their illustrative seeds; keep only seeds without
+    // an official build (e.g. HHS-HCC).
+    const SUPERSEDED = new Set(["CMS-HCC", "ESRD-HCC", "Rx-HCC"]);
+    const remainingSeeds = (MODEL.models || []).filter((m) => !loaded.includes(m) && !SUPERSEDED.has(m));
+    MODEL.models = [...loaded, ...remainingSeeds];
     $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
     updateModelPill();
   }
@@ -352,6 +392,8 @@ async function loadModel(obj) {
   syncModelInputs();
   $("model").addEventListener("change", () => { syncModelInputs(); updateModelPill(); runRAF(); });
   $("metal").addEventListener("change", runRAF);
+  $("seg").addEventListener("change", runRAF);
+  $("origESRD").addEventListener("change", runRAF);
   $("calcBtn").onclick = runRAF;
   $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
   $("mipsQ").addEventListener("input", runMIPS);
