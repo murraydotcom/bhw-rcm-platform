@@ -29,7 +29,9 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:
 a{color:inherit;text-decoration:none}
 .app{display:flex;min-height:100vh}
 .sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
 .brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
 .brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
 .nav-group{padding:14px 12px 4px}
@@ -91,7 +93,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div>
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
     <nav class="nav-group">
       <div class="label">Pre-Bill</div>
       <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
