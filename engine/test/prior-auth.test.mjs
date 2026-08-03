@@ -5,9 +5,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { checkPriorAuth, PA_STATUS, buildPASRequest } from "../prior-auth.mjs";
+import { checkPriorAuth, checkCarelonMSAG, isCarelonPayer, PA_STATUS, buildPASRequest } from "../prior-auth.mjs";
 
-const RULES = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "data", "pa-rules.json"), "utf8"));
+const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+const RULES = JSON.parse(readFileSync(join(dataDir, "pa-rules.json"), "utf8"));
+const MSAG = JSON.parse(readFileSync(join(dataDir, "carelon-msag.json"), "utf8"));
 
 test("TMS requires prior auth for any payer", () => {
   const r = checkPriorAuth({ payer: "Aetna", code: "90867" }, RULES);
@@ -45,6 +47,48 @@ test("unmatched code falls through to the default (unknown)", () => {
 
 test("seed is flagged illustrative", () => {
   assert.equal(checkPriorAuth({ payer: "Medicare", code: "99213" }, RULES).illustrative, true);
+});
+
+/* ---- Carelon / CBH Master Service Authorization Grid (real data) --------- */
+test("MSAG is authoritative (not illustrative) and covers real BH codes", () => {
+  assert.equal(MSAG._meta.illustrative, false);
+  assert.ok(MSAG.codes["90837"]);            // individual psychotherapy 60 min
+  assert.ok(MSAG.packages.some((p) => p.code === "FMDC")); // Medicaid, Federally Funded
+});
+
+test("Carelon payer routing recognizes PBHS / Beacon aliases", () => {
+  assert.equal(isCarelonPayer("Carelon (PBHS)"), true);
+  assert.equal(isCarelonPayer("Beacon Health Options"), true);
+  assert.equal(isCarelonPayer("Aetna"), false);
+});
+
+test("MSAG gives a package-specific answer: Medicaid requires PA for 90837, dual does not", () => {
+  const mdcd = checkPriorAuth({ payer: "Carelon (PBHS)", code: "90837", benefitPackage: "FMDC" }, RULES, MSAG);
+  assert.equal(mdcd.status, PA_STATUS.REQUIRED);
+  assert.equal(mdcd.illustrative, false);
+  assert.match(mdcd.source, /Master Service Authorization Grid/);
+  const dual = checkPriorAuth({ payer: "Carelon (PBHS)", code: "90837", benefitPackage: "FDUA" }, RULES, MSAG);
+  assert.equal(dual.status, PA_STATUS.NOT_REQUIRED);
+});
+
+test("MSAG summarizes across packages when none is named (mixed → conditional + breakdown)", () => {
+  const r = checkPriorAuth({ payer: "Carelon (PBHS)", code: "90837" }, RULES, MSAG);
+  assert.equal(r.status, PA_STATUS.CONDITIONAL);
+  const fmdc = r.msag.byPackage.find((p) => p.code === "FMDC");
+  assert.equal(fmdc.preAuth, PA_STATUS.REQUIRED);
+  assert.ok(r.notes.some((n) => /required under/i.test(n)));
+});
+
+test("MSAG only engages for Carelon; other payers fall through to the seed rules", () => {
+  // 90837 under Aetna is not in the seed table → default unknown, and no msag block
+  const r = checkPriorAuth({ payer: "Aetna", code: "90837" }, RULES, MSAG);
+  assert.equal(r.msag, undefined);
+  // TMS still resolves via the shared seed rule for a non-Carelon payer
+  assert.equal(checkPriorAuth({ payer: "Aetna", code: "90867" }, RULES, MSAG).status, PA_STATUS.REQUIRED);
+});
+
+test("checkCarelonMSAG returns null for a code absent from the grid (caller falls back)", () => {
+  assert.equal(checkCarelonMSAG({ payer: "Carelon (PBHS)", code: "ZZZ99" }, MSAG), null);
 });
 
 test("buildPASRequest shapes a preauthorization Claim with missing-doc summary", () => {

@@ -12,6 +12,8 @@ of the scrub engine:
 | File | Shape | Notes |
 |---|---|---|
 | `doc-assist.json` | `{ code: { supports[], modifiers{}, em{minMinutes,mdm}, source } }` | The note↔code map used by `engine/assist.mjs` (`suggestEM`, `docChecklist`). Currently office E/M (99202–99215) + AWV. |
+| `pa-rules.json` | `{ default, payers{}, rules[{codes[],payers[],status,reason,source,notes[]}] }` | Seed CRD table used by `engine/prior-auth.mjs` for **non-Carelon** payers (illustrative — verify before use). |
+| `carelon-msag.json` | `{ packages[{code,label}], codes{ CODE: [{serviceType,authClass,description,pos,packages{FUND:{covered,preAuth}}, sendTo,...}] } }` | **Authoritative.** Generated from the Carelon / CBH Master Service Authorization Grid via `tools/build-carelon-msag.mjs` (source CSV committed under `sources/carelon-msag/`). Pre-auth requirement per benefit package (fund code). `engine/prior-auth.mjs` uses it for Carelon (PBHS). Regenerate: `node tools/build-carelon-msag.mjs`. |
 
 ## Guardrails (non-negotiable)
 

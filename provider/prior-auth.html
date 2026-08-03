@@ -123,9 +123,11 @@ pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;backg
       </div>
 
       <div class="note">
-        <b>Local CRD table + workflow demo.</b> The "is prior auth required?" answer comes from a seed rules table
-        (grounded in BHW P-2 / Carelon) until a live Da Vinci <b>CRD</b> endpoint is connected. The <b>PAS</b> step
-        below shapes the request payload but does not transmit — wire it to the payer's Prior Authorization API to submit.
+        <b>Carelon MSAG + local CRD table.</b> For <b>Carelon (PBHS)</b> the "is prior auth required?" answer comes
+        from the official <b>CBH Master Service Authorization Grid</b> — per benefit package (fund code); pick the
+        member's package for the exact requirement. Other payers use a seed rules table until a live Da Vinci
+        <b>CRD</b> endpoint is connected. The <b>PAS</b> step shapes the request payload but does not transmit —
+        wire it to the payer's Prior Authorization API to submit.
       </div>
 
       <div class="grid g2">
@@ -135,6 +137,10 @@ pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;backg
           <div class="row r2">
             <div><label class="fld" for="payer">Payer</label><select id="payer"></select></div>
             <div><label class="fld" for="code">Code (CPT/HCPCS)</label><input type="text" id="code" placeholder="e.g. 90837, 96130, 90867"></div>
+          </div>
+          <div class="row r2" id="pkgRow" style="display:none">
+            <div><label class="fld" for="benefitPackage">Benefit package <span class="mini">(Carelon fund code)</span></label><select id="benefitPackage"></select></div>
+            <div></div>
           </div>
           <div class="row r2">
             <div><label class="fld" for="dx">Diagnosis (ICD-10)</label><input type="text" id="dx" placeholder="e.g. F33.1"></div>
@@ -178,7 +184,7 @@ import { analyzeNote } from "../engine/note-analyze.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-let RULES = {}, lastCRD = null, lastDoc = null, pasReq = null;
+let RULES = {}, MSAG = null, lastCRD = null, lastDoc = null, pasReq = null;
 
 (function theme() {
   const KEY = "bhw-theme";
@@ -187,20 +193,36 @@ let RULES = {}, lastCRD = null, lastDoc = null, pasReq = null;
   $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
 })();
 
-const STATUS_LABEL = { required: "Prior authorization REQUIRED", not_required: "No prior authorization needed", conditional: "Conditional — authorize per grid", unknown: "Unknown — verify with payer" };
+const STATUS_LABEL = { required: "Prior authorization REQUIRED", not_required: "No prior authorization needed", conditional: "Conditional — depends on package / context", not_covered: "Not a covered service", unknown: "Unknown — verify with payer" };
+
+function isCarelon() { return /carelon|pbhs/i.test($("payer").value); }
+function syncPkgRow() { $("pkgRow").style.display = (isCarelon() && MSAG) ? "grid" : "none"; }
 
 function runCRD() {
   const claim = { payer: $("payer").value, code: $("code").value.trim() };
+  if (isCarelon() && MSAG && $("benefitPackage").value) claim.benefitPackage = $("benefitPackage").value;
   if (!claim.code) return;
-  const r = checkPriorAuth(claim, RULES);
+  const r = checkPriorAuth(claim, RULES, MSAG);
   lastCRD = r;
-  const icon = { required: "✋", not_required: "✓", conditional: "◑", unknown: "?" }[r.status] || "?";
+  const icon = { required: "✋", not_required: "✓", conditional: "◑", not_covered: "⃠", unknown: "?" }[r.status] || "?";
+  let msagBlock = "";
+  if (r.msag) {
+    const m = r.msag;
+    const meta = [m.description, m.authClass ? `auth class ${m.authClass}` : "", m.pos ? `POS ${m.pos}` : ""].filter(Boolean).join(" · ");
+    const rows = (m.byPackage || []).filter((p) => p.covered).map((p) =>
+      `<div class="nchk ${p.preAuth === "required" ? "missing" : p.preAuth === "not_required" ? "present" : "review"}">
+        <span class="ic">${p.preAuth === "required" ? "✋" : p.preAuth === "not_required" ? "✓" : "◑"}</span>
+        <div><span class="lbl">${esc(p.code)}</span> <span class="dt">— ${esc(p.label)}: ${esc((p.preAuth || "").replace("_", " "))}</span></div></div>`).join("");
+    msagBlock = `${meta ? `<div class="mini" style="margin-top:8px">${esc(meta)}</div>` : ""}
+      ${rows ? `<div class="mini" style="margin:8px 0 4px">Requirement by benefit package:</div>${rows}` : ""}`;
+  }
   $("crdOut").innerHTML = `
     <div class="pa ${r.status}"><span style="font-size:22px">${icon}</span>
       <div><div class="big">${esc(STATUS_LABEL[r.status] || r.status)}</div>
       <div class="mini">${esc(r.reason)}</div></div></div>
     ${r.source ? `<div class="mini">Source: ${esc(r.source)}</div>` : ""}
     ${r.notes.length ? `<div class="mini" style="margin-top:6px">${r.notes.map((n) => "• " + esc(n)).join("<br>")}</div>` : ""}
+    ${msagBlock}
     <div class="mini" style="margin-top:8px;opacity:.7">${esc(r.standard)}${r.illustrative ? " · seed rule — verify against the payer / Carelon grid" : ""}</div>`;
   runDTR();
   resetPAS();
@@ -252,15 +274,26 @@ function submitPAS() {
 
 (async function init() {
   try { const r = await fetch("../engine/data/pa-rules.json"); if (r.ok) RULES = await r.json(); } catch (e) {}
+  try { const r = await fetch("../engine/data/carelon-msag.json"); if (r.ok) MSAG = await r.json(); } catch (e) {}
   const seed = RULES._meta && RULES._meta.illustrative;
-  $("rulesPill").className = "pill " + (seed ? "warn" : "");
-  $("rulesPill").textContent = seed ? "seed rules" : "live CRD";
+  $("rulesPill").className = "pill " + (MSAG ? "" : seed ? "warn" : "");
+  $("rulesPill").textContent = MSAG ? "Carelon grid + seed rules" : seed ? "seed rules" : "live CRD";
   // payer list: real DATA payers ∪ pa-rules payer keys, Carelon first
   const dataPayers = (window.DATA && window.DATA.payers) || [];
   const ruleKeys = Object.keys(RULES.payers || {});
   const payers = Array.from(new Set(["Carelon (PBHS)", ...ruleKeys, ...dataPayers]));
   $("payer").innerHTML = payers.map((p) => `<option>${esc(p)}</option>`).join("");
+  // benefit-package (fund code) options for the Carelon MSAG; Medicaid defaults first
+  if (MSAG && MSAG.packages) {
+    const opts = [`<option value="">Any package (summarize)</option>`,
+      ...MSAG.packages.map((p) => `<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.label)}</option>`)].join("");
+    $("benefitPackage").innerHTML = opts;
+    $("benefitPackage").value = "FMDC"; // Medicaid, Federally Funded — the common case
+    $("benefitPackage").addEventListener("change", runCRD);
+  }
+  syncPkgRow();
 
+  $("payer").addEventListener("change", () => { syncPkgRow(); if ($("code").value.trim()) runCRD(); });
   $("crdBtn").onclick = runCRD;
   $("code").addEventListener("keydown", (e) => { if (e.key === "Enter") runCRD(); });
   $("note").addEventListener("input", runDTR);
