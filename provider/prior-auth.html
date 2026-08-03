@@ -77,7 +77,12 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 .pa.not_required{background:#e8f0e3;border-color:#c2d3b4}.pa.not_required .big{color:#5c7050}
 .pa.conditional{background:#fdf1d6;border-color:#efd399}.pa.conditional .big{color:#9a6f16}
 .pa.unknown{background:var(--base);border-color:var(--line)}.pa.unknown .big{color:var(--ink-soft)}
-:root[data-theme="dark"] .pa.required{background:#2e1d1a}:root[data-theme="dark"] .pa.not_required{background:#1c2a1e}:root[data-theme="dark"] .pa.conditional{background:#2a2213}
+.pa.not_covered{background:#ece9e6;border-color:#d3ccc4}.pa.not_covered .big{color:#6b6259}
+.pa.expired{background:#f7e0dc;border-color:#e6b7ad}.pa.expired .big{color:#a53f30}
+.pa.expiring{background:#fdf1d6;border-color:#efd399}.pa.expiring .big{color:#9a6f16}
+.pa.active{background:#e8f0e3;border-color:#c2d3b4}.pa.active .big{color:#5c7050}
+.pa.future{background:var(--base);border-color:var(--line)}.pa.future .big{color:var(--ink-soft)}
+:root[data-theme="dark"] .pa.required,:root[data-theme="dark"] .pa.expired{background:#2e1d1a}:root[data-theme="dark"] .pa.not_required,:root[data-theme="dark"] .pa.active{background:#1c2a1e}:root[data-theme="dark"] .pa.conditional,:root[data-theme="dark"] .pa.expiring{background:#2a2213}:root[data-theme="dark"] .pa.not_covered{background:#26221e}
 .nchk{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px}
 .nchk:last-child{border-bottom:none}
 .nchk .ic{font-weight:800;flex-shrink:0;width:16px;text-align:center}
@@ -159,6 +164,18 @@ pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;backg
         </div>
       </div>
 
+      <!-- ============ AUTH SPAN TRACKING ============ -->
+      <div class="card" style="margin-top:16px" id="spanCard">
+        <div class="card-head"><h3>Authorization tracking</h3><span class="step">Renewal</span></div>
+        <div class="mini" style="margin-bottom:8px">Once an authorization is granted, track its span. Carelon (PBHS) requires the continued-stay/concurrent request <b>before the last authorized day</b>; this flags the 30/14/7-day reminders and the determination turnaround.</div>
+        <div class="row r3">
+          <div><label class="fld" for="authStart">Auth start</label><input type="date" id="authStart"></div>
+          <div><label class="fld" for="authEnd">Last authorized day</label><input type="date" id="authEnd"></div>
+          <div><label class="fld" for="reqType">Review type</label><select id="reqType"></select></div>
+        </div>
+        <div id="spanOut" style="margin-top:12px"><div class="empty">Enter the authorization span to track renewals.</div></div>
+      </div>
+
       <!-- ============ PAS ============ -->
       <div class="card" style="margin-top:16px">
         <div class="card-head"><h3>Prior authorization request</h3><span class="step">PAS</span></div>
@@ -181,10 +198,11 @@ pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;backg
 <script type="module">
 import { checkPriorAuth, PA_STATUS, buildPASRequest } from "../engine/prior-auth.mjs";
 import { analyzeNote } from "../engine/note-analyze.mjs";
+import { trackAuthSpan } from "../engine/auth-span.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-let RULES = {}, MSAG = null, lastCRD = null, lastDoc = null, pasReq = null;
+let RULES = {}, MSAG = null, TIMEFRAMES = null, lastCRD = null, lastDoc = null, pasReq = null;
 
 (function theme() {
   const KEY = "bhw-theme";
@@ -244,6 +262,23 @@ function runDTR() {
   resetPAS();
 }
 
+const SPAN_LABEL = { future: "Not yet active", active: "Active", expiring: "Expiring soon", expired: "Expired — reauthorize", unknown: "Enter the span" };
+const SPAN_ICON = { future: "◷", active: "✓", expiring: "◑", expired: "✋", unknown: "?" };
+function runSpan() {
+  if (!TIMEFRAMES) return;
+  const start = $("authStart").value, end = $("authEnd").value;
+  if (!end) { $("spanOut").innerHTML = `<div class="empty">Enter the authorization span to track renewals.</div>`; return; }
+  const r = trackAuthSpan({ startDate: start, endDate: end, requestType: $("reqType").value }, TIMEFRAMES);
+  const rem = (r.daysRemaining != null) ? (r.daysRemaining < 0 ? `${-r.daysRemaining} day(s) past` : `${r.daysRemaining} day(s) left`) : "";
+  const tiers = r.reminders.map((t) => `<span class="tag ${t.reached ? "hp" : ""}" title="${esc(t.date)}">${t.tier}-day${t.reached ? " ✓" : ""}</span>`).join(" ");
+  $("spanOut").innerHTML = `
+    <div class="pa ${r.status}"><span style="font-size:22px">${SPAN_ICON[r.status] || "?"}</span>
+      <div><div class="big">${esc(SPAN_LABEL[r.status] || r.status)}</div>
+      <div class="mini">${esc(rem)}${r.renewalDueBy ? ` · continued-stay due by ${esc(r.renewalDueBy)}` : ""}</div></div></div>
+    <div class="mini" style="margin-top:8px">Reminders: ${tiers}</div>
+    ${r.notes.length ? `<div class="mini" style="margin-top:6px">${r.notes.map((n) => "• " + esc(n)).join("<br>")}</div>` : ""}`;
+}
+
 function resetPAS() { pasReq = null; $("pasSubmit").disabled = true; setFlow(null); $("pasOut").innerHTML = `<div class="empty">Assemble the request to preview the PAS payload.</div>`; $("pasNote").textContent = ""; }
 function setFlow(state) {
   const order = ["draft", "submitted", "pending", "approved"];
@@ -275,6 +310,7 @@ function submitPAS() {
 (async function init() {
   try { const r = await fetch("../engine/data/pa-rules.json"); if (r.ok) RULES = await r.json(); } catch (e) {}
   try { const r = await fetch("../engine/data/carelon-msag.json"); if (r.ok) MSAG = await r.json(); } catch (e) {}
+  try { const r = await fetch("../engine/data/carelon-auth-timeframes.json"); if (r.ok) TIMEFRAMES = await r.json(); } catch (e) {}
   const seed = RULES._meta && RULES._meta.illustrative;
   $("rulesPill").className = "pill " + (MSAG ? "" : seed ? "warn" : "");
   $("rulesPill").textContent = MSAG ? "Carelon grid + seed rules" : seed ? "seed rules" : "live CRD";
@@ -292,6 +328,13 @@ function submitPAS() {
     $("benefitPackage").addEventListener("change", runCRD);
   }
   syncPkgRow();
+
+  // authorization tracking: review-type options + live recompute
+  if (TIMEFRAMES && TIMEFRAMES.requestTypes) {
+    $("reqType").innerHTML = TIMEFRAMES.requestTypes.map((t) => `<option value="${esc(t.id)}">${esc(t.label)}</option>`).join("");
+    $("reqType").value = "concurrent_nonurgent";
+    ["authStart", "authEnd", "reqType"].forEach((id) => $(id).addEventListener("change", runSpan));
+  } else { $("spanCard").style.display = "none"; }
 
   $("payer").addEventListener("change", () => { syncPkgRow(); if ($("code").value.trim()) runCRD(); });
   $("crdBtn").onclick = runCRD;

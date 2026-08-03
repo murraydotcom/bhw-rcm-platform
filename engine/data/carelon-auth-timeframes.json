@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "source": "Carelon Behavioral Health — Maryland PBHS Provider Manual, §5 (Utilization Management / Standard Time Frames)",
+    "administrator": "Carelon (PBHS)",
+    "illustrative": false,
+    "note": "Authorization submission + determination turnaround times and the concurrent-review timing rule. Decision support — the authoritative source is the current Carelon Provider Manual and the Authorization Grid; more specifics per level of care live in the manual's Authorization Requirements section."
+  },
+  "requestTypes": [
+    { "id": "prospective_urgent", "label": "Prospective — Urgent", "timing": "Prior to treatment", "determination": "Within 72 hours (3 days)", "determinationDays": 3 },
+    { "id": "prospective_nonurgent", "label": "Prospective — Non-Urgent", "timing": "Prior to treatment", "determination": "Within 14 calendar days", "determinationDays": 14 },
+    { "id": "concurrent_urgent", "label": "Concurrent — Urgent", "timing": "Within 72 hours of authorization expiration", "determination": "Within 72 hours (3 days)", "determinationDays": 3 },
+    { "id": "concurrent_nonurgent", "label": "Concurrent — Non-Urgent", "timing": "Prior to the authorization term (before the last authorized day)", "determination": "Prior to the authorization term", "determinationDays": null },
+    { "id": "retrospective", "label": "Retrospective", "timing": "After services", "determination": "Reverts to Prospective — within 30 calendar days", "determinationDays": 30 }
+  ],
+  "notification": [
+    { "id": "post_stabilization", "label": "Post-stabilization services", "within": "1 hour" },
+    { "id": "urgent", "label": "Urgent requests", "within": "24 hours" },
+    { "id": "nonurgent", "label": "Non-urgent requests", "within": "30 calendar days" },
+    { "id": "inpatient_admit", "label": "Inpatient admission notice", "within": "24 hours (one calendar day) of admission" }
+  ],
+  "concurrentReview": {
+    "rule": "Request continued authorization before the last authorized day of service; the continued-stay/concurrent request carries supporting clinical information.",
+    "example": "For an initial authorization span of March 1–March 4, submit the continued-stay request by March 4 (the last authorized day)."
+  },
+  "reminderTiers": [30, 14, 7]
+}
