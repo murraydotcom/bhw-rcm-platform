@@ -184,6 +184,17 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
             <label><input type="checkbox" id="f_g2211"> G2211 add-on</label>
           </div>
 
+          <label class="fld">Patient history <span class="mini" id="freqHint" style="font-weight:400;opacity:.75"></span></label>
+          <div class="flags">
+            <label><input type="checkbox" id="f_priorDone"> Already performed for this patient</label>
+          </div>
+          <div class="row r2">
+            <div><label class="fld" for="priorDays">Days since last billed</label>
+              <input type="number" id="priorDays" min="0" placeholder="e.g. 200"></div>
+            <div><label class="fld" for="priorCount">Times billed in period</label>
+              <input type="number" id="priorCount" min="0" placeholder="e.g. 1"></div>
+          </div>
+
           <div class="row r3">
             <div><label class="fld" for="awv">AWV code</label>
               <select id="awv"><option value="">—</option><option>G0438</option><option>G0439</option><option>G0402</option></select></div>
@@ -289,9 +300,21 @@ function readClaim() {
     audioOnly: $("f_audio").checked,
     seenWithin3y: $("f_seen3y").checked,
     g2211: $("f_g2211").checked,
+    priorDone: $("f_priorDone").checked,
+    priorDays: $("priorDays").value !== "" ? +$("priorDays").value : null,
+    priorCount: $("priorCount").value !== "" ? +$("priorCount").value : null,
     timeDoc: minutes != null && minutes > 0,   // entering time documents it (clears level-5 flag)
     _minutes: minutes,
   };
+}
+
+/* Show the frequency limit for the entered E/M / service code, so staff know
+ * when the patient-history fields matter. Reads the real DATA.freq table. */
+function updateFreqHint() {
+  const freq = (window.DATA && window.DATA.freq) || {};
+  const codes = [$("em").value.trim().toUpperCase(), $("proc").value.trim().toUpperCase(), $("awv").value.trim().toUpperCase()].filter(Boolean);
+  const hit = codes.map((c) => (freq[c] ? `${c}: ${freq[c].label || freq[c].days + "d"}` : null)).filter(Boolean);
+  $("freqHint").textContent = hit.length ? `— ${hit.join(" · ")}` : "— no frequency limit on the entered codes";
 }
 
 function renderFindings(findings) {
@@ -308,7 +331,7 @@ function renderFindings(findings) {
           ${f.fix ? `<div class="fix">→ ${esc(f.fix)}</div>` : ""}
           <div class="rid">${esc(f.ruleId)}</div>
         </div></div>`).join("")
-    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits need prior claim history.)</div>`;
+    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits fire once you enter the patient history above.)</div>`;
 }
 
 function renderChecklist(codes) {
@@ -369,6 +392,7 @@ function renderPA(claim) {
 
 function run() {
   const claim = readClaim();
+  updateFreqHint();
   renderFindings(window.scrubClaim(claim));
   renderPA(claim);
   renderChecklist([claim.em, claim.sameDayProc]);
@@ -384,7 +408,8 @@ function wire() {
   ["payer", "em", "proc", "dx", "mods", "units", "awv", "minutes", "mdm"].forEach((id) => {
     $(id).addEventListener("input", run); $(id).addEventListener("change", run);
   });
-  ["f_tele", "f_audio", "f_seen3y", "f_g2211"].forEach((id) => $(id).addEventListener("change", run));
+  ["f_tele", "f_audio", "f_seen3y", "f_g2211", "f_priorDone"].forEach((id) => $(id).addEventListener("change", run));
+  ["priorDays", "priorCount"].forEach((id) => $(id).addEventListener("input", run));
   $("note").addEventListener("input", run);
   $("runBtn").onclick = run;
   $("themeBtn").onclick = () => {
