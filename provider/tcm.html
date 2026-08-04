@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script src="/auth-gate.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BHW Provider — Claims Tracker (non-Stedi)</title>
+<title>BHW Provider — TCM / Discharges (CRISP)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -49,13 +49,11 @@ a{color:inherit;text-decoration:none}
 .content{padding:26px 30px 60px;max-width:1400px;width:100%}
 .page-head{margin-bottom:18px}
 .page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
-.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:820px}
+.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:860px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
 .card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .card-head h3{margin:0}
-label.fld{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
-textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%;resize:vertical;line-height:1.5}
 .btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
 .btn:active{transform:translateY(1px)}
 .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
@@ -66,7 +64,10 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 :root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
 .note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
 .mini{font-size:11px;color:var(--ink-soft)}
-.empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.empty{padding:26px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--ink-soft);transition:border-color .15s,background .15s;cursor:pointer}
+.drop.hot{border-color:var(--blue);background:rgba(128,171,189,.08)}
+.drop .big{font-size:14px;font-weight:700;color:var(--ink)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
 .tile .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft)}
@@ -74,21 +75,28 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 .tile .s{font-size:11px;color:var(--ink-soft);margin-top:2px}
 .tile.alert{border-color:#e6b7ad;background:#faece9}.tile.alert .v{color:#a53f30}
 :root[data-theme="dark"] .tile.alert{background:#2e1d1a}
+.tile.good{border-color:#c2d3b4;background:#eef3e9}.tile.good .v{color:#5c7050}
+:root[data-theme="dark"] .tile.good{background:#1c2a1e}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th{text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);padding:8px 10px;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--card)}
 .tbl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:hover{background:var(--base)}
 .tbl tr.action{background:#faece9}.tbl tr.action:hover{background:#f6e2de}
 :root[data-theme="dark"] .tbl tr.action{background:#2a1c19}
-.tbl tr:hover{background:var(--base)}
-.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.b-rejected{background:#f7e0dc;color:#a53f30}
-.b-accepted{background:#e8f0e3;color:#5c7050}
-.b-acknowledged{background:#e2edf1;color:#3f6675}
-.b-clearinghouse{background:#fdf1d6;color:#9a6f16}
-.b-unknown{background:var(--neutral);color:#6b563f}
+.tbl tr.soon{background:#fdf7ea}:root[data-theme="dark"] .tbl tr.soon{background:#2a2413}
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
-.reason{color:#a53f30;font-size:11px}
-.amt{font-variant-numeric:tabular-nums;font-weight:600}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.b-tcm{background:#e2edf1;color:#3f6675}
+.b-admitted{background:#fdf1d6;color:#9a6f16}
+.b-ed{background:#efe7f1;color:#6b4d78}
+.b-ambulatory{background:var(--neutral);color:#6b563f}
+.b-excluded{background:#ece9e6;color:#6b6259}
+.cs-due{color:#9a6f16;font-weight:700}
+.cs-due-today{color:#a53f30;font-weight:800}
+.cs-passed{color:#a53f30;font-weight:700}
+.flags{color:#9a6f16;font-size:11px}
+.nm{font-weight:700}
+.dob{color:var(--ink-soft);font-size:11px}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 8px}
 .chip{font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);cursor:pointer}
 .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -112,11 +120,11 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
       <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
       <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
       <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
-      <a class="nav-item" href="tcm.html"><span class="ic">⏱</span> TCM / Discharges</a>
-      <div class="nav-item active"><span class="ic">▦</span> Claims Tracker</div>
+      <div class="nav-item active"><span class="ic">⏱</span> TCM / Discharges</div>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
       <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
     </nav>
-    <div class="sidebar-foot">Non-Stedi claim status · paste the daily clearinghouse pull.<br>Runs in your browser — nothing is uploaded.</div>
+    <div class="sidebar-foot">TCM worklist from the CRISP ENS panel export.<br>Runs in your browser — nothing is uploaded.</div>
   </aside>
   <div class="scrim" id="navScrim"></div>
 
@@ -124,51 +132,55 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
     <div class="topbar">
       <div class="tb-left">
         <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
-        <div class="crumb">Post-Bill · <b>Claims Tracker (non-Stedi)</b></div>
+        <div class="crumb">Care Coordination · <b>TCM / Discharges (CRISP)</b></div>
       </div>
       <div class="tools">
-        <span class="pill" id="countPill">no claims loaded</span>
+        <span class="pill" id="countPill">no file loaded</span>
         <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <h2>Claims Tracker</h2>
-        <p>Paste the daily clearinghouse status export for claims that don't go through Stedi. It's rolled up to one row
-           per claim (by invoice), the current stage is resolved from the status events, and the rejections that need
-           rework are pulled to the top with their reason.</p>
+        <h2>TCM / Discharge Worklist</h2>
+        <p>Upload the CRISP ENS <b>Panel Details</b> export and it surfaces the inpatient &amp; observation discharges that
+           are Transitional Care Management candidates (99495 / 99496) — with the <b>2-business-day call</b> clock and the
+           <b>7-day (99496) / 14-day (99495)</b> face-to-face windows. ED visits and current admissions are listed
+           separately for outreach.</p>
       </div>
 
       <div class="note">
-        <b>Runs entirely in your browser.</b> The pasted text is parsed locally and never leaves this page — nothing is
-        uploaded or stored. Decision support: confirm each rejection against the clearinghouse before reworking.
+        <b>Runs entirely in your browser.</b> The uploaded file is parsed locally and never leaves this page — nothing is
+        uploaded or stored. Decision support only: TCM requires an eligible discharge to a community setting, an
+        interactive contact within 2 business days, and the face-to-face visit within the window. The 2-business-day
+        clock ignores federal holidays — verify against the calendar. Confirm eligibility before billing.
       </div>
 
       <div class="card" id="dropCard">
-        <div class="card-head"><h3>Paste or drop the clearinghouse export</h3>
+        <div class="card-head"><h3>Upload the CRISP Panel Details export</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label class="mini" style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="appendChk" checked> Append batches</label>
-            <button class="btn btn-ghost btn-sm" id="fileBtn">Choose file…</button>
-            <input type="file" id="fileInput" accept=".txt,.csv,.tsv,text/plain" hidden>
-            <button class="btn btn-primary btn-sm" id="parseBtn">Parse claims</button>
+            <button class="btn btn-primary btn-sm" id="fileBtn">Choose file…</button>
+            <input type="file" id="fileInput" accept=".xlsx,.csv" hidden>
             <button class="btn btn-ghost btn-sm" id="csvBtn" disabled>Export CSV</button>
-            <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
+            <button class="btn btn-ghost btn-sm" id="clearBtn" disabled>Clear</button>
           </div>
         </div>
-        <textarea id="raw" rows="7" placeholder="Paste the daily status rows here (e.g. 1–50 of 132), or drop the exported file anywhere on this card…"></textarea>
-        <div class="mini" id="parseNote" style="margin-top:6px">Tip: with <b>Append batches</b> on, paste or drop each 50-row batch and they accumulate into one worklist (duplicate events are ignored).</div>
+        <div class="drop" id="drop">
+          <div class="big">Drop the <code>PanelDetails….xlsx</code> here, or click to choose</div>
+          <div class="mini" style="margin-top:5px">Accepts the CRISP ENS panel export (<b>.xlsx</b>) or a <b>.csv</b> with the same columns. Each upload replaces the current list.</div>
+        </div>
+        <div class="mini" id="parseNote" style="margin-top:8px"></div>
       </div>
 
       <div id="statsWrap"></div>
       <div class="filters" id="filters" style="display:none">
         <span class="mini" style="font-weight:700">Show:</span>
-        <span class="chip on" data-f="all">All</span>
-        <span class="chip" data-f="action">Needs action</span>
-        <span class="chip" data-f="rejected">Ever rejected</span>
-        <span class="chip" data-f="accepted">Accepted</span>
-        <span class="chip" data-f="acknowledged">Acknowledged</span>
-        <span class="chip" data-f="clearinghouse">At clearinghouse</span>
+        <span class="chip on" data-f="tcm">TCM candidates</span>
+        <span class="chip" data-f="admitted">Admitted</span>
+        <span class="chip" data-f="ed">ED visits</span>
+        <span class="chip" data-f="ambulatory">Ambulatory</span>
+        <span class="chip" data-f="excluded">Excluded</span>
+        <span class="chip" data-f="all">All</span>
       </div>
       <div id="tableWrap"></div>
     </div>
@@ -176,14 +188,12 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 </div>
 
 <script type="module">
-import { parseClaimEvents, rollupClaims, summarize, CLAIM_STAGE } from "../engine/claims-parse.mjs";
+import { buildWorklist } from "../engine/tcm-parse.mjs";
+import { readSpreadsheet } from "../engine/xlsx-lite.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const money = (n) => "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const STAGE_LABEL = { rejected: "Rejected", clearinghouse: "At clearinghouse", acknowledged: "Acknowledged", accepted: "In adjudication", unknown: "Unknown" };
-let CLAIMS = [], FILTER = "all", ALL_EVENTS = [];
-const evtKey = (e) => [e.invoice, e.status, e.asOnDate, e.ect, e.remarks].join("|");
+let RESULT = { items: [], stats: {}, meta: {} }, FILTER = "tcm";
 
 (function theme() {
   const KEY = "bhw-theme";
@@ -193,7 +203,7 @@ const evtKey = (e) => [e.invoice, e.status, e.asOnDate, e.ect, e.remarks].join("
 })();
 
 (function nav() {
-  const nt = document.getElementById("navToggle"), ns = document.getElementById("navScrim"), sb = document.querySelector(".sidebar");
+  const nt = $("navToggle"), ns = $("navScrim"), sb = document.querySelector(".sidebar");
   if (!nt || !ns || !sb) return;
   const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
   nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
@@ -201,104 +211,123 @@ const evtKey = (e) => [e.invoice, e.status, e.asOnDate, e.ect, e.remarks].join("
   sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
 })();
 
-/* Ingest a chunk of export text. In append mode the events accumulate (deduped
- * by event signature) so the 50-row batches build one worklist; otherwise the
- * batch replaces what's loaded. */
-function ingest(text, sourceLabel) {
-  if (!text || !text.trim()) { $("parseNote").textContent = "Nothing to parse — paste or drop the export."; return; }
-  const append = $("appendChk").checked;
-  const incoming = parseClaimEvents(text);
-  if (!incoming.length) { $("parseNote").textContent = "No claim rows recognized in that text."; return; }
-  if (!append) ALL_EVENTS = [];
-  const seen = new Set(ALL_EVENTS.map(evtKey));
-  let added = 0;
-  for (const e of incoming) { const k = evtKey(e); if (!seen.has(k)) { seen.add(k); ALL_EVENTS.push(e); added++; } }
-  render();
-  $("parseNote").textContent = `${sourceLabel}: ${incoming.length} event(s) read, ${added} new · ${ALL_EVENTS.length} event(s) loaded → ${CLAIMS.length} claim(s).`;
+async function loadFile(file) {
+  if (!file) return;
+  $("parseNote").textContent = `Reading “${file.name}”…`;
+  try {
+    const { rows, sheet } = await readSpreadsheet(file);
+    if (!rows.length) { $("parseNote").textContent = "No rows found in that file — is it the Panel Details export?"; return; }
+    RESULT = buildWorklist(rows);
+    render();
+    const s = RESULT.stats;
+    $("parseNote").innerHTML = `Loaded <b>${esc(file.name)}</b>${sheet ? ` · sheet “${esc(sheet)}”` : ""} · ${s.rows} people · as of ${esc(RESULT.meta.today)}.`;
+    $("clearBtn").disabled = false; $("csvBtn").disabled = false;
+  } catch (e) {
+    $("parseNote").innerHTML = `Couldn't read that file: ${esc(e.message)}. ` +
+      `If your browser can't open .xlsx here, re-save it as <b>.csv</b> and drop that instead.`;
+  }
 }
 
 function render() {
-  CLAIMS = rollupClaims(ALL_EVENTS);
-  const summary = summarize(CLAIMS);
-  $("countPill").textContent = CLAIMS.length ? `${CLAIMS.length} claims · ${summary.actionCount} need action` : "no claims loaded";
-  $("csvBtn").disabled = !CLAIMS.length;
-  renderStats(summary);
-  $("filters").style.display = CLAIMS.length ? "flex" : "none";
+  const s = RESULT.stats;
+  $("countPill").textContent = s.rows ? `${s.tcm} TCM · ${s.callsDueToday + s.callsOverdue} calls to act` : "no file loaded";
+  renderStats(s);
+  $("filters").style.display = s.rows ? "flex" : "none";
   renderTable();
 }
 
-function run() { ingest($("raw").value, "Pasted"); }
-
 function renderStats(s) {
-  const stage = (k) => (s.byStage[k] || { count: 0, amount: 0 });
   const tiles = [
-    { k: "Claims", v: s.total, sub: money(s.totalAmount), cls: "" },
-    { k: "Need action", v: s.actionCount, sub: money(s.actionAmount) + " at risk", cls: s.actionCount ? "alert" : "" },
-    { k: "In adjudication", v: stage("accepted").count, sub: money(stage("accepted").amount), cls: "" },
-    { k: "Acknowledged", v: stage("acknowledged").count, sub: money(stage("acknowledged").amount), cls: "" },
-    { k: "At clearinghouse", v: stage("clearinghouse").count, sub: money(stage("clearinghouse").amount), cls: "" },
+    { k: "TCM candidates", v: s.tcm || 0, sub: "inpatient / observation", cls: "" },
+    { k: "Calls due today", v: s.callsDueToday || 0, sub: "2-business-day contact", cls: s.callsDueToday ? "alert" : "" },
+    { k: "Calls overdue", v: s.callsOverdue || 0, sub: "past 2 business days", cls: s.callsOverdue ? "alert" : "" },
+    { k: "Visits ≤ 7 days", v: s.visitsDue7 || 0, sub: "99496 window open", cls: s.visitsDue7 ? "good" : "" },
+    { k: "Currently admitted", v: s.admitted || 0, sub: "watch for discharge", cls: "" },
+    { k: "ED visits", v: s.ed || 0, sub: "outreach (not TCM)", cls: "" },
   ];
   $("statsWrap").innerHTML = `<div class="stats">${tiles.map((t) =>
-    `<div class="tile ${t.cls}"><div class="k">${esc(t.k)}</div><div class="v">${t.v}</div><div class="s">${esc(t.sub)}</div></div>`).join("")}</div>` +
-    payerBreakdown(s.byPayer);
-}
-function payerBreakdown(byPayer) {
-  const rows = Object.entries(byPayer).sort((a, b) => b[1].amount - a[1].amount);
-  if (!rows.length) return "";
-  return `<div class="card" style="margin-bottom:4px"><div class="card-head"><h3>By payer</h3></div>
-    <div class="tblwrap"><table class="tbl"><thead><tr><th>Payer</th><th>Claims</th><th>Amount</th><th>Need action</th></tr></thead>
-    <tbody>${rows.map(([p, v]) => `<tr><td>${esc(p)}</td><td>${v.count}</td><td class="amt">${money(v.amount)}</td><td>${v.needsAction ? `<span class="badge b-rejected">${v.needsAction}</span>` : "—"}</td></tr>`).join("")}</tbody></table></div></div>`;
+    `<div class="tile ${t.cls}"><div class="k">${esc(t.k)}</div><div class="v">${t.v}</div><div class="s">${esc(t.sub)}</div></div>`).join("")}</div>`;
 }
 
 function visible() {
-  if (FILTER === "all") return CLAIMS;
-  if (FILTER === "action") return CLAIMS.filter((c) => c.needsAction);
-  if (FILTER === "rejected") return CLAIMS.filter((c) => c.wasRejected);
-  return CLAIMS.filter((c) => c.stage === FILTER);
-}
-function renderTable() {
-  const rows = visible().slice().sort((a, b) => (b.needsAction - a.needsAction) || (a.payer.localeCompare(b.payer)));
-  if (!rows.length) { $("tableWrap").innerHTML = `<div class="empty">No claims match this filter.</div>`; return; }
-  $("tableWrap").innerHTML = `<div class="tblwrap"><table class="tbl">
-    <thead><tr><th>Patient</th><th>Invoice</th><th>Payer</th><th>Encounter</th><th class="amt">Amount</th><th>Stage</th><th>Rework reason</th></tr></thead>
-    <tbody>${rows.map((c) => `
-      <tr class="${c.needsAction ? "action" : ""}">
-        <td>${esc(c.name)} <span class="mini">${esc(c.bhwId)}</span></td>
-        <td>${esc(c.invoice)}</td>
-        <td>${esc(c.payer)}</td>
-        <td>${esc(c.encounterDate)}</td>
-        <td class="amt">${money(c.amount)}</td>
-        <td><span class="badge b-${c.stage}">${esc(STAGE_LABEL[c.stage] || c.stage)}</span>${c.wasRejected && !c.needsAction ? ` <span class="mini">(rejected → resolved)</span>` : ""}</td>
-        <td>${c.needsAction ? `<span class="reason">${esc(c.reason || "See remarks")}</span>` : "—"}</td>
-      </tr>`).join("")}</tbody></table></div>`;
+  if (FILTER === "all") return RESULT.items;
+  return RESULT.items.filter((i) => i.category === FILTER);
 }
 
+const CAT_LABEL = { tcm: "TCM", admitted: "Admitted", ed: "ED", ambulatory: "Ambulatory", excluded: "Excluded" };
+const callCell = (dl) => {
+  if (!dl) return "—";
+  const cls = dl.callState === "due-today" ? "cs-due-today" : dl.callState === "passed" ? "cs-passed" : "cs-due";
+  const lbl = dl.callState === "due-today" ? "due today" : dl.callState === "passed" ? "overdue" : "due";
+  return `<span class="${cls}">${esc(dl.callBy)}</span> <span class="mini">(${lbl})</span>`;
+};
+const visitCell = (dl) => {
+  if (!dl) return "—";
+  if (dl.windowState === "closed") return `<span class="mini">window closed (day ${dl.daysSince})</span>`;
+  return `<span title="99496 (high MDM)">≤7d ${esc(dl.visitBy99496)}</span><br><span class="mini" title="99495 (moderate MDM)">≤14d ${esc(dl.visitBy99495)}</span>`;
+};
+
+function renderTable() {
+  const rows = visible();
+  if (!rows.length) { $("tableWrap").innerHTML = `<div class="empty">No people in this category.</div>`; return; }
+  $("tableWrap").innerHTML = `<div class="tblwrap"><table class="tbl">
+    <thead><tr>
+      <th>Patient</th><th>Status</th><th>Discharge / Admit</th><th>Day</th>
+      <th>Call by</th><th>Visit window</th><th>Billable</th><th>Facility</th><th>Primary Dx</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${rows.map((it) => {
+      const dl = it.dl;
+      const rowCls = it.category === "tcm" && dl ? (dl.callState === "passed" || dl.callState === "due-today" ? "action" : dl.windowState === "7" ? "soon" : "") : "";
+      const when = it.category === "admitted" ? (fmtDate(it.admitAt) + ' <span class="mini">adm</span>') : fmtDate(it.dischargeAt || it.admitAt);
+      return `<tr class="${rowCls}">
+        <td><span class="nm">${esc(it.name)}</span><br><span class="dob">${esc(fmtDate(it.dob))}${it.gender ? " · " + esc(it.gender) : ""}</span></td>
+        <td><span class="badge b-${it.category}">${esc(CAT_LABEL[it.category] || it.category)}</span>${it.encounterType ? `<br><span class="mini">${esc(it.encounterType)}</span>` : ""}</td>
+        <td>${esc(when)}</td>
+        <td>${dl ? dl.daysSince : "—"}</td>
+        <td>${callCell(dl)}</td>
+        <td>${visitCell(dl)}</td>
+        <td>${dl ? esc(dl.billable) : "—"}</td>
+        <td>${esc(it.facility || "—")}</td>
+        <td>${esc(it.dxCodes || "")}${it.dxDesc ? `<br><span class="mini">${esc(it.dxDesc)}</span>` : ""}</td>
+        <td>${it.flags && it.flags.length ? `<span class="flags">${esc(it.flags.join("; "))}</span>` : (it.disposition ? `<span class="mini">${esc(it.disposition)}</span>` : "")}</td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+function fmtDate(iso) { return String(iso || "").slice(0, 10); }
+
 function toCSV() {
-  const cols = ["invoice", "name", "bhwId", "payer", "payerId", "memberId", "encounterDate", "amount", "stage", "wasRejected", "needsAction", "reason", "ect"];
+  const cols = ["name", "dob", "gender", "category", "encounterType", "facility", "dischargeAt", "disposition",
+    "daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable", "dxCodes", "dxDesc", "flags"];
   const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-  const lines = [cols.join(",")].concat(CLAIMS.map((c) => cols.map((k) => q(c[k])).join(",")));
+  const line = (it) => cols.map((k) => {
+    if (["daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable"].includes(k)) return q(it.dl ? it.dl[k] : "");
+    if (k === "flags") return q((it.flags || []).join("; "));
+    return q(it[k]);
+  }).join(",");
+  const lines = [cols.join(",")].concat(RESULT.items.map(line));
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "claims-worklist.csv"; a.click();
+  a.href = URL.createObjectURL(blob); a.download = "tcm-worklist.csv"; a.click();
   URL.revokeObjectURL(a.href);
 }
 
-$("parseBtn").onclick = run;
-$("csvBtn").onclick = toCSV;
-$("clearBtn").onclick = () => { $("raw").value = ""; ALL_EVENTS = []; CLAIMS = []; $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none"; $("countPill").textContent = "no claims loaded"; $("parseNote").textContent = ""; $("csvBtn").disabled = true; };
-
-/* File picker + drag-and-drop (reads the exported file's text; still local). */
-async function readFile(file) {
-  if (!file) return;
-  const text = await file.text();
-  ingest(text, `File “${file.name}”`);
-}
 $("fileBtn").onclick = () => $("fileInput").click();
-$("fileInput").addEventListener("change", (e) => readFile(e.target.files[0]));
-const drop = $("dropCard");
-["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.style.outline = "2px dashed var(--blue)"; }));
-["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.style.outline = ""; }));
-drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+$("drop").onclick = () => $("fileInput").click();
+$("fileInput").addEventListener("change", (e) => loadFile(e.target.files[0]));
+$("csvBtn").onclick = toCSV;
+$("clearBtn").onclick = () => {
+  RESULT = { items: [], stats: {}, meta: {} };
+  $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none";
+  $("countPill").textContent = "no file loaded"; $("parseNote").textContent = "";
+  $("csvBtn").disabled = true; $("clearBtn").disabled = true; $("fileInput").value = "";
+};
+
+const drop = $("drop"), card = $("dropCard");
+["dragenter", "dragover"].forEach((ev) => card.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave", "drop"].forEach((ev) => card.addEventListener(ev, (e) => { e.preventDefault(); if (ev === "dragleave" && card.contains(e.relatedTarget)) return; drop.classList.remove("hot"); }));
+card.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
 $("filters").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip"); if (!chip) return;
   FILTER = chip.dataset.f;
