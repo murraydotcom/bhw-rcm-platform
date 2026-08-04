@@ -91,6 +91,8 @@ a{color:inherit;text-decoration:none}
 .b-ed{background:#efe7f1;color:#6b4d78}
 .b-ambulatory{background:var(--neutral);color:#6b563f}
 .b-excluded{background:#ece9e6;color:#6b6259}
+.pan-yes{background:#e8f0e3;color:#5c7050}
+.pan-review{background:#fdf1d6;color:#9a6f16}
 .cs-due{color:#9a6f16;font-weight:700}
 .cs-due-today{color:#a53f30;font-weight:800}
 .cs-passed{color:#a53f30;font-weight:700}
@@ -170,6 +172,14 @@ a{color:inherit;text-decoration:none}
           <div class="mini" style="margin-top:5px">Accepts the CRISP ENS panel export (<b>.xlsx</b>) or a <b>.csv</b> with the same columns. Each upload replaces the current list.</div>
         </div>
         <div class="mini" id="parseNote" style="margin-top:8px"></div>
+        <div class="mini" id="rosterBar" style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px">
+          <b>Panel roster:</b>
+          <span id="rosterStatus">not loaded — showing all discharges</span>
+          <button class="btn btn-ghost btn-sm" id="rosterBtn">Upload roster…</button>
+          <input type="file" id="rosterInput" accept=".xlsx,.csv" hidden>
+          <button class="btn btn-ghost btn-sm" id="rosterForget" style="display:none">Forget</button>
+          <span style="color:var(--ink-soft)">Any file with name + DOB columns. Remembered on this device only.</span>
+        </div>
       </div>
 
       <div id="statsWrap"></div>
@@ -181,6 +191,8 @@ a{color:inherit;text-decoration:none}
         <span class="chip" data-f="ambulatory">Ambulatory</span>
         <span class="chip" data-f="excluded">Excluded</span>
         <span class="chip" data-f="all">All</span>
+        <span style="flex:1"></span>
+        <span class="chip" id="panelToggle" style="display:none">✓ On panel only</span>
       </div>
       <div id="tableWrap"></div>
     </div>
@@ -188,12 +200,14 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <script type="module">
-import { buildWorklist } from "../engine/tcm-parse.mjs";
+import { buildWorklist, normalizeRoster } from "../engine/tcm-parse.mjs";
 import { readSpreadsheet } from "../engine/xlsx-lite.mjs";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 let RESULT = { items: [], stats: {}, meta: {} }, FILTER = "tcm";
+let RAW_ROWS = [], ROSTER = [], PANEL_ONLY = false;
+const ROSTER_KEY = "bhw-tcm-roster";
 
 (function theme() {
   const KEY = "bhw-theme";
@@ -211,21 +225,63 @@ let RESULT = { items: [], stats: {}, meta: {} }, FILTER = "tcm";
   sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
 })();
 
+let LAST_FILE = null;
+
 async function loadFile(file) {
   if (!file) return;
   $("parseNote").textContent = `Reading “${file.name}”…`;
   try {
     const { rows, sheet } = await readSpreadsheet(file);
     if (!rows.length) { $("parseNote").textContent = "No rows found in that file — is it the Panel Details export?"; return; }
-    RESULT = buildWorklist(rows);
-    render();
-    const s = RESULT.stats;
-    $("parseNote").innerHTML = `Loaded <b>${esc(file.name)}</b>${sheet ? ` · sheet “${esc(sheet)}”` : ""} · ${s.rows} people · as of ${esc(RESULT.meta.today)}.`;
+    RAW_ROWS = rows; LAST_FILE = { name: file.name, sheet };
+    rebuild();
     $("clearBtn").disabled = false; $("csvBtn").disabled = false;
   } catch (e) {
     $("parseNote").innerHTML = `Couldn't read that file: ${esc(e.message)}. ` +
       `If your browser can't open .xlsx here, re-save it as <b>.csv</b> and drop that instead.`;
   }
+}
+
+function rebuild() {
+  if (!RAW_ROWS.length) return;
+  RESULT = buildWorklist(RAW_ROWS, { roster: ROSTER });
+  render();
+  const s = RESULT.stats;
+  const onPanel = s.rosterLoaded ? ` · <b>${s.onPanel}</b> on panel` : "";
+  $("parseNote").innerHTML = `Loaded <b>${esc(LAST_FILE.name)}</b>${LAST_FILE.sheet ? ` · sheet “${esc(LAST_FILE.sheet)}”` : ""} · ${s.rows} people${onPanel} · as of ${esc(RESULT.meta.today)}.`;
+}
+
+// ---- panel roster (optional, remembered locally) ----------------------------
+async function loadRoster(file) {
+  if (!file) return;
+  $("rosterStatus").textContent = `Reading “${file.name}”…`;
+  try {
+    const { rows } = await readSpreadsheet(file);
+    const norm = normalizeRoster(rows);
+    if (!norm.length) { $("rosterStatus").textContent = "No name/DOB columns found in that roster file."; return; }
+    ROSTER = norm; persistRoster(); updateRosterStatus();
+    rebuild();
+  } catch (e) { $("rosterStatus").textContent = `Couldn't read roster: ${e.message}`; }
+}
+function persistRoster() { try { localStorage.setItem(ROSTER_KEY, JSON.stringify(ROSTER)); } catch (e) {} }
+function forgetRoster() {
+  ROSTER = []; PANEL_ONLY = false;
+  try { localStorage.removeItem(ROSTER_KEY); } catch (e) {}
+  updateRosterStatus(); rebuild();
+}
+function updateRosterStatus() {
+  if (ROSTER.length) {
+    $("rosterStatus").innerHTML = `<b>${ROSTER.length}</b> patients loaded ✓ — discharges matched by name + DOB`;
+    $("rosterForget").style.display = ""; $("panelToggle").style.display = "";
+  } else {
+    $("rosterStatus").textContent = "not loaded — showing all discharges";
+    $("rosterForget").style.display = "none";
+    $("panelToggle").style.display = "none"; $("panelToggle").classList.remove("on");
+  }
+}
+function initRoster() {
+  try { const raw = localStorage.getItem(ROSTER_KEY); if (raw) ROSTER = JSON.parse(raw) || []; } catch (e) {}
+  updateRosterStatus();
 }
 
 function render() {
@@ -239,19 +295,32 @@ function render() {
 function renderStats(s) {
   const tiles = [
     { k: "TCM candidates", v: s.tcm || 0, sub: "inpatient / observation", cls: "" },
+  ];
+  if (s.rosterLoaded) tiles.push({ k: "TCM on panel", v: s.tcmOnPanel || 0, sub: `${s.onPanel || 0} of ${s.rows} on roster`, cls: "good" });
+  tiles.push(
     { k: "Calls due today", v: s.callsDueToday || 0, sub: "2-business-day contact", cls: s.callsDueToday ? "alert" : "" },
     { k: "Calls overdue", v: s.callsOverdue || 0, sub: "past 2 business days", cls: s.callsOverdue ? "alert" : "" },
     { k: "Visits ≤ 7 days", v: s.visitsDue7 || 0, sub: "99496 window open", cls: s.visitsDue7 ? "good" : "" },
     { k: "Currently admitted", v: s.admitted || 0, sub: "watch for discharge", cls: "" },
     { k: "ED visits", v: s.ed || 0, sub: "outreach (not TCM)", cls: "" },
-  ];
+  );
   $("statsWrap").innerHTML = `<div class="stats">${tiles.map((t) =>
     `<div class="tile ${t.cls}"><div class="k">${esc(t.k)}</div><div class="v">${t.v}</div><div class="s">${esc(t.sub)}</div></div>`).join("")}</div>`;
 }
 
 function visible() {
-  if (FILTER === "all") return RESULT.items;
-  return RESULT.items.filter((i) => i.category === FILTER);
+  let base = FILTER === "all" ? RESULT.items : RESULT.items.filter((i) => i.category === FILTER);
+  if (PANEL_ONLY) base = base.filter((i) => i.panel && i.panel.onPanel);
+  return base;
+}
+
+function panelCell(it) {
+  const p = it.panel;
+  if (!p || !p.onPanel) return `<span class="mini">—</span>`;
+  const cls = p.confidence === "review" ? "pan-review" : "pan-yes";
+  const tag = p.confidence === "review" ? "✓ verify" : "✓ on panel";
+  const extra = [p.mrn && `MRN ${esc(p.mrn)}`, p.pcp && esc(p.pcp), p.program && esc(p.program)].filter(Boolean).join(" · ");
+  return `<span class="badge ${cls}">${tag}</span>${extra ? `<br><span class="mini">${extra}</span>` : ""}`;
 }
 
 const CAT_LABEL = { tcm: "TCM", admitted: "Admitted", ed: "ED", ambulatory: "Ambulatory", excluded: "Excluded" };
@@ -269,10 +338,11 @@ const visitCell = (dl) => {
 
 function renderTable() {
   const rows = visible();
-  if (!rows.length) { $("tableWrap").innerHTML = `<div class="empty">No people in this category.</div>`; return; }
+  if (!rows.length) { $("tableWrap").innerHTML = `<div class="empty">No people in this category${PANEL_ONLY ? " on your panel" : ""}.</div>`; return; }
+  const showP = !!RESULT.stats.rosterLoaded;
   $("tableWrap").innerHTML = `<div class="tblwrap"><table class="tbl">
     <thead><tr>
-      <th>Patient</th><th>Status</th><th>Discharge / Admit</th><th>Day</th>
+      <th>Patient</th>${showP ? "<th>Panel</th>" : ""}<th>Status</th><th>Discharge / Admit</th><th>Day</th>
       <th>Call by</th><th>Visit window</th><th>Billable</th><th>Facility</th><th>Primary Dx</th><th>Notes</th>
     </tr></thead>
     <tbody>${rows.map((it) => {
@@ -281,6 +351,7 @@ function renderTable() {
       const when = it.category === "admitted" ? (fmtDate(it.admitAt) + ' <span class="mini">adm</span>') : fmtDate(it.dischargeAt || it.admitAt);
       return `<tr class="${rowCls}">
         <td><span class="nm">${esc(it.name)}</span><br><span class="dob">${esc(fmtDate(it.dob))}${it.gender ? " · " + esc(it.gender) : ""}</span></td>
+        ${showP ? `<td>${panelCell(it)}</td>` : ""}
         <td><span class="badge b-${it.category}">${esc(CAT_LABEL[it.category] || it.category)}</span>${it.encounterType ? `<br><span class="mini">${esc(it.encounterType)}</span>` : ""}</td>
         <td>${esc(when)}</td>
         <td>${dl ? dl.daysSince : "—"}</td>
@@ -297,12 +368,18 @@ function renderTable() {
 function fmtDate(iso) { return String(iso || "").slice(0, 10); }
 
 function toCSV() {
+  const withPanel = !!RESULT.stats.rosterLoaded;
   const cols = ["name", "dob", "gender", "category", "encounterType", "facility", "dischargeAt", "disposition",
-    "daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable", "dxCodes", "dxDesc", "flags"];
+    "daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable", "dxCodes", "dxDesc", "flags"]
+    .concat(withPanel ? ["onPanel", "panelMatch", "mrn", "pcp", "program"] : []);
   const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const dlKeys = ["daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable"];
   const line = (it) => cols.map((k) => {
-    if (["daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable"].includes(k)) return q(it.dl ? it.dl[k] : "");
+    if (dlKeys.includes(k)) return q(it.dl ? it.dl[k] : "");
     if (k === "flags") return q((it.flags || []).join("; "));
+    if (k === "onPanel") return q(it.panel && it.panel.onPanel ? "yes" : "no");
+    if (k === "panelMatch") return q(it.panel ? it.panel.confidence : "");
+    if (["mrn", "pcp", "program"].includes(k)) return q(it.panel ? it.panel[k] : "");
     return q(it[k]);
   }).join(",");
   const lines = [cols.join(",")].concat(RESULT.items.map(line));
@@ -316,12 +393,15 @@ $("fileBtn").onclick = () => $("fileInput").click();
 $("drop").onclick = () => $("fileInput").click();
 $("fileInput").addEventListener("change", (e) => loadFile(e.target.files[0]));
 $("csvBtn").onclick = toCSV;
+$("rosterBtn").onclick = () => $("rosterInput").click();
+$("rosterInput").addEventListener("change", (e) => loadRoster(e.target.files[0]));
+$("rosterForget").onclick = forgetRoster;
 $("clearBtn").onclick = () => {
-  RESULT = { items: [], stats: {}, meta: {} };
+  RESULT = { items: [], stats: {}, meta: {} }; RAW_ROWS = []; LAST_FILE = null;
   $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none";
   $("countPill").textContent = "no file loaded"; $("parseNote").textContent = "";
   $("csvBtn").disabled = true; $("clearBtn").disabled = true; $("fileInput").value = "";
-};
+}; // the panel roster is kept (use “Forget” to remove it)
 
 const drop = $("drop"), card = $("dropCard");
 ["dragenter", "dragover"].forEach((ev) => card.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("hot"); }));
@@ -330,10 +410,18 @@ card.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f)
 
 $("filters").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip"); if (!chip) return;
+  if (chip.id === "panelToggle") {
+    PANEL_ONLY = !PANEL_ONLY;
+    chip.classList.toggle("on", PANEL_ONLY);
+    renderTable();
+    return;
+  }
   FILTER = chip.dataset.f;
-  $("filters").querySelectorAll(".chip").forEach((c) => c.classList.toggle("on", c === chip));
+  $("filters").querySelectorAll(".chip[data-f]").forEach((c) => c.classList.toggle("on", c === chip));
   renderTable();
 });
+
+initRoster();
 </script>
 </body>
 </html>

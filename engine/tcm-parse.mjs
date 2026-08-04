@@ -158,11 +158,89 @@ export function deadlines(dischargeISO, today) {
 
 // ---- worklist ---------------------------------------------------------------
 
+// ---- panel roster cross-check ----------------------------------------------
+
+// Coerce a roster DOB (string, Date, or Excel serial) to "YYYY-MM-DD".
+function coerceDob(v) {
+  if (v == null || v === "") return "";
+  if (typeof v === "number" && v > 20000 && v < 80000) { // Excel serial date
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    const p = (x) => String(x).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+  }
+  return toISO(v).slice(0, 10);
+}
+
+function splitName(s) {
+  const str = norm(s);
+  if (str.includes(",")) { const [l, f] = str.split(","); return { last: norm(l), first: norm(f) }; }
+  const t = str.split(/\s+/);
+  return t.length > 1 ? { last: t[t.length - 1], first: t.slice(0, -1).join(" ") } : { last: str, first: "" };
+}
+
+const findCol = (headers, re) => headers.find((h) => re.test(key(h)));
+
+// Normalize an arbitrary roster export (any column layout) into
+// { last, first, dob, mrn, pcp, program, name }. Tolerant of header naming and
+// of a single "Patient Name" column ("Last, First" or "First Last").
+export function normalizeRoster(rows) {
+  if (!rows || !rows.length) return [];
+  const h = Object.keys(rows[0]);
+  const c = {
+    last: findCol(h, /^(last|lastname|lname|surname)$/) || findCol(h, /lastname/),
+    first: findCol(h, /^(first|firstname|fname)$/) || findCol(h, /firstname|givenname/),
+    name: findCol(h, /^(name|patient|patientname|membername|fullname)$/),
+    dob: findCol(h, /dob|dateofbirth|birthdate|^birth/),
+    mrn: findCol(h, /mrn|chartnumber|^chart$|patientid|recordnumber|^mr$/),
+    pcp: findCol(h, /pcp|provider|attributed|paneledprovider|^panel$/),
+    program: findCol(h, /program|clinic|servicline|serviceline|^line$/),
+  };
+  return rows.map((r) => {
+    let last = c.last ? norm(r[c.last]) : "";
+    let first = c.first ? norm(r[c.first]) : "";
+    if ((!last || !first) && c.name) { const s = splitName(r[c.name]); last = last || s.last; first = first || s.first; }
+    return {
+      last, first,
+      dob: coerceDob(c.dob ? r[c.dob] : ""),
+      mrn: c.mrn ? norm(r[c.mrn]) : "",
+      pcp: c.pcp ? norm(r[c.pcp]) : "",
+      program: c.program ? norm(r[c.program]) : "",
+      name: `${last}, ${first}`.replace(/^, |, $/g, ""),
+    };
+  }).filter((e) => e.last || e.first);
+}
+
+const nk = (s) => key(s);
+// Accepts normalized roster entries (from normalizeRoster) or raw roster rows.
+export function buildRosterIndex(roster) {
+  const entries = (roster && roster.length && roster[0] && roster[0].last !== undefined)
+    ? roster : normalizeRoster(roster);
+  const lfd = new Map(), ld = new Map(), lf = new Map();
+  for (const e of entries) {
+    const l = nk(e.last), f = nk(e.first), d = (e.dob || "").slice(0, 10);
+    if (l && f && d) lfd.set(`${l}|${f}|${d}`, e);
+    if (l && d) ld.set(`${l}|${d}`, e);
+    if (l && f) lf.set(`${l}|${f}`, e);
+  }
+  return { lfd, ld, lf, size: lf.size || ld.size };
+}
+
+// Match one worklist item against the roster index, with a confidence level.
+export function matchRoster(item, idx) {
+  const l = nk(item.lastName), f = nk(item.firstName), d = (item.dob || "").slice(0, 10);
+  const hit = (e, confidence) => ({ onPanel: true, confidence, mrn: e.mrn || "", pcp: e.pcp || "", program: e.program || "", rosterName: e.name });
+  if (d && idx.lfd.has(`${l}|${f}|${d}`)) return hit(idx.lfd.get(`${l}|${f}|${d}`), "match");
+  if (d && idx.ld.has(`${l}|${d}`)) return hit(idx.ld.get(`${l}|${d}`), "review"); // DOB matches, name variant
+  if (idx.lf.has(`${l}|${f}`)) return hit(idx.lf.get(`${l}|${f}`), d ? "review" : "match"); // name matches, DOB missing/differs
+  return { onPanel: false, confidence: "none" };
+}
+
 const dedupeKey = (r) => [r.lastName, r.firstName, r.dob, r.dischargeAt || r.admitAt].join("|").toLowerCase();
 
 // Build the full worklist from raw CRISP rows. `today` defaults to now.
 export function buildWorklist(rawRecords, opts = {}) {
   const today = opts.today ? new Date(opts.today) : new Date();
+  const idx = opts.roster && opts.roster.length ? buildRosterIndex(opts.roster) : null;
   const seen = new Set();
   const items = [];
   for (const raw of rawRecords || []) {
@@ -173,10 +251,16 @@ export function buildWorklist(rawRecords, opts = {}) {
     seen.add(dk);
     const { category, flags } = classify(rec);
     const dl = category === "tcm" ? deadlines(rec.dischargeAt, today) : null;
-    items.push({ ...rec, name: `${rec.lastName}, ${rec.firstName}`.replace(/^, |, $/g, ""), category, flags, ...(dl ? { dl } : {}) });
+    const item = { ...rec, name: `${rec.lastName}, ${rec.firstName}`.replace(/^, |, $/g, ""), category, flags, ...(dl ? { dl } : {}) };
+    if (idx) item.panel = matchRoster(item, idx);
+    items.push(item);
   }
   items.sort(sortItems);
-  return { items, stats: summarize(items), meta: { today: fmt(dateOnly0(today)), rows: items.length } };
+  return {
+    items,
+    stats: summarize(items, !!idx),
+    meta: { today: fmt(dateOnly0(today)), rows: items.length, rosterLoaded: !!idx, rosterSize: idx ? idx.size : 0 },
+  };
 }
 
 const CATEGORY_RANK = { tcm: 0, admitted: 1, ed: 2, ambulatory: 3, excluded: 4 };
@@ -193,18 +277,21 @@ function sortItems(a, b) {
   return (b.dischargeAt || b.admitAt || "").localeCompare(a.dischargeAt || a.admitAt || "");
 }
 
-export function summarize(items) {
+export function summarize(items, rosterLoaded = false) {
   const s = {
     rows: items.length, tcm: 0, admitted: 0, ed: 0, ambulatory: 0, excluded: 0,
     callsDueToday: 0, callsOverdue: 0, visitsDue7: 0, windowClosed: 0, byFacility: {},
+    rosterLoaded, onPanel: 0, tcmOnPanel: 0,
   };
   for (const it of items) {
     s[it.category] = (s[it.category] || 0) + 1;
+    if (it.panel && it.panel.onPanel) s.onPanel++;
     if (it.category === "tcm" && it.dl) {
       if (it.dl.callState === "due-today") s.callsDueToday++;
       if (it.dl.callState === "passed" && it.dl.windowState !== "closed") s.callsOverdue++;
       if (it.dl.windowState === "7") s.visitsDue7++;
       if (it.dl.windowState === "closed") s.windowClosed++;
+      if (it.panel && it.panel.onPanel) s.tcmOnPanel++;
       const f = it.facility || "—";
       (s.byFacility[f] ||= { count: 0 }).count++;
     }

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   normalizeRecord, classify, deadlines, addBusinessDays, buildWorklist, CRISP_HEADERS,
+  normalizeRoster, buildRosterIndex, matchRoster,
 } from "../../engine/tcm-parse.mjs";
 
 // A raw row keyed by the real CRISP "Panel Details" headers.
@@ -107,6 +108,41 @@ test("buildWorklist dedupes, categorizes, sorts, and summarizes", () => {
   assert.equal(items[0].category, "tcm"); // TCM sorts first
   assert.equal(items[0].name, "Alpha, A");
   assert.ok(items[0].dl);
+});
+
+test("normalizeRoster maps varied headers, a Name column, and a DOB serial", () => {
+  const a = normalizeRoster([{ "Last Name": "Alpha", "First Name": "Ann", "DOB": "1970-01-02", "MRN": "123", "PCP": "Murray" }]);
+  assert.deepEqual(a[0], { last: "Alpha", first: "Ann", dob: "1970-01-02", mrn: "123", pcp: "Murray", program: "", name: "Alpha, Ann" });
+  const b = normalizeRoster([{ "Patient Name": "Bravo, Bob", "Date of Birth": 25569 }]); // Excel serial → 1970-01-01
+  assert.equal(b[0].last, "Bravo");
+  assert.equal(b[0].first, "Bob");
+  assert.equal(b[0].dob, "1970-01-01");
+});
+
+test("matchRoster: exact match, DOB-variant review, and no match", () => {
+  const idx = buildRosterIndex(normalizeRoster([
+    { "Last Name": "Alpha", "First Name": "Ann", "DOB": "1970-01-02", "MRN": "A1" },
+  ]));
+  assert.equal(matchRoster({ lastName: "Alpha", firstName: "Ann", dob: "1970-01-02" }, idx).confidence, "match");
+  assert.equal(matchRoster({ lastName: "Alpha", firstName: "Annie", dob: "1970-01-02" }, idx).confidence, "review"); // DOB matches, name variant
+  assert.equal(matchRoster({ lastName: "Zeta", firstName: "Zed", dob: "1980-01-01" }, idx).onPanel, false);
+  assert.equal(matchRoster({ lastName: "Alpha", firstName: "Ann", dob: "1970-01-02" }, idx).mrn, "A1");
+});
+
+test("buildWorklist annotates panel membership and stats", () => {
+  const rows = [
+    row({ first: "Ann", last: "Alpha", enc: "Inpatient", discharge: "2026-01-02", dispo: "Home", dob: "1970-01-02" }),
+    row({ first: "Zed", last: "Zeta", enc: "Inpatient", discharge: "2026-01-02", dispo: "Home", dob: "1980-01-01" }),
+  ];
+  const roster = normalizeRoster([{ "Last Name": "Alpha", "First Name": "Ann", "DOB": "1970-01-02", "MRN": "A1" }]);
+  const { items, stats } = buildWorklist(rows, { today: new Date(2026, 0, 5), roster });
+  assert.equal(stats.rosterLoaded, true);
+  assert.equal(stats.onPanel, 1);
+  assert.equal(stats.tcmOnPanel, 1);
+  const ann = items.find((i) => i.lastName === "Alpha");
+  assert.equal(ann.panel.onPanel, true);
+  assert.equal(ann.panel.mrn, "A1");
+  assert.equal(items.find((i) => i.lastName === "Zeta").panel.onPanel, false);
 });
 
 test("buildWorklist: overdue-call and closed-window stats", () => {
