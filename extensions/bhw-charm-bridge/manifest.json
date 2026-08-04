@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "BHW Charm Draft Bridge (Pilot)",
+  "version": "0.1.0",
+  "description": "Supervised transfer of a provider-approved BHW encounter packet into an open CharmHealth draft.",
+  "permissions": ["activeTab", "clipboardRead"],
+  "host_permissions": [
+    "https://*.charmhealth.com/*",
+    "https://*.charmtracker.com/*"
+  ],
+  "action": {
+    "default_title": "BHW Charm Draft Bridge",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.charmhealth.com/*",
+        "https://*.charmtracker.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
