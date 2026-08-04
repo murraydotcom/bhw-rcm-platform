@@ -7,6 +7,9 @@ before the superbill leaves the room and get, in one place:
 2. **Pre-bill scrub** — the real payer-aware clean-claim edits (NCCI PTP, MUE,
    add-on, covered-dx gating, payer quirks) *before* submission.
 3. **Documentation support** — "to bill code X, the note must contain Y".
+4. **24-hour encounter operations** — one work queue from Freed draft through
+   documentation/coding review, forms, provider approval, and supervised
+   CharmHealth draft entry.
 
 The thesis: **more than Encoda + Codify Pro** — all three, proactively, payer-aware
 to BHW's mix, and owned.
@@ -23,10 +26,13 @@ engine/
                        (pillars 1 & 3 — not in the scrub engine). Pure ESM.
   note-analyze.mjs  ← analyzeNote(text, ctx): checks a pasted clinical note for
                        documentation supporting the billed codes. Pure ESM.
+  encounter-workflow.mjs ← 12/20/24-hour escalation, encounter packets,
+                       downstream-output detection, and Charm-entry guardrails.
   data/doc-assist.json  ← note↔code map (E/M, AWV, behavioral; validate vs Coders' Guide).
   test/themis.test.mjs  ← node --test over the real engine + the assist layer.
 tools/extract-engine.js ← regenerates engine/themis.js from index.html.
 provider/index.html     ← this app: loads themis.js (global) + assist.mjs (module).
+provider/workflow.html  ← exception-based 24-hour encounter work queue.
 index.html              ← the RCM Command Center (same engine).
 ```
 
@@ -84,6 +90,14 @@ chart, never a definitive coding call.
 
 Working now: the real scrub engine + full CMS data, the point-of-care UX, E/M
 suggestion, the documentation checklist, and clinical-note analysis.
+
+The 24-hour workflow page is a front-end operating prototype. It deliberately
+does not persist clinical note text outside the active browser session and it
+does not connect to CharmHealth. Production persistence, role authentication,
+and the browser-automation runner must be connected before using it as a live
+PHI workflow. The Charm Entry Agent control is draft-only by design: provider
+approval is required and signing, prescribing, claim submission, and release
+of information remain prohibited.
 
 Next: (1) validate + extend `doc-assist.json` / note checks to the remaining
 high-volume codes (CCM, cognitive, Flow); (2) surface the `cdm` rates in the UI;
