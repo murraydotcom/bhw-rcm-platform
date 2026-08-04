@@ -62,7 +62,18 @@ account on the same email.
 
 ## Add / change passwords
 
-Passwords never go in the repo or in argv. Generate a hashed record per person:
+**One step for the whole team** — prompts for each password and prints the
+finished `AUTH_USERS` value (leave a password blank to keep that person
+Google-only):
+
+```bash
+node tools/make-auth-users.mjs \
+  amurray@bhwmedical.org:"Amaris Murray":admin \
+  sstevens@bhwmedical.org:"Shade Stevens":admin
+```
+
+Or generate a single hashed record at a time. Passwords never go in the repo or
+in argv:
 
 ```bash
 # interactive (password prompt, echo muted)
