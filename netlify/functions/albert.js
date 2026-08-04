@@ -41,6 +41,8 @@ GUARDRAILS:
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  const _auth = require("./lib/auth").requireAuth(event);
+  if (!_auth.ok) return _auth.response;
 
   const key = process.env.ANTHROPIC_API_KEY;
   let prompt = "", context = "";

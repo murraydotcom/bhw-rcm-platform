@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — BHW RCM &amp; Billing Command Center</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --base:#243239; --panel:#f7f5f2; --card:#ffffff; --ink:#2f3a3f; --ink-soft:#5b686d;
+  --line:#e7e1d9; --blue:#5f8b9d; --blue-d:#4d7686; --denied:#c0503f; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;color:var(--ink);
+  background:radial-gradient(1200px 600px at 50% -10%, #2d3d45 0%, #243239 55%, #1c272c 100%);
+  display:flex;align-items:center;justify-content:center;padding:24px;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;max-width:400px}
+.brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px;text-align:center}
+.brand img{width:64px;height:64px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.brand h1{color:#fff;font-size:18px;font-weight:800;letter-spacing:.3px}
+.brand .sub{color:#a9c8d5;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:1.6px;margin-top:2px}
+.card{background:var(--card);border-radius:var(--radius);padding:26px 24px;
+  box-shadow:0 10px 40px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.2)}
+.card h2{font-size:16px;font-weight:700;margin-bottom:3px}
+.card p.lede{font-size:12px;color:var(--ink-soft);margin-bottom:18px}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
+input{width:100%;font-family:inherit;font-size:14px;padding:11px 13px;border:1px solid var(--line);
+  border-radius:10px;background:#fff;color:var(--ink);margin-bottom:15px}
+input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(95,139,157,.18)}
+button{width:100%;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:10px;
+  padding:12px;cursor:pointer;background:var(--blue);color:#fff;transition:filter .15s,transform .05s}
+button:hover{filter:brightness(1.06)}button:active{transform:translateY(1px)}
+button:disabled{opacity:.6;cursor:default}
+.err{display:none;background:#f7e0dc;color:#a53f30;border:1px solid #eec4bc;border-radius:9px;
+  padding:9px 12px;font-size:12px;font-weight:600;margin-bottom:14px}
+.err.show{display:block}
+.foot{text-align:center;color:#8ba4ad;font-size:10.5px;margin-top:18px;line-height:1.6}
+.foot a{color:#a9c8d5}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <img src="provider/assets/bhw-emblem.png" alt="BHW Medical Group">
+    <div><h1>RCM &amp; Billing Command Center</h1><div class="sub">BHW Medical Group</div></div>
+  </div>
+  <div class="card">
+    <h2>Sign in</h2>
+    <p class="lede">Staff access to the revenue-cycle workspace.</p>
+    <div class="err" id="err"></div>
+    <form id="form" autocomplete="on">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" autocomplete="username" required autofocus>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+      <button type="submit" id="submit">Sign in</button>
+    </form>
+  </div>
+  <div class="foot">Protected workspace — PHI &amp; billing data.<br>
+    Trouble signing in? Contact your practice administrator.</div>
+</div>
+<script>
+// Only allow same-origin relative redirect targets (block open-redirects).
+function safeNext() {
+  const raw = new URLSearchParams(location.search).get("next") || "/index.html";
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/index.html";
+}
+const NEXT = safeNext();
+const err = document.getElementById("err");
+function showErr(m) { err.textContent = m; err.classList.add("show"); }
+
+// If already signed in (or auth disabled), skip the form.
+(async () => {
+  try {
+    const r = await fetch("/.netlify/functions/auth-me", { credentials: "same-origin" });
+    if (r.ok) { const d = await r.json(); if (d.ok) location.replace(NEXT); }
+  } catch (e) { /* offline / functions unavailable — show the form */ }
+})();
+
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  err.classList.remove("show");
+  const btn = document.getElementById("submit");
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Signing in…';
+  try {
+    const r = await fetch("/.netlify/functions/auth-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value,
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) { location.replace(NEXT); return; }
+    if (r.status === 503) showErr("Sign-in isn’t configured on the server yet.");
+    else showErr(d.error === "invalid email or password" ? "Invalid email or password." : (d.error || "Sign-in failed. Try again."));
+  } catch (e) {
+    showErr("Network error — please try again.");
+  }
+  btn.disabled = false; btn.textContent = "Sign in";
+});
+</script>
+</body>
+</html>

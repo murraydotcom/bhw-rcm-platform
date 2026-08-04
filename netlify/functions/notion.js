@@ -34,6 +34,8 @@ const headers = () => ({ Authorization: `Bearer ${NOTION_TOKEN}`, "Notion-Versio
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  const _auth = require("./lib/auth").requireAuth(event);
+  if (!_auth.ok) return _auth.response;
   const db = (event.queryStringParameters || {}).db;
   const dbId = DB[db];
   if (!NOTION_TOKEN || !dbId) return json(200, { ok: true, sampleMode: true });   // keep sample data

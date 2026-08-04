@@ -29,6 +29,9 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: "" };
   }
 
+  const _auth = require("./lib/auth").requireAuth(event);
+  if (!_auth.ok) return _auth.response;
+
   const stediKey = process.env.STEDI_KEY_PREFIX && process.env.STEDI_KEY_SUFFIX
     ? `${process.env.STEDI_KEY_PREFIX}.${process.env.STEDI_KEY_SUFFIX}`
     : process.env.STEDI_API_KEY;
