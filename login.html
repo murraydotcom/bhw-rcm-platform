@@ -43,6 +43,17 @@ button:disabled{opacity:.6;cursor:default}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);
   border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.gbtn{display:none;align-items:center;justify-content:center;gap:10px;width:100%;text-decoration:none;
+  font-size:14px;font-weight:600;padding:11px;border:1px solid var(--line);border-radius:10px;
+  background:#fff;color:#3c4043;margin-bottom:4px;transition:background .12s}
+.gbtn.show{display:flex}
+.gbtn:hover{background:#f7f6f4}
+.gbtn svg{width:18px;height:18px;flex:0 0 auto}
+.divider{display:none;align-items:center;gap:10px;color:var(--ink-soft);font-size:11px;
+  font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin:14px 0}
+.divider.show{display:flex}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+#form.hide{display:none}
 </style>
 </head>
 <body>
@@ -55,6 +66,11 @@ button:disabled{opacity:.6;cursor:default}
     <h2>Sign in</h2>
     <p class="lede">Staff access to the revenue-cycle workspace.</p>
     <div class="err" id="err"></div>
+    <a class="gbtn" id="gbtn" href="#">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.3 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 7l7.1 5.5c4.2-3.9 6.6-9.6 6.6-16.4z"/><path fill="#FBBC05" d="M10.4 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.4 0 11.9-2.1 15.9-5.8l-7.1-5.5c-2 1.3-4.5 2.1-8.8 2.1-6.3 0-11.7-3.8-13.6-9.4l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+      Sign in with Google
+    </a>
+    <div class="divider" id="divider">or</div>
     <form id="form" autocomplete="on">
       <label for="email">Email</label>
       <input type="email" id="email" name="email" autocomplete="username" required autofocus>
@@ -77,12 +93,41 @@ const NEXT = safeNext();
 const err = document.getElementById("err");
 function showErr(m) { err.textContent = m; err.classList.add("show"); }
 
+// Surface an error handed back by the Google callback (?error=...).
+const ERR_MSG = {
+  domain: "Please use your BHW Medical Group Google account.",
+  google_denied: "Google sign-in was cancelled.",
+  bad_state: "Your sign-in session expired. Please try again.",
+  exchange_failed: "Couldn’t complete Google sign-in. Please try again.",
+  bad_token: "Couldn’t verify your Google account. Please try again.",
+  unverified: "Your Google email address isn’t verified.",
+  google_unconfigured: "Google sign-in isn’t configured on the server yet.",
+};
+const errParam = new URLSearchParams(location.search).get("error");
+if (errParam) showErr(ERR_MSG[errParam] || "Sign-in failed. Please try again.");
+
+// Point the Google button at the start endpoint, preserving the next target.
+const gbtn = document.getElementById("gbtn");
+gbtn.setAttribute("href", "/.netlify/functions/auth-google-start?next=" + encodeURIComponent(NEXT));
+
 // If already signed in (or auth disabled), skip the form.
 (async () => {
   try {
     const r = await fetch("/.netlify/functions/auth-me", { credentials: "same-origin" });
-    if (r.ok) { const d = await r.json(); if (d.ok) location.replace(NEXT); }
+    if (r.ok) { const d = await r.json(); if (d.ok) { location.replace(NEXT); return; } }
   } catch (e) { /* offline / functions unavailable — show the form */ }
+})();
+
+// Show only the sign-in methods the server has enabled.
+(async () => {
+  try {
+    const r = await fetch("/.netlify/functions/auth-config", { credentials: "same-origin" });
+    const d = await r.json().catch(() => ({}));
+    const m = (d && d.methods) || {};
+    if (m.google) { gbtn.classList.add("show"); }
+    if (m.google && m.password) { document.getElementById("divider").classList.add("show"); }
+    if (m.password === false) { document.getElementById("form").classList.add("hide"); }
+  } catch (e) { /* leave the password form visible as the default */ }
 })();
 
 document.getElementById("form").addEventListener("submit", async (e) => {

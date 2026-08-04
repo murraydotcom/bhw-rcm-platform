@@ -74,6 +74,22 @@ test("loadUsers / findUser parse AUTH_USERS and lowercase email", () => {
   }
 });
 
+test("loadUsers keeps hash-less entries (Google-only) with their role", () => {
+  const prev = process.env.AUTH_USERS;
+  process.env.AUTH_USERS = JSON.stringify([
+    { email: "amurray@bhwmedical.org", name: "Amaris", role: "admin" }, // no hash
+  ]);
+  try {
+    const u = auth.findUser("amurray@bhwmedical.org");
+    assert.equal(u.role, "admin");
+    assert.equal(u.hash, null);
+    // A hash-less user cannot log in with a password.
+    assert.equal(auth.verifyPassword("anything", u.hash), false);
+  } finally {
+    if (prev === undefined) delete process.env.AUTH_USERS; else process.env.AUTH_USERS = prev;
+  }
+});
+
 test("requireAuth passes through when AUTH_SECRET is unset (fail-safe-off)", () => {
   const prev = process.env.AUTH_SECRET;
   delete process.env.AUTH_SECRET;

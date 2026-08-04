@@ -54,13 +54,15 @@ function loadUsers() {
   try {
     const arr = JSON.parse(process.env.AUTH_USERS || "[]");
     if (!Array.isArray(arr)) return [];
+    // `hash` is optional: entries without one can't log in with a password
+    // (Google sign-in only) but still carry a role for their email.
     return arr
-      .filter((u) => u && u.email && u.hash)
+      .filter((u) => u && u.email)
       .map((u) => ({
         email: String(u.email).trim().toLowerCase(),
         name: u.name || u.email,
         role: u.role || "staff",
-        hash: u.hash,
+        hash: u.hash || null,
       }));
   } catch {
     return [];

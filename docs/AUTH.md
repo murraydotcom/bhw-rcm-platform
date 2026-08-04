@@ -25,12 +25,42 @@ Set these in **Netlify → Site settings → Environment variables**:
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `AUTH_SECRET` | yes | Long random string used to sign sessions. Generate with `openssl rand -hex 32`. Rotating it signs everyone out. |
-| `AUTH_USERS` | yes | JSON array of user objects (see below). |
+| `AUTH_USERS` | see note | JSON array of user objects (see below). Required for **password** login. Optional with Google sign-in — use it only to grant admin role. |
 | `AUTH_SESSION_TTL_HOURS` | no | Session lifetime in hours. Default `12`. |
+| `GOOGLE_CLIENT_ID` | for Google | OAuth client ID (see "Google Workspace sign-in" below). |
+| `GOOGLE_CLIENT_SECRET` | for Google | OAuth client secret. |
+| `GOOGLE_ALLOWED_DOMAIN` | no | Workspace domain(s) allowed to sign in, comma-separated. Default `bhwmedical.org`. |
+| `GOOGLE_REDIRECT_URI` | no | Exact callback URL. Leave unset to derive it from the request host (works for the normal site URL). |
 
+You need **at least one** login method: set `AUTH_USERS` (password), or the
+`GOOGLE_*` vars (Google), or both. The login page shows whichever are enabled.
 Then **redeploy** (env changes need a new deploy to take effect).
 
-## Add / change users
+## Users & roles (`AUTH_USERS`)
+
+`AUTH_USERS` is a JSON **array** of user objects. Each object needs an `email`;
+`name` and `role` are optional (role defaults to `staff`), and `hash` is
+optional — include it only for **password** login.
+
+**Google-only (no passwords):** you don't need `AUTH_USERS` at all — any account
+in the allowed Workspace domain can sign in. Add entries only to mark admins:
+
+```json
+[
+  {"email":"amurray@bhwmedical.org","name":"Amaris Murray","role":"admin"},
+  {"email":"sstevens@bhwmedical.org","name":"Shade Stevens","role":"admin"}
+]
+```
+
+(Role is stored in the session and available to the functions for future
+role-specific checks; nothing enforces admin-only access yet, so `admin` vs
+`staff` is harmless to set now.)
+
+**With password login:** add a `hash` to each entry (see below). A person can
+have both — a password *and* Google sign-in — by having a `hash` and a Workspace
+account on the same email.
+
+## Add / change passwords
 
 Passwords never go in the repo or in argv. Generate a hashed record per person:
 
@@ -100,10 +130,43 @@ UX (don't show an empty shell to a logged-out user).
 the gate) and an end-to-end login → session → gated-call → logout flow against the
 real handlers.
 
-## Future option: Google Workspace SSO
+## Google Workspace sign-in
 
-Because staff are on `@bhwmedical.org` (Google Workspace), "Sign in with Google"
-restricted to that domain is a strong upgrade — no passwords to manage, MFA
-handled by Google. The session cookie, `requireAuth()` gate, and client gate here
-are reusable as-is; only the credential-verification step in `auth-login` would be
-swapped for a Google OIDC token exchange (needs a Google Cloud OAuth client ID/secret).
+"Sign in with Google" restricted to the practice's Workspace domain — no
+passwords to manage, MFA handled by Google. It uses the OAuth 2.0 Authorization
+Code flow (`auth-google-start` → Google → `auth-google-callback`) and mints the
+**same** `bhw_session` cookie as the password flow, so the gate, logout, and
+client redirect all work identically.
+
+### One-time Google Cloud setup
+
+1. In the **Google Cloud console** (console.cloud.google.com), pick or create a
+   project owned by your `bhwmedical.org` Workspace.
+2. **APIs & Services → OAuth consent screen:** choose **Internal** (this alone
+   limits sign-in to your Workspace), app name e.g. "BHW RCM", your support email.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID:**
+   - Application type: **Web application**.
+   - **Authorized redirect URI:** your site URL + `/.netlify/functions/auth-google-callback`
+     (e.g. `https://bhw-rcm.netlify.app/.netlify/functions/auth-google-callback`).
+     If you use a custom domain, add that one too. It must match exactly.
+4. Copy the **Client ID** and **Client secret**.
+
+### Netlify env
+
+Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (plus `AUTH_SECRET` if not
+already set). `GOOGLE_ALLOWED_DOMAIN` defaults to `bhwmedical.org`. If your
+site's public URL differs from the host Netlify sees, set `GOOGLE_REDIRECT_URI`
+to the exact URL you registered in step 3. Redeploy.
+
+That's it — the login page shows a **Sign in with Google** button, and only
+verified `@bhwmedical.org` accounts are allowed through (checked server-side via
+the ID token's `hd`/email claim, not just the UI hint).
+
+### How the domain restriction is enforced
+
+The callback validates the Google ID token's claims (`iss`, `aud`, `exp`,
+`email_verified`) and requires the `hd` (hosted-domain) claim — or the email
+domain — to be in `GOOGLE_ALLOWED_DOMAIN`. A non-Workspace account (personal
+Gmail, another org) is bounced back to the login page with a clear message.
+CSRF is covered by a signed, short-lived `state` value cross-checked against a
+`SameSite=Lax` cookie.
