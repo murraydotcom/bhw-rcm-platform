@@ -96,7 +96,15 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 .pas-flow .s.done{background:#e8f0e3;color:#5c7050;border-color:#c2d3b4}
 pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:var(--base);border:1px solid var(--line);border-radius:9px;padding:12px;overflow:auto;color:var(--ink);max-height:260px}
 .empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px}
-@media(max-width:1000px){.g2{grid-template-columns:1fr}.sidebar{display:none}.r2{grid-template-columns:1fr}}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.r2{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
 </style>
 </head>
 <body>
@@ -113,10 +121,14 @@ pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;backg
     </nav>
     <div class="sidebar-foot">Prior-auth workflow · CRD → DTR → PAS.<br>Decision support — verify with the payer.</div>
   </aside>
+  <div class="scrim" id="navScrim"></div>
 
   <div class="main">
     <div class="topbar">
-      <div class="crumb">Pre-Bill · <b>Prior Authorization (CMS-0057-F workflow)</b></div>
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Pre-Bill · <b>Prior Authorization (CMS-0057-F workflow)</b></div>
+      </div>
       <div class="tools">
         <span class="pill warn" id="rulesPill">seed rules</span>
         <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
@@ -212,6 +224,15 @@ let RULES = {}, MSAG = null, TIMEFRAMES = null, lastCRD = null, lastDoc = null, 
   const set = (t) => { document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem(KEY, t); } catch (e) {} };
   try { if (localStorage.getItem(KEY)) set(localStorage.getItem(KEY)); } catch (e) {}
   $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+})();
+
+(function nav() {
+  const nt = document.getElementById("navToggle"), ns = document.getElementById("navScrim"), sb = document.querySelector(".sidebar");
+  if (!nt || !ns || !sb) return;
+  const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+  nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+  ns.onclick = close;
+  sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
 })();
 
 const STATUS_LABEL = { required: "Prior authorization REQUIRED", not_required: "No prior authorization needed", conditional: "Conditional — depends on package / context", not_covered: "Not a covered service", unknown: "Unknown — verify with payer" };
