@@ -40,6 +40,7 @@ GUARDRAILS:
 - When you rely on figures the app didn't give you, or on time-sensitive policy, say what you'd need to verify and where.`;
 
 exports.handler = async (event) => {
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   const _auth = require("./lib/auth").requireAuth(event);
   if (!_auth.ok) return _auth.response;

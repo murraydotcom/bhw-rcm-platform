@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="/auth-gate.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BHW — Charm Draft Bridge Setup</title>
+<style>body{margin:0;background:#f7f5f2;color:#2f3a3f;font-family:Montserrat,Arial,sans-serif}.wrap{max-width:760px;margin:0 auto;padding:42px 20px}.card{background:#fff;border:1px solid #e4ded6;border-radius:16px;padding:26px;box-shadow:0 8px 24px rgba(36,50,57,.08)}h1{margin-top:0}.lead{color:#68767b;line-height:1.6}.notice{background:#fdf5e9;border-left:4px solid #b07a55;padding:12px 14px;line-height:1.55;margin:18px 0}.btn{display:inline-block;background:#5f8b9d;color:#fff;text-decoration:none;font-weight:700;border-radius:9px;padding:11px 15px;margin:4px 6px 4px 0}li{margin:10px 0;line-height:1.5}.safe{font-size:12px;color:#68767b;border-top:1px solid #e4ded6;margin-top:22px;padding-top:16px}</style>
+</head>
+<body><main class="wrap"><section class="card">
+<h1>Charm Draft Bridge — Amaris Pilot</h1>
+<p class="lead">This browser extension carries one approved encounter packet from BHW Encounter Operations into the open CharmHealth draft without using the CharmHealth API.</p>
+<div class="notice"><b>Test with a synthetic training encounter first.</b> The bridge fills detected draft fields but never saves, signs, prescribes, submits a claim, or releases information.</div>
+<a class="btn" href="../downloads/bhw-charm-bridge-pilot.zip" download>Download pilot extension</a>
+<a class="btn" href="workflow.html">Return to encounter queue</a>
+<ol><li>Download and unzip the package.</li><li>In Google Chrome, open <b>chrome://extensions</b>.</li><li>Turn on <b>Developer mode</b>.</li><li>Select <b>Load unpacked</b> and choose the unzipped <b>bhw-charm-bridge</b> folder.</li><li>Pin the extension to the Chrome toolbar.</li><li>Use a synthetic CharmHealth training encounter to test note and code-field detection.</li></ol>
+<p class="safe">The extension has no outside network connection and does not retain the note. Clinical content moves through the clipboard and the active CharmHealth page only.</p>
+</section></main></body>
+</html>

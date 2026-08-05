@@ -18,6 +18,7 @@ const NOTION_VERSION = "2022-06-28";
 const INSURANCE_DB_ID = process.env.NOTION_INSURANCE_DB || "6bf580758d30828098a101e533cbed4d";
 
 exports.handler = async (event) => {
+
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",

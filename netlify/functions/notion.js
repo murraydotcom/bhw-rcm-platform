@@ -33,6 +33,7 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const headers = () => ({ Authorization: `Bearer ${NOTION_TOKEN}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" });
 
 exports.handler = async (event) => {
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   const _auth = require("./lib/auth").requireAuth(event);
   if (!_auth.ok) return _auth.response;

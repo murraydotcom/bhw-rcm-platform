@@ -7,6 +7,9 @@ before the superbill leaves the room and get, in one place:
 2. **Pre-bill scrub** — the real payer-aware clean-claim edits (NCCI PTP, MUE,
    add-on, covered-dx gating, payer quirks) *before* submission.
 3. **Documentation support** — "to bill code X, the note must contain Y".
+4. **24-hour encounter operations** — one work queue from Freed draft through
+   documentation/coding review, forms, provider approval, and supervised
+   CharmHealth draft entry.
 
 The thesis: **more than Encoda + Codify Pro** — all three, proactively, payer-aware
 to BHW's mix, and owned.
@@ -23,10 +26,18 @@ engine/
                        (pillars 1 & 3 — not in the scrub engine). Pure ESM.
   note-analyze.mjs  ← analyzeNote(text, ctx): checks a pasted clinical note for
                        documentation supporting the billed codes. Pure ESM.
+  encounter-workflow.mjs ← 12/20/24-hour escalation, encounter packets,
+                       downstream-output detection, and Charm-entry guardrails.
+  encounter-pilot.mjs ← privacy-minimized queue serialization, escalation
+                       transitions, and approved Charm packet construction.
   data/doc-assist.json  ← note↔code map (E/M, AWV, behavioral; validate vs Coders' Guide).
   test/themis.test.mjs  ← node --test over the real engine + the assist layer.
 tools/extract-engine.js ← regenerates engine/themis.js from index.html.
 provider/index.html     ← this app: loads themis.js (global) + assist.mjs (module).
+provider/workflow.html  ← exception-based 24-hour encounter work queue.
+provider/workflow-app.mjs ← live pilot state, Freed clipboard intake, alerts,
+                       approval, packet export, and local audit history.
+extensions/bhw-charm-bridge/ ← no-network supervised Charm draft extension.
 index.html              ← the RCM Command Center (same engine).
 ```
 
@@ -84,6 +95,18 @@ chart, never a definitive coding call.
 
 Working now: the real scrub engine + full CMS data, the point-of-care UX, E/M
 suggestion, the documentation checklist, and clinical-note analysis.
+
+The 24-hour workflow is active as an Amaris-only, same-browser pilot. It starts
+with an empty real queue, persists operational metadata in local browser
+storage, keeps note text and clinical codes in session storage only, supports one-click
+Freed clipboard intake, and raises 12/20/24-hour browser alerts. The approved
+packet can be transferred through the no-network BHW Charm Draft Bridge. The
+bridge fills only clearly labeled draft text fields and never saves, signs,
+prescribes, submits a claim, or releases information. Test field mapping with a
+synthetic CharmHealth encounter before clinical use.
+
+Team-wide production use still requires centralized BAA-backed persistence and
+role authentication. The pilot intentionally avoids server-side PHI storage.
 
 Next: (1) validate + extend `doc-assist.json` / note checks to the remaining
 high-volume codes (CCM, cognitive, Flow); (2) surface the `cdm` rates in the UI;
