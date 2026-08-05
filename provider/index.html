@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="/auth-gate.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BHW Provider — Pre-Bill Scrub &amp; Coding Assist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +30,9 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:
 a{color:inherit}
 .app{display:flex;min-height:100vh}
 .sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
 .brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
 .brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
 .nav-group{padding:14px 12px 4px}
@@ -108,26 +111,41 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 :root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
 .note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
 .mini{font-size:11px;color:var(--ink-soft)}
-@media(max-width:1000px){.g2{grid-template-columns:1fr}.sidebar{display:none}.r2,.r3{grid-template-columns:1fr}}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.r2,.r3{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div>
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
     <nav class="nav-group">
       <div class="label">Pre-Bill</div>
       <a class="nav-item" href="workflow.html"><span class="ic">◷</span> 24-Hour Work Queue</a>
       <div class="nav-item active"><span class="ic">◈</span> Encounter Scrub</div>
       <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
       <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
+      <a class="nav-item" href="tcm.html"><span class="ic">⏱</span> TCM / Discharges</a>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
+      <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
     </nav>
     <div class="sidebar-foot">Themis engine · shared with the RCM app.<br>Decision support — validate before billing.</div>
   </aside>
+  <div class="scrim" id="navScrim"></div>
 
   <div class="main">
     <div class="topbar">
-      <div class="crumb">Pre-Bill · <b>Encounter Scrub &amp; Coding Assist</b></div>
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Pre-Bill · <b>Encounter Scrub &amp; Coding Assist</b></div>
+      </div>
       <div class="tools">
         <span class="pill" id="dataPill">loading…</span>
         <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
@@ -184,6 +202,17 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
             <label><input type="checkbox" id="f_g2211"> G2211 add-on</label>
           </div>
 
+          <label class="fld">Patient history <span class="mini" id="freqHint" style="font-weight:400;opacity:.75"></span></label>
+          <div class="flags">
+            <label><input type="checkbox" id="f_priorDone"> Already performed for this patient</label>
+          </div>
+          <div class="row r2">
+            <div><label class="fld" for="priorDays">Days since last billed</label>
+              <input type="number" id="priorDays" min="0" placeholder="e.g. 200"></div>
+            <div><label class="fld" for="priorCount">Times billed in period</label>
+              <input type="number" id="priorCount" min="0" placeholder="e.g. 1"></div>
+          </div>
+
           <div class="row r3">
             <div><label class="fld" for="awv">AWV code</label>
               <select id="awv"><option value="">—</option><option>G0438</option><option>G0439</option><option>G0402</option></select></div>
@@ -231,8 +260,12 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
         <div class="notegrid">
           <div>
             <label class="fld" for="note">Paste the visit note</label>
-            <textarea id="note" rows="15" placeholder="Paste the encounter note here to check its documentation against the billed codes…"></textarea>
-            <div class="mini" style="margin-top:6px">Keyword-based decision support — a miss is a prompt to verify in the chart, not a coding call. Each line cites its source standard.</div>
+            <textarea id="note" rows="15" placeholder="Paste the encounter note here (incl. the scribe's coded summary) to check documentation and pull the codes…"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="pullBtn" type="button">↑ Pull codes from note</button>
+              <span class="mini" id="pullStatus"></span>
+            </div>
+            <div class="mini" style="margin-top:6px">Pulls the CPT/HCPCS + ICD-10 the scribe (e.g. Freed) put on the note into the encounter fields — always confirm before billing. Keyword-based decision support; each line cites its source standard.</div>
           </div>
           <div>
             <label class="fld">Documentation readiness</label>
@@ -250,6 +283,7 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 import { suggestEM, docChecklist } from "../engine/assist.mjs";
 import { analyzeNote } from "../engine/note-analyze.mjs";
 import { checkPriorAuth } from "../engine/prior-auth.mjs";
+import { extractCodes } from "../engine/code-extract.mjs";
 
 /* Payer options use the exact strings the engine's payer-specific rules key off,
  * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
@@ -289,9 +323,21 @@ function readClaim() {
     audioOnly: $("f_audio").checked,
     seenWithin3y: $("f_seen3y").checked,
     g2211: $("f_g2211").checked,
+    priorDone: $("f_priorDone").checked,
+    priorDays: $("priorDays").value !== "" ? +$("priorDays").value : null,
+    priorCount: $("priorCount").value !== "" ? +$("priorCount").value : null,
     timeDoc: minutes != null && minutes > 0,   // entering time documents it (clears level-5 flag)
     _minutes: minutes,
   };
+}
+
+/* Show the frequency limit for the entered E/M / service code, so staff know
+ * when the patient-history fields matter. Reads the real DATA.freq table. */
+function updateFreqHint() {
+  const freq = (window.DATA && window.DATA.freq) || {};
+  const codes = [$("em").value.trim().toUpperCase(), $("proc").value.trim().toUpperCase(), $("awv").value.trim().toUpperCase()].filter(Boolean);
+  const hit = codes.map((c) => (freq[c] ? `${c}: ${freq[c].label || freq[c].days + "d"}` : null)).filter(Boolean);
+  $("freqHint").textContent = hit.length ? `— ${hit.join(" · ")}` : "— no frequency limit on the entered codes";
 }
 
 function renderFindings(findings) {
@@ -308,7 +354,7 @@ function renderFindings(findings) {
           ${f.fix ? `<div class="fix">→ ${esc(f.fix)}</div>` : ""}
           <div class="rid">${esc(f.ruleId)}</div>
         </div></div>`).join("")
-    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits need prior claim history.)</div>`;
+    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits fire once you enter the patient history above.)</div>`;
 }
 
 function renderChecklist(codes) {
@@ -367,8 +413,29 @@ function renderPA(claim) {
     ${rows.join(" &nbsp;·&nbsp; ")} <a href="prior-auth.html" style="text-decoration:underline;opacity:.75">CRD workflow →</a></div>`;
 }
 
+/* Pull the CPT/HCPCS + ICD-10 codes the scribe put on the note into the
+ * encounter fields. Validated against the real charge master to drop stray
+ * numbers; the biller still confirms, then the scrub engine checks them. */
+function pullCodes() {
+  const note = $("note").value;
+  if (!note.trim()) { $("pullStatus").textContent = "Paste a note first."; return; }
+  // Extract unvalidated so no real scribe code is dropped; the scrub engine
+  // then flags anything unknown / not on BHW's charge master.
+  const r = extractCodes(note);
+  if (!r.all.length) { $("pullStatus").textContent = "No CPT/HCPCS or ICD-10 codes found in the note."; return; }
+  if (r.primary) $("em").value = r.primary;
+  if (r.sameDayProcs[0]) $("proc").value = r.sameDayProcs[0];
+  if (r.icd10[0]) $("dx").value = r.icd10[0];
+  if (r.modifiers.length) $("mods").value = r.modifiers.join(", ");
+  const extraDx = r.icd10.length > 1 ? ` (+${r.icd10.length - 1} more dx: ${r.icd10.slice(1).join(", ")})` : "";
+  const extraProc = r.sameDayProcs.length > 1 ? ` · other procs: ${r.sameDayProcs.slice(1).join(", ")}` : "";
+  $("pullStatus").innerHTML = `Pulled: <b>${esc([r.primary, r.sameDayProcs[0], r.icd10[0]].filter(Boolean).join(", "))}</b>${esc(extraDx + extraProc)} — confirm before billing.`;
+  run();
+}
+
 function run() {
   const claim = readClaim();
+  updateFreqHint();
   renderFindings(window.scrubClaim(claim));
   renderPA(claim);
   renderChecklist([claim.em, claim.sameDayProc]);
@@ -384,13 +451,22 @@ function wire() {
   ["payer", "em", "proc", "dx", "mods", "units", "awv", "minutes", "mdm"].forEach((id) => {
     $(id).addEventListener("input", run); $(id).addEventListener("change", run);
   });
-  ["f_tele", "f_audio", "f_seen3y", "f_g2211"].forEach((id) => $(id).addEventListener("change", run));
+  ["f_tele", "f_audio", "f_seen3y", "f_g2211", "f_priorDone"].forEach((id) => $(id).addEventListener("change", run));
+  ["priorDays", "priorCount"].forEach((id) => $(id).addEventListener("input", run));
   $("note").addEventListener("input", run);
   $("runBtn").onclick = run;
+  $("pullBtn").onclick = pullCodes;
   $("themeBtn").onclick = () => {
     const dark = document.documentElement.getAttribute("data-theme") === "dark";
     document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
   };
+  const nt = $("navToggle"), ns = $("navScrim"), sb = document.querySelector(".sidebar");
+  if (nt && ns && sb) {
+    const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+    nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+    ns.onclick = close;
+    sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
+  }
 }
 
 function renderCoverage() {

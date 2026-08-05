@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="/auth-gate.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BHW Provider — Risk Adjustment (HCC) &amp; MIPS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +30,9 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:
 a{color:inherit;text-decoration:none}
 .app{display:flex;min-height:100vh}
 .sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
 .brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
 .brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
 .nav-group{padding:14px 12px 4px}
@@ -85,26 +88,40 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
 .tag.q{background:#e2edf1;color:#4d7686}.tag.ia{background:#e8f0e3;color:#5c7050}.tag.pi{background:#efe7f1;color:#6b4d78}.tag.cost{background:#fdf1d6;color:#9a6f16}
 .empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px}
 .strike{opacity:.55}.strike .cd{text-decoration:line-through}
-@media(max-width:1000px){.g2{grid-template-columns:1fr}.sidebar{display:none}.r2,.r3{grid-template-columns:1fr}}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.r2,.r3{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div>
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
     <nav class="nav-group">
       <div class="label">Pre-Bill</div>
       <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
       <div class="nav-item active"><span class="ic">◑</span> Risk &amp; Quality</div>
       <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
+      <a class="nav-item" href="tcm.html"><span class="ic">⏱</span> TCM / Discharges</a>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
       <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
     </nav>
     <div class="sidebar-foot">HCC &amp; MIPS engines · shared with the RCM app.<br>Decision support — validate before billing.</div>
   </aside>
+  <div class="scrim" id="navScrim"></div>
 
   <div class="main">
     <div class="topbar">
-      <div class="crumb">Risk &amp; Quality · <b>HCC Calculator &amp; MIPS Manager</b></div>
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Risk &amp; Quality · <b>HCC Calculator &amp; MIPS Manager</b></div>
+      </div>
       <div class="tools">
         <span class="pill warn" id="modelPill">seed model</span>
         <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
@@ -119,11 +136,13 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
       </div>
 
       <div class="note">
-        <b>CMS-HCC v28 and v22 are loaded from the official CMS packages</b> — real relative factors,
-        hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured HCCs and the
-        payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-/Rx-HCC and HHS-HCC
-        are still seeds pending their official data; the "seed model" tag flags those. Always confirm against
-        the CMS software before payment use. MIPS is a starter measure set — replace with the full QPP/AAPC list.
+        <b>CMS-HCC v28/v22, ESRD-HCC v24 and RxHCC v8 are loaded from the official CMS packages</b> — real
+        relative factors, hierarchies, interactions and the full ICD-10→HCC crosswalk. v28 adds the restructured
+        HCCs and the payment-count (D1–D10+) factors; v22 stays available for the legacy blend. ESRD-HCC and
+        RxHCC use continuing-enrollee segments — pick the segment (dialysis / graft state, or Part&nbsp;D LIS
+        status) that matches the enrollee. HHS-HCC (marketplace) is still a seed; the "seed model" tag flags it.
+        Always confirm against the CMS software before payment use. MIPS is a starter measure set — replace with
+        the full QPP/AAPC list.
       </div>
 
       <div class="grid g2">
@@ -157,6 +176,15 @@ textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid
             <label class="fld" for="metal">Metal level <span class="mini">(HHS-HCC / marketplace)</span></label>
             <select id="metal"><option>Platinum</option><option>Gold</option><option selected>Silver</option><option>Bronze</option><option>Catastrophic</option></select>
           </div></div>
+
+          <div class="row r2" id="segInputs" style="display:none">
+            <div><label class="fld" for="seg">Risk segment <span class="mini" id="segHint"></span></label>
+              <select id="seg"></select></div>
+            <div><label class="fld">Status</label>
+              <div class="flags" style="margin:0">
+                <label id="origESRDWrap"><input type="checkbox" id="origESRD"> Originally ESRD</label>
+              </div></div>
+          </div>
 
           <div class="row"><div>
             <label class="fld" for="dx">Diagnosis codes (ICD-10) — comma or newline separated</label>
@@ -207,14 +235,45 @@ let MODEL = {}, MIPS = {};
   $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
 })();
 
+(function nav() {
+  const nt = document.getElementById("navToggle"), ns = document.getElementById("navScrim"), sb = document.querySelector(".sidebar");
+  if (!nt || !ns || !sb) return;
+  const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+  nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+  ns.onclick = close;
+  sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
+})();
+
 /* ---- HCC ---------------------------------------------------------------- */
 function parseDx(s) { return String(s || "").split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean); }
 
-function isHHS() { return $("model").value === "HHS-HCC"; }
+function activeModel() {
+  const name = $("model").value;
+  return (MODEL.byModel && MODEL.byModel[name]) || MODEL;
+}
+/* "hhs" (metal levels), "explicit" (ESRD/Rx — caller picks the segment), or
+ * "cms" (community/institutional derived from dual/disabled/institutional). */
+function modelKind() {
+  const M = activeModel();
+  if (M && M.type === "hhs-hcc") return "hhs";
+  if (M && M.segmentSelect === "explicit") return "explicit";
+  return "cms";
+}
+function populateSegments() {
+  const M = activeModel();
+  const segs = M.segments || {};
+  const keys = Object.keys(segs);
+  $("seg").innerHTML = keys.map((k) => `<option value="${esc(k)}"${k === M.defaultSegment ? " selected" : ""}>${esc(segs[k])}</option>`).join("");
+  // The originally-ESRD flag only applies to the ESRD model.
+  $("origESRDWrap").style.display = M.type === "esrd-hcc" ? "" : "none";
+  $("segHint").textContent = M.type === "rx-hcc" ? "(Part D / LIS status)" : M.type === "esrd-hcc" ? "(dialysis / graft state)" : "";
+}
 function syncModelInputs() {
-  const hhs = isHHS();
-  $("cmsInputs").style.display = hhs ? "none" : "grid";
-  $("hhsInputs").style.display = hhs ? "grid" : "none";
+  const k = modelKind();
+  $("cmsInputs").style.display = k === "cms" ? "grid" : "none";
+  $("hhsInputs").style.display = k === "hhs" ? "grid" : "none";
+  $("segInputs").style.display = k === "explicit" ? "grid" : "none";
+  if (k === "explicit") populateSegments();
 }
 
 function runRAF() {
@@ -222,6 +281,7 @@ function runRAF() {
     model: $("model").value, age: $("age").value, sex: $("sex").value,
     dualStatus: $("dual").value, disabled: $("disabled").checked, institutional: $("institutional").checked,
     metalLevel: $("metal").value,
+    segment: $("seg").value, origESRD: $("origESRD").checked,
     dxCodes: parseDx($("dx").value),
   };
   const r = calcRAF(bene, MODEL);
@@ -321,6 +381,8 @@ async function loadModel(obj) {
   const OFFICIAL = [
     { name: "CMS-HCC v28", file: "../engine/data/hcc-v28.json" },
     { name: "CMS-HCC v22", file: "../engine/data/hcc-v22.json" },
+    { name: "ESRD-HCC v24", file: "../engine/data/hcc-esrd.json" },
+    { name: "RxHCC v8 (Part D)", file: "../engine/data/hcc-rxhcc.json" },
   ];
   const loaded = [];
   for (const pkg of OFFICIAL) {
@@ -333,7 +395,11 @@ async function loadModel(obj) {
     } catch (e) { /* skip this package */ }
   }
   if (loaded.length) {
-    MODEL.models = [...loaded, ...(MODEL.models || []).filter((m) => !loaded.includes(m))];
+    // Real packages supersede their illustrative seeds; keep only seeds without
+    // an official build (e.g. HHS-HCC).
+    const SUPERSEDED = new Set(["CMS-HCC", "ESRD-HCC", "Rx-HCC"]);
+    const remainingSeeds = (MODEL.models || []).filter((m) => !loaded.includes(m) && !SUPERSEDED.has(m));
+    MODEL.models = [...loaded, ...remainingSeeds];
     $("model").innerHTML = MODEL.models.map((m) => `<option>${esc(m)}</option>`).join("");
     updateModelPill();
   }
@@ -349,6 +415,8 @@ async function loadModel(obj) {
   syncModelInputs();
   $("model").addEventListener("change", () => { syncModelInputs(); updateModelPill(); runRAF(); });
   $("metal").addEventListener("change", runRAF);
+  $("seg").addEventListener("change", runRAF);
+  $("origESRD").addEventListener("change", runRAF);
   $("calcBtn").onclick = runRAF;
   $("dx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runRAF(); });
   $("mipsQ").addEventListener("input", runMIPS);

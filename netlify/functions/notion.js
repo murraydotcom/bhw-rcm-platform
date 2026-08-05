@@ -33,12 +33,10 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const headers = () => ({ Authorization: `Bearer ${NOTION_TOKEN}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" });
 
 exports.handler = async (event) => {
-  // Standalone access gate — no-op until RCM_SESSION_SECRET + a code are set.
-  const { guard } = require("./lib/rcmAuth");
-  const _g = guard(event);
-  if (!_g.ok) return _g.resp;
 
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  const _auth = require("./lib/auth").requireAuth(event);
+  if (!_auth.ok) return _auth.response;
   const db = (event.queryStringParameters || {}).db;
   const dbId = DB[db];
   if (!NOTION_TOKEN || !dbId) return json(200, { ok: true, sampleMode: true });   // keep sample data

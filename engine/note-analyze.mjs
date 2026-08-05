@@ -41,6 +41,7 @@ const SRC = {
   MEDNEC: "Medical necessity — A&P must justify the service (CMS Program Integrity Manual, Pub 100-08 Ch. 3)",
   CERT: "CERT / RAC common documentation errors (CMS)",
   ICD10: "ICD-10-CM Official Guidelines — code to the highest specificity (7th character for injuries)",
+  BH: "BHW Mind & Mood BH note standards (Carelon/COMAR payer-required core)",
 };
 
 /* Patterns that match a word STEM (allerg, medicat, exam, diagnos, psychotherap…)
@@ -81,6 +82,19 @@ const rx = {
   vascInd: /claudication|rest pain|ulcer|ischemi|\bpvd\b|\bpad\b|\babi\b|syncope|dysautonomia|orthostat/i,
   vascMeas: /segmental|waveform|\babi\b|doppler|bilateral|pressure|amplitude|tilt/i,
   interp: /interpret|impression|\bfindings\b|conclusion|read as/i,
+  // behavioral-health note elements (BHW Mind & Mood templates)
+  mse: /mental status|\bmse\b|\baffect\b|thought process|thought content|insight|jud\w*ment|orientation|\bmood\b/i,
+  bhRisk: /c-?ssrs|suicidal|homicid|self-?harm|ideation|\bmeans\b|protective factor|\bsi\b|\bhi\b|risk assess/i,
+  bhMeasure: /phq-?9|gad-?7|audit-?c|pcl-?5|c-?ssrs|rating scale|validated (measure|scale|instrument)/i,
+  bhModality: /\bcbt\b|\bdbt\b|behavioral activation|motivational interview|supportive (therapy|counseling)|psychoeducat|mindfulness|problem-?solving|de-?escalat|safety planning|means restriction|exposure|interpersonal therapy|\bipt\b/i,
+  txGoals: /treatment plan|\bgoals?\b|objectives?|progress (toward|towards|on)/i,
+  safetyPlan: /safety plan/i,
+  bhFollowUp: /24-?48|within (24|48)|follow-?up (contact|call|within)|scheduled follow/i,
+  disposition: /disposition|higher level of care|outpatient|emergency services|hospitaliz|admit/i,
+  registry: /registr/i,
+  psychConsult: /psychiatric consultant|consultant (case )?review|case (reviewed|review)|caseload review/i,
+  providerCollab: /billing provider|provider collaborat|reviewed with .*provider|case reviewed with/i,
+  dsmDx: /dsm-?5|\bicd-?10\b|diagnos|\bdx\b/i,
   // medical-necessity A&P depth (CMS PIM Ch.3 / CERT-RAC)
   management: /prescrib|\brx\b|start(ed|ing)?|continu|increase|decrease|titrat|discontinu|\bd\/c(ed)?\b|refer(red|ral)?|order(ed|ing)?|administer|inject|treatment plan|plan of care|will (start|continue|order|refer|obtain|monitor)|counsel|educat/i,
   dxStatus: /\bstable\b|improv|worsen|unchanged|well[- ]controlled|uncontrolled|\bcontrolled\b|resolv|exacerbat|in remission|progress|deteriorat|responding|at goal|not at goal/i,
@@ -118,6 +132,17 @@ const isTCM = (c) => /^(99495|99496)$/.test(c || "");
 const isVascular = (c) => /^(93922|93923|93784|93786|93788|93790|9592[1-4]|93660)$/.test(c || "");
 /* Codes that are time-based per CPT/CMS → the note must state time (BHW P-8). */
 const isTimeBased = (c) => /^(9083[234678]|90840|99417|G2212|99490|99439|99491|99437|99487|99489|9942[4-7]|99457|99458|99091|99483|99497|99498|9949[234])$/.test(c || "");
+
+/* ---- Behavioral-health note families (BHW Mind & Mood templates) --------- */
+const isBHIntake = (c) => /^(90791|90792)$/.test(c || "");             // psychiatric diagnostic eval
+const isPsyTherapy = (c) => /^(90832|90834|90837)$/.test(c || "");     // individual psychotherapy
+const isCrisis = (c) => /^(90839|90840)$/.test(c || "");              // crisis psychotherapy
+const isFamilyTx = (c) => /^(90846|90847)$/.test(c || "");            // family therapy
+const isBHI = (c) => /^99484$/.test(c || "");                          // general BHI (monthly)
+const isCoCM = (c) => /^(99492|99493|99494|G2214)$/.test(c || "");     // psychiatric collaborative care
+/* Individual-psychotherapy CPT time bands (minutes): the billed code must match
+ * the documented session time. 90832 16-37 · 90834 38-52 · 90837 53+. */
+const PSY_TIME_BAND = { "90832": [16, 37], "90834": [38, 52], "90837": [53, Infinity] };
 
 /* analyzeNote(noteText, ctx)
  * ctx = { codes:[...], hasSameDayProc, minutes, mdmLevel }
@@ -214,6 +239,63 @@ export function analyzeNote(noteText = "", ctx = {}) {
   if (standalonePsych && emCode)
     add("psy_standalone_with_em", "Standalone psychotherapy billed with E/M", NOTE_STATUS.REVIEW,
       `${standalonePsych} is standalone and should not be reported with an E/M — use an add-on (90833/90836/90838).`, SRC.AETNA_PSY);
+
+  /* ---- Behavioral-health note families (BHW Mind & Mood templates) ------ *
+   * Elements are the payer-required core BHW's own templates enumerate — the
+   * MSE, C-SSRS risk, measurement scales, named modality, treatment-plan
+   * progress, and (for CoCM) the registry + psychiatric-consultant review a
+   * Carelon/COMAR BH auditor looks for. */
+  const bhIntake = codes.find(isBHIntake);
+  if (bhIntake) {
+    add("bh_mse", "Mental status exam", pm(hit(rx.mse)), "A diagnostic evaluation must document the MSE (appearance, behavior, speech, mood, affect, thought process/content, perception, cognition, insight/judgment).", SRC.BH);
+    add("bh_risk", "Risk assessment (C-SSRS / SI-HI)", pm(hit(rx.bhRisk)), "Document suicide/violence risk — ideation, plan, means, prior attempts, protective factors — even when negative.", SRC.BH);
+    add("bh_measures", "Baseline validated measures", hit(rx.bhMeasure) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "Baseline PHQ-9 / GAD-7 (or equivalent) anchors measurement-based care.", SRC.BH);
+    add("bh_dx", "DSM-5 / ICD-10 diagnosis", pm(hit(rx.dsmDx) || (dxList.length > 0)), "A working diagnosis (DSM-5-TR / ICD-10) supports medical necessity for the plan.", SRC.BH);
+    add("bh_medical_necessity", "Medical-necessity statement", pm(hit(rx.management) || /medical necessity|needed now|expected benefit/i.test(note)), "State why treatment is needed now and the expected benefit — the intake anchors necessity for every future session.", SRC.BH);
+    add("bh_tx_plan", "Treatment plan (goals / frequency)", pm(hit(rx.txGoals)), "Initial plan with modality, frequency, measurable goals and referrals.", SRC.BH);
+  }
+
+  const psyTx = codes.find(isPsyTherapy);
+  if (psyTx) {
+    add("bh_mse_brief", "Mental status (brief)", pm(hit(rx.mse)), "A brief MSE (mood, affect, thought process) each session.", SRC.BH);
+    add("bh_risk_check", "Risk check (SI/HI screened)", pm(hit(rx.bhRisk)), "Screen and document risk each session, even when negative.", SRC.BH);
+    add("bh_modality", "Named therapeutic intervention", pm(hit(rx.bhModality)), "Name the modality used (CBT, behavioral activation, MI, supportive, psychoeducation…) — this is what auditors look for.", SRC.BH);
+    add("bh_progress", "Progress toward treatment-plan goals", pm(hit(rx.txGoals)), "Tie the session to the treatment-plan goal(s) addressed and note progress.", SRC.BH);
+    // Billed psychotherapy code must match the documented session time-band.
+    if (ctx.minutes != null && PSY_TIME_BAND[psyTx]) {
+      const [lo, hi] = PSY_TIME_BAND[psyTx];
+      const ok = ctx.minutes >= lo && ctx.minutes <= hi;
+      add("bh_psy_time_band", `${psyTx} time band (${lo}${hi === Infinity ? "+" : "–" + hi} min)`, ok ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW,
+        ok ? `Documented ${ctx.minutes} min fits ${psyTx}.` : `Documented ${ctx.minutes} min is outside the ${psyTx} band (${lo}${hi === Infinity ? "+" : "-" + hi}) — 90832 16-37 · 90834 38-52 · 90837 53+; bill the code that matches the time.`, SRC.BH);
+    }
+  }
+
+  if (codes.some(isCrisis)) {
+    add("bh_crisis_risk", "Full safety assessment (C-SSRS)", pm(hit(rx.bhRisk)), "Crisis codes require a complete safety assessment — ideation, plan, intent, means/access, prior attempts, protective factors.", SRC.BH);
+    add("bh_safety_plan", "Safety plan documented", pm(hit(rx.safetyPlan)), "A crisis encounter must document a safety plan (warning signs, coping, supports, professional contacts, means-restriction) — copy given to patient.", SRC.BH);
+    add("bh_disposition", "Disposition & rationale", pm(hit(rx.disposition)), "Document the disposition (outpatient with safety plan / higher level of care / emergency services) and why.", SRC.BH);
+    add("bh_crisis_followup", "Follow-up contact 24–48h", hit(rx.bhFollowUp) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "Schedule a follow-up contact within 24–48h and notify the provider — never end a crisis encounter without it.", SRC.BH);
+  }
+
+  if (codes.some(isFamilyTx)) {
+    add("bh_family_necessity", "Tie to identified patient's diagnosis", pm(hit(rx.dsmDx) || dxList.length > 0 || /identified patient/i.test(note)), "Family therapy must tie the work to the identified patient's condition and its treatment plan.", SRC.BH);
+    add("bh_family_safety", "Safety screen (any member)", hit(rx.bhRisk) ? NOTE_STATUS.PRESENT : NOTE_STATUS.REVIEW, "Screen for safety concerns for any participant.", SRC.BH);
+    add("bh_progress", "Progress toward treatment-plan goals", pm(hit(rx.txGoals)), "Note progress toward the identified patient's goals and the next-session plan.", SRC.BH);
+  }
+
+  if (codes.some(isBHI)) {
+    add("bh_bhi_time", "Monthly care-manager time (≥20 min)", pm((ctx.minutes != null && ctx.minutes >= 20) || hit(rx.monthlyTime) || hit(rx.timeStatement)), "99484 requires ≥20 minutes of behavioral care-manager time in the calendar month — log every contact.", SRC.BH);
+    add("bh_bhi_measure", "Validated rating scale", pm(hit(rx.bhMeasure)), "A validated measure (PHQ-9 / GAD-7) each month — measurement-based care.", SRC.BH);
+    add("bh_bhi_care_plan", "Behavioral care plan reviewed/revised", pm(hit(rx.carePlan)), "Review or revise the behavioral care plan each month.", SRC.BH);
+    add("bh_bhi_collab", "Provider collaboration", pm(hit(rx.providerCollab)), "Document the case review with the billing provider.", SRC.BH);
+  }
+
+  if (codes.some(isCoCM)) {
+    add("bh_cocm_registry", "Registry review", pm(hit(rx.registry)), "CoCM is registry-based — the patient must be tracked in the registry and reviewed this month.", SRC.BH);
+    add("bh_cocm_measure", "Validated measure & trend", pm(hit(rx.bhMeasure)), "A validated measure and its trend — no CoCM month is complete without a score and a trend.", SRC.BH);
+    add("bh_cocm_consult", "Psychiatric consultant case review", pm(hit(rx.psychConsult)), "Document the psychiatric consultant's case review and recommendations.", SRC.BH);
+    add("bh_cocm_time", "BHCM time for the level", pm((ctx.minutes != null && ctx.minutes > 0) || hit(rx.monthlyTime) || hit(rx.timeStatement)), "Document the behavioral care-manager minutes (99492 ~70 · 99493 ~60 · +99494 · G2214 ~30).", SRC.BH);
+  }
 
   /* ---- Modifier 25 justification --------------------------------------- */
   if (ctx.hasSameDayProc && emCode)

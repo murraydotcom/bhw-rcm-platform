@@ -59,7 +59,19 @@ export function calcRAF(bene = {}, MODEL = {}) {
   const modelName = bene.model || (MODEL.models && MODEL.models[0]) || "CMS-HCC";
   const M = (MODEL.byModel && MODEL.byModel[modelName]) || MODEL; // support multi-model or flat
   if (M && M.type === "hhs-hcc") return calcHHS(bene, M, MODEL, modelName);
-  const seg = segmentFor(bene);
+  /* Segment: CMS-HCC derives it from dual/entitlement/institutional; ESRD & Rx
+   * models declare their own segments (dialysis/graft state, LIS status), so the
+   * caller picks one explicitly. */
+  let seg;
+  if (M.segmentSelect === "explicit") {
+    if (bene.segment && M.hccCoeff && bene.segment in M.hccCoeff) seg = bene.segment;
+    else {
+      seg = M.defaultSegment || (M.segments && Object.keys(M.segments)[0]) || null;
+      notes.push(bene.segment ? `Segment "${bene.segment}" not in model — using ${seg}.` : `No segment provided — using default segment ${seg}.`);
+    }
+  } else {
+    seg = segmentFor(bene);
+  }
   const cell = demoCell(bene.age, bene.sex);
 
   /* 1) Demographic factor -------------------------------------------------- */
@@ -67,13 +79,17 @@ export function calcRAF(bene = {}, MODEL = {}) {
   let demoFactor = cell != null && cell in demoTable ? demoTable[cell] : 0;
   if (cell == null) notes.push("Age/sex not provided — demographic factor omitted.");
   else if (!(cell in demoTable)) notes.push(`No demographic factor for ${seg}/${cell} in the loaded model.`);
-  /* Demographic add-factors (originally-disabled, long-term institutional Medicaid) */
+  /* Demographic add-factors (originally-disabled, originally-ESRD, long-term
+   * institutional Medicaid). */
   const isAged = /A$/.test(seg);
   const add = M.addFactors || {};
-  if (bene.origDisabled && isAged) {
-    const t = (String(bene.sex || "").toUpperCase().startsWith("F") ? add.origDisabledFemale : add.origDisabledMale) || {};
-    if (seg in t) demoFactor += t[seg];
-  }
+  const sexF = String(bene.sex || "").toUpperCase().startsWith("F");
+  const applyAdd = (tbl) => { if (tbl && seg in tbl) demoFactor += tbl[seg]; };
+  /* CMS community: the originally-disabled add applies only to aged segments.
+   * ESRD/Rx models carry the factor only on the segments where it applies, so
+   * gating by table presence is sufficient there. */
+  if (bene.origDisabled && (M.segmentSelect === "explicit" || isAged)) applyAdd(sexF ? add.origDisabledFemale : add.origDisabledMale);
+  if (bene.origESRD) applyAdd(sexF ? add.origESRDFemale : add.origESRDMale);
   if (bene.medicaid && seg === "INS" && add.ltiMcaid && seg in add.ltiMcaid) demoFactor += add.ltiMcaid[seg];
 
   /* 2) Map dx → HCCs (a dx may map to several HCCs) ------------------------ */
@@ -127,10 +143,17 @@ export function calcRAF(bene = {}, MODEL = {}) {
   /* A requirement token is satisfied if it is a present HCC, a disease GROUP
    * with any member present, or a beneficiary flag (DISABL). */
   const groups = M.groups || {};
+  const interReq = M.interactionReq || {};
+  const agedFlag = Number(bene.age) >= 65;
   const reqOk = (tok) => {
     if (keptSet.has(tok)) return true;
     if (tok === "DISABL" || tok === "DISABLED") return !!bene.disabled;
+    /* Non-aged = Medicare entitlement before 65 (disability/ESRD). */
+    if (tok === "NonAged" || tok === "NONAGED") return Number.isFinite(Number(bene.age)) ? !agedFlag : !!bene.disabled;
     if (groups[tok]) return groups[tok].some((h) => keptSet.has(h));
+    /* Nested interaction token (ESRD): satisfied when that interaction's own
+     * requirements are met. */
+    if (interReq[tok]) return interReq[tok].every(reqOk);
     return false;
   };
   const interactions = [];

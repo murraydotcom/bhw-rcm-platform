@@ -13,6 +13,8 @@ const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const MODEL = JSON.parse(readFileSync(join(dataDir, "hcc-model.json"), "utf8"));
 const V22 = JSON.parse(readFileSync(join(dataDir, "hcc-v22.json"), "utf8"));
 const V28 = JSON.parse(readFileSync(join(dataDir, "hcc-v28.json"), "utf8"));
+const ESRD = JSON.parse(readFileSync(join(dataDir, "hcc-esrd.json"), "utf8"));
+const RX = JSON.parse(readFileSync(join(dataDir, "hcc-rxhcc.json"), "utf8"));
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≈ ${b}`);
 
 test("age bands and demographic cells", () => {
@@ -183,4 +185,55 @@ test("v28: payment-HCC count factor applies once five HCCs are present", () => {
   assert.equal(r.diseaseCount.variable, "D5");
   near(r.breakdown.counts, 0.05);        // official CNA D5 count factor
   near(r.raf, r.breakdown.demographic + r.breakdown.disease + 0.05);
+});
+
+/* ---- Real ESRD-HCC v24 package (dialysis + functioning-graft segments) --- */
+test("ESRD: explicit segment selects the dialysis relative-factor column", () => {
+  const r = calcRAF({ model: ESRD.models[0], age: 55, sex: "M", segment: "DIAL", dxCodes: ["A07.2"] }, ESRD); // HCC6
+  assert.equal(r.illustrative, false);
+  assert.equal(r.segment, "DIAL");
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["HCC6"]);
+  // NONAGED interaction fires for the under-65 dialysis enrollee
+  assert.ok(r.interactions.some((i) => i.id === "NONAGED_HCC6"));
+  near(r.raf, 0.557 + 0.076 + 0.043);    // demo M55_59 DIAL + HCC6 + NONAGED_HCC6
+});
+
+test("ESRD: NonAged interaction is suppressed once the enrollee is aged", () => {
+  const r = calcRAF({ model: ESRD.models[0], age: 70, sex: "M", segment: "DIAL", dxCodes: ["A07.2"] }, ESRD);
+  assert.equal(r.interactions.length, 0);
+});
+
+test("ESRD: no segment supplied falls back to the default (dialysis) with a note", () => {
+  const r = calcRAF({ model: ESRD.models[0], age: 60, sex: "F", dxCodes: [] }, ESRD);
+  assert.equal(r.segment, "DIAL");
+  assert.ok(r.notes.some((n) => /default segment DIAL/.test(n)));
+});
+
+test("ESRD: originally-ESRD add-factor adjusts the demographic base", () => {
+  const base = calcRAF({ model: ESRD.models[0], age: 60, sex: "F", segment: "DIAL", dxCodes: [] }, ESRD);
+  const orig = calcRAF({ model: ESRD.models[0], age: 60, sex: "F", segment: "DIAL", origESRD: true, dxCodes: [] }, ESRD);
+  near(orig.breakdown.demographic - base.breakdown.demographic, -0.024); // Originally_ESRD_Female DIAL
+});
+
+/* ---- Real RxHCC v8 package (Part D drug-risk, continuing enrollee) ------- */
+test("RxHCC: RXHCC-prefixed crosswalk + demographic + coefficient at the LIS-aged segment", () => {
+  const r = calcRAF({ model: RX.models[0], age: 72, sex: "F", segment: "CE_LowAged", dxCodes: ["A07.2"] }, RX);
+  assert.equal(r.illustrative, false);
+  assert.equal(r.segment, "CE_LowAged");
+  assert.deepEqual(r.hccs.map((h) => h.hcc), ["RXHCC5"]);
+  assert.equal(r.interactions.length, 0); // RxHCC v8 has no disease interactions
+  near(r.raf, 0.05 + 0.784);              // demo F70_74 + RXHCC5, CE_LowAged
+});
+
+test("RxHCC: RxHCC hierarchy zeroes secondary drug-risk HCCs", () => {
+  // RXHCC15 dominates RXHCC17; if both present, only RXHCC15 scores
+  const hasBoth = Object.keys(RX.dxToHcc).filter((d) => RX.dxToHcc[d].includes("RXHCC15"));
+  assert.ok(RX.hierarchyMap.RXHCC15.includes("RXHCC17"));
+  assert.ok(hasBoth.length > 0, "at least one dx maps to RXHCC15");
+});
+
+test("RxHCC: unknown segment falls back to the non-LIS aged default", () => {
+  const r = calcRAF({ model: RX.models[0], age: 72, sex: "F", segment: "NOPE", dxCodes: ["A07.2"] }, RX);
+  assert.equal(r.segment, "CE_NonLowAged");
+  assert.ok(r.notes.some((n) => /not in model/.test(n)));
 });

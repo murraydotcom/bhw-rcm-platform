@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="/auth-gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHW Provider — TCM / Discharges (CRISP)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#80abbd; --blue-d:#5f8b9d; --blue-l:#a9c8d5;
+  --base:#f7f5f2; --bronze:#b07a55; --sage:#a8b59a; --neutral:#dcc8b1;
+  --pending:#fab219; --denied:#c0503f; --billed:#b9b2a7;
+  --ink:#2f3a3f; --ink-soft:#5b686d; --line:#e7e1d9;
+  --sidebar:#243239; --sidebar-2:#2d3d45; --sidebar-ink:#c9d6db;
+  --card:#ffffff; --shadow:0 1px 3px rgba(36,50,57,.08),0 4px 14px rgba(36,50,57,.05);
+  --radius:14px;
+}
+:root[data-theme="dark"]{
+  --base:#141a1d; --card:#1e272b; --ink:#e6edf0; --ink-soft:#9db0b7; --line:#2b373c;
+  --blue-d:#8fb8c8; --blue-l:#6f97a8; --billed:#7f8a86; --neutral:#3a4b53;
+  --shadow:0 1px 3px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
+.brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
+.nav-group{padding:14px 12px 4px}
+.nav-group .label{font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#7d94a0;padding:0 10px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:500;color:var(--sidebar-ink);cursor:pointer;transition:background .15s,color .15s;margin-bottom:1px}
+.nav-item:hover{background:var(--sidebar-2);color:#fff}
+.nav-item.active{background:var(--blue);color:#fff;font-weight:600}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.9}
+.sidebar-foot{margin-top:auto;padding:16px 20px;font-size:10.5px;color:#6f8792;border-top:1px solid rgba(255,255,255,.07)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.topbar .crumb{font-size:12px;color:var(--ink-soft);font-weight:500}
+.topbar .crumb b{color:var(--ink);font-weight:700}
+.topbar .tools{display:flex;align-items:center;gap:10px}
+.pill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--neutral);color:#6b563f}
+.content{padding:26px 30px 60px;max-width:1400px;width:100%}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
+.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:860px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h3{margin:0}
+.btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.btn-ghost:hover{background:var(--base)}
+.btn-sm{padding:6px 11px;font-size:11.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{background:#fdf7ef;border:1px solid #ecd9c1;border-left:4px solid var(--bronze);border-radius:10px;padding:12px 14px;font-size:12px;color:#6b5233;margin-bottom:18px}
+:root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
+.note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
+.mini{font-size:11px;color:var(--ink-soft)}
+.empty{padding:26px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--ink-soft);transition:border-color .15s,background .15s;cursor:pointer}
+.drop.hot{border-color:var(--blue);background:rgba(128,171,189,.08)}
+.drop .big{font-size:14px;font-weight:700;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.tile .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft)}
+.tile .v{font-size:24px;font-weight:800;margin-top:3px}
+.tile .s{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.tile.alert{border-color:#e6b7ad;background:#faece9}.tile.alert .v{color:#a53f30}
+:root[data-theme="dark"] .tile.alert{background:#2e1d1a}
+.tile.good{border-color:#c2d3b4;background:#eef3e9}.tile.good .v{color:#5c7050}
+:root[data-theme="dark"] .tile.good{background:#1c2a1e}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);padding:8px 10px;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--card)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:hover{background:var(--base)}
+.tbl tr.action{background:#faece9}.tbl tr.action:hover{background:#f6e2de}
+:root[data-theme="dark"] .tbl tr.action{background:#2a1c19}
+.tbl tr.soon{background:#fdf7ea}:root[data-theme="dark"] .tbl tr.soon{background:#2a2413}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.b-tcm{background:#e2edf1;color:#3f6675}
+.b-admitted{background:#fdf1d6;color:#9a6f16}
+.b-ed{background:#efe7f1;color:#6b4d78}
+.b-ambulatory{background:var(--neutral);color:#6b563f}
+.b-excluded{background:#ece9e6;color:#6b6259}
+.pan-yes{background:#e8f0e3;color:#5c7050}
+.pan-review{background:#fdf1d6;color:#9a6f16}
+.cs-due{color:#9a6f16;font-weight:700}
+.cs-due-today{color:#a53f30;font-weight:800}
+.cs-passed{color:#a53f30;font-weight:700}
+.flags{color:#9a6f16;font-size:11px}
+.nm{font-weight:700}
+.dob{color:var(--ink-soft);font-size:11px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 8px}
+.chip{font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);cursor:pointer}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
+    <nav class="nav-group">
+      <div class="label">Pre-Bill</div>
+      <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
+      <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
+      <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
+      <div class="nav-item active"><span class="ic">⏱</span> TCM / Discharges</div>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
+      <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
+    </nav>
+    <div class="sidebar-foot">TCM worklist from the CRISP ENS panel export.<br>Runs in your browser — nothing is uploaded.</div>
+  </aside>
+  <div class="scrim" id="navScrim"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Care Coordination · <b>TCM / Discharges (CRISP)</b></div>
+      </div>
+      <div class="tools">
+        <span class="pill" id="countPill">no file loaded</span>
+        <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <h2>TCM / Discharge Worklist</h2>
+        <p>Upload the CRISP ENS <b>Panel Details</b> export and it surfaces the inpatient &amp; observation discharges that
+           are Transitional Care Management candidates (99495 / 99496) — with the <b>2-business-day call</b> clock and the
+           <b>7-day (99496) / 14-day (99495)</b> face-to-face windows. ED visits and current admissions are listed
+           separately for outreach.</p>
+      </div>
+
+      <div class="note">
+        <b>Runs entirely in your browser.</b> The uploaded file is parsed locally and never leaves this page — nothing is
+        uploaded or stored. Decision support only: TCM requires an eligible discharge to a community setting, an
+        interactive contact within 2 business days, and the face-to-face visit within the window. The 2-business-day
+        clock ignores federal holidays — verify against the calendar. Confirm eligibility before billing.
+      </div>
+
+      <div class="card" id="dropCard">
+        <div class="card-head"><h3>Upload the CRISP Panel Details export</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" id="fileBtn">Choose file…</button>
+            <input type="file" id="fileInput" accept=".xlsx,.csv" hidden>
+            <button class="btn btn-ghost btn-sm" id="csvBtn" disabled>Export CSV</button>
+            <button class="btn btn-ghost btn-sm" id="clearBtn" disabled>Clear</button>
+          </div>
+        </div>
+        <div class="drop" id="drop">
+          <div class="big">Drop the <code>PanelDetails….xlsx</code> here, or click to choose</div>
+          <div class="mini" style="margin-top:5px">Accepts the CRISP ENS panel export (<b>.xlsx</b>) or a <b>.csv</b> with the same columns. Each upload replaces the current list.</div>
+        </div>
+        <div class="mini" id="parseNote" style="margin-top:8px"></div>
+        <div class="mini" id="rosterBar" style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px">
+          <b>Panel roster:</b>
+          <span id="rosterStatus">not loaded — showing all discharges</span>
+          <button class="btn btn-ghost btn-sm" id="rosterBtn">Upload roster…</button>
+          <input type="file" id="rosterInput" accept=".xlsx,.csv" hidden>
+          <button class="btn btn-ghost btn-sm" id="rosterForget" style="display:none">Forget</button>
+          <span style="color:var(--ink-soft)">Any file with name + DOB columns. Remembered on this device only.</span>
+        </div>
+      </div>
+
+      <div id="statsWrap"></div>
+      <div class="filters" id="filters" style="display:none">
+        <span class="mini" style="font-weight:700">Show:</span>
+        <span class="chip on" data-f="tcm">TCM candidates</span>
+        <span class="chip" data-f="admitted">Admitted</span>
+        <span class="chip" data-f="ed">ED visits</span>
+        <span class="chip" data-f="ambulatory">Ambulatory</span>
+        <span class="chip" data-f="excluded">Excluded</span>
+        <span class="chip" data-f="all">All</span>
+        <span style="flex:1"></span>
+        <span class="chip" id="panelToggle" style="display:none">✓ On panel only</span>
+      </div>
+      <div id="tableWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { buildWorklist, normalizeRoster } from "../engine/tcm-parse.mjs";
+import { readSpreadsheet } from "../engine/xlsx-lite.mjs";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let RESULT = { items: [], stats: {}, meta: {} }, FILTER = "tcm";
+let RAW_ROWS = [], ROSTER = [], PANEL_ONLY = false;
+const ROSTER_KEY = "bhw-tcm-roster";
+
+(function theme() {
+  const KEY = "bhw-theme";
+  const set = (t) => { document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem(KEY, t); } catch (e) {} };
+  try { if (localStorage.getItem(KEY)) set(localStorage.getItem(KEY)); } catch (e) {}
+  $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+})();
+
+(function nav() {
+  const nt = $("navToggle"), ns = $("navScrim"), sb = document.querySelector(".sidebar");
+  if (!nt || !ns || !sb) return;
+  const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+  nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+  ns.onclick = close;
+  sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
+})();
+
+let LAST_FILE = null;
+
+async function loadFile(file) {
+  if (!file) return;
+  $("parseNote").textContent = `Reading “${file.name}”…`;
+  try {
+    const { rows, sheet } = await readSpreadsheet(file);
+    if (!rows.length) { $("parseNote").textContent = "No rows found in that file — is it the Panel Details export?"; return; }
+    RAW_ROWS = rows; LAST_FILE = { name: file.name, sheet };
+    rebuild();
+    $("clearBtn").disabled = false; $("csvBtn").disabled = false;
+  } catch (e) {
+    $("parseNote").innerHTML = `Couldn't read that file: ${esc(e.message)}. ` +
+      `If your browser can't open .xlsx here, re-save it as <b>.csv</b> and drop that instead.`;
+  }
+}
+
+function rebuild() {
+  if (!RAW_ROWS.length) return;
+  RESULT = buildWorklist(RAW_ROWS, { roster: ROSTER });
+  render();
+  const s = RESULT.stats;
+  const onPanel = s.rosterLoaded ? ` · <b>${s.onPanel}</b> on panel` : "";
+  $("parseNote").innerHTML = `Loaded <b>${esc(LAST_FILE.name)}</b>${LAST_FILE.sheet ? ` · sheet “${esc(LAST_FILE.sheet)}”` : ""} · ${s.rows} people${onPanel} · as of ${esc(RESULT.meta.today)}.`;
+}
+
+// ---- panel roster (optional, remembered locally) ----------------------------
+async function loadRoster(file) {
+  if (!file) return;
+  $("rosterStatus").textContent = `Reading “${file.name}”…`;
+  try {
+    const { rows } = await readSpreadsheet(file);
+    const norm = normalizeRoster(rows);
+    if (!norm.length) { $("rosterStatus").textContent = "No name/DOB columns found in that roster file."; return; }
+    ROSTER = norm; persistRoster(); updateRosterStatus();
+    rebuild();
+  } catch (e) { $("rosterStatus").textContent = `Couldn't read roster: ${e.message}`; }
+}
+function persistRoster() { try { localStorage.setItem(ROSTER_KEY, JSON.stringify(ROSTER)); } catch (e) {} }
+function forgetRoster() {
+  ROSTER = []; PANEL_ONLY = false;
+  try { localStorage.removeItem(ROSTER_KEY); } catch (e) {}
+  updateRosterStatus(); rebuild();
+}
+function updateRosterStatus() {
+  if (ROSTER.length) {
+    $("rosterStatus").innerHTML = `<b>${ROSTER.length}</b> patients loaded ✓ — discharges matched by name + DOB`;
+    $("rosterForget").style.display = ""; $("panelToggle").style.display = "";
+  } else {
+    $("rosterStatus").textContent = "not loaded — showing all discharges";
+    $("rosterForget").style.display = "none";
+    $("panelToggle").style.display = "none"; $("panelToggle").classList.remove("on");
+  }
+}
+function initRoster() {
+  try { const raw = localStorage.getItem(ROSTER_KEY); if (raw) ROSTER = JSON.parse(raw) || []; } catch (e) {}
+  updateRosterStatus();
+}
+
+function render() {
+  const s = RESULT.stats;
+  $("countPill").textContent = s.rows ? `${s.tcm} TCM · ${s.callsDueToday + s.callsOverdue} calls to act` : "no file loaded";
+  renderStats(s);
+  $("filters").style.display = s.rows ? "flex" : "none";
+  renderTable();
+}
+
+function renderStats(s) {
+  const tiles = [
+    { k: "TCM candidates", v: s.tcm || 0, sub: "inpatient / observation", cls: "" },
+  ];
+  if (s.rosterLoaded) tiles.push({ k: "TCM on panel", v: s.tcmOnPanel || 0, sub: `${s.onPanel || 0} of ${s.rows} on roster`, cls: "good" });
+  tiles.push(
+    { k: "Calls due today", v: s.callsDueToday || 0, sub: "2-business-day contact", cls: s.callsDueToday ? "alert" : "" },
+    { k: "Calls overdue", v: s.callsOverdue || 0, sub: "past 2 business days", cls: s.callsOverdue ? "alert" : "" },
+    { k: "Visits ≤ 7 days", v: s.visitsDue7 || 0, sub: "99496 window open", cls: s.visitsDue7 ? "good" : "" },
+    { k: "Currently admitted", v: s.admitted || 0, sub: "watch for discharge", cls: "" },
+    { k: "ED visits", v: s.ed || 0, sub: "outreach (not TCM)", cls: "" },
+  );
+  $("statsWrap").innerHTML = `<div class="stats">${tiles.map((t) =>
+    `<div class="tile ${t.cls}"><div class="k">${esc(t.k)}</div><div class="v">${t.v}</div><div class="s">${esc(t.sub)}</div></div>`).join("")}</div>`;
+}
+
+function visible() {
+  let base = FILTER === "all" ? RESULT.items : RESULT.items.filter((i) => i.category === FILTER);
+  if (PANEL_ONLY) base = base.filter((i) => i.panel && i.panel.onPanel);
+  return base;
+}
+
+function panelCell(it) {
+  const p = it.panel;
+  if (!p || !p.onPanel) return `<span class="mini">—</span>`;
+  const cls = p.confidence === "review" ? "pan-review" : "pan-yes";
+  const tag = p.confidence === "review" ? "✓ verify" : "✓ on panel";
+  const extra = [p.mrn && `MRN ${esc(p.mrn)}`, p.pcp && esc(p.pcp), p.program && esc(p.program)].filter(Boolean).join(" · ");
+  return `<span class="badge ${cls}">${tag}</span>${extra ? `<br><span class="mini">${extra}</span>` : ""}`;
+}
+
+const CAT_LABEL = { tcm: "TCM", admitted: "Admitted", ed: "ED", ambulatory: "Ambulatory", excluded: "Excluded" };
+const callCell = (dl) => {
+  if (!dl) return "—";
+  const cls = dl.callState === "due-today" ? "cs-due-today" : dl.callState === "passed" ? "cs-passed" : "cs-due";
+  const lbl = dl.callState === "due-today" ? "due today" : dl.callState === "passed" ? "overdue" : "due";
+  return `<span class="${cls}">${esc(dl.callBy)}</span> <span class="mini">(${lbl})</span>`;
+};
+const visitCell = (dl) => {
+  if (!dl) return "—";
+  if (dl.windowState === "closed") return `<span class="mini">window closed (day ${dl.daysSince})</span>`;
+  return `<span title="99496 (high MDM)">≤7d ${esc(dl.visitBy99496)}</span><br><span class="mini" title="99495 (moderate MDM)">≤14d ${esc(dl.visitBy99495)}</span>`;
+};
+
+function renderTable() {
+  const rows = visible();
+  if (!rows.length) { $("tableWrap").innerHTML = `<div class="empty">No people in this category${PANEL_ONLY ? " on your panel" : ""}.</div>`; return; }
+  const showP = !!RESULT.stats.rosterLoaded;
+  $("tableWrap").innerHTML = `<div class="tblwrap"><table class="tbl">
+    <thead><tr>
+      <th>Patient</th>${showP ? "<th>Panel</th>" : ""}<th>Status</th><th>Discharge / Admit</th><th>Day</th>
+      <th>Call by</th><th>Visit window</th><th>Billable</th><th>Facility</th><th>Primary Dx</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${rows.map((it) => {
+      const dl = it.dl;
+      const rowCls = it.category === "tcm" && dl ? (dl.callState === "passed" || dl.callState === "due-today" ? "action" : dl.windowState === "7" ? "soon" : "") : "";
+      const when = it.category === "admitted" ? (fmtDate(it.admitAt) + ' <span class="mini">adm</span>') : fmtDate(it.dischargeAt || it.admitAt);
+      return `<tr class="${rowCls}">
+        <td><span class="nm">${esc(it.name)}</span><br><span class="dob">${esc(fmtDate(it.dob))}${it.gender ? " · " + esc(it.gender) : ""}</span></td>
+        ${showP ? `<td>${panelCell(it)}</td>` : ""}
+        <td><span class="badge b-${it.category}">${esc(CAT_LABEL[it.category] || it.category)}</span>${it.encounterType ? `<br><span class="mini">${esc(it.encounterType)}</span>` : ""}</td>
+        <td>${esc(when)}</td>
+        <td>${dl ? dl.daysSince : "—"}</td>
+        <td>${callCell(dl)}</td>
+        <td>${visitCell(dl)}</td>
+        <td>${dl ? esc(dl.billable) : "—"}</td>
+        <td>${esc(it.facility || "—")}</td>
+        <td>${esc(it.dxCodes || "")}${it.dxDesc ? `<br><span class="mini">${esc(it.dxDesc)}</span>` : ""}</td>
+        <td>${it.flags && it.flags.length ? `<span class="flags">${esc(it.flags.join("; "))}</span>` : (it.disposition ? `<span class="mini">${esc(it.disposition)}</span>` : "")}</td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+function fmtDate(iso) { return String(iso || "").slice(0, 10); }
+
+function toCSV() {
+  const withPanel = !!RESULT.stats.rosterLoaded;
+  const cols = ["name", "dob", "gender", "category", "encounterType", "facility", "dischargeAt", "disposition",
+    "daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable", "dxCodes", "dxDesc", "flags"]
+    .concat(withPanel ? ["onPanel", "panelMatch", "mrn", "pcp", "program"] : []);
+  const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const dlKeys = ["daysSince", "callBy", "callState", "visitBy99496", "visitBy99495", "billable"];
+  const line = (it) => cols.map((k) => {
+    if (dlKeys.includes(k)) return q(it.dl ? it.dl[k] : "");
+    if (k === "flags") return q((it.flags || []).join("; "));
+    if (k === "onPanel") return q(it.panel && it.panel.onPanel ? "yes" : "no");
+    if (k === "panelMatch") return q(it.panel ? it.panel.confidence : "");
+    if (["mrn", "pcp", "program"].includes(k)) return q(it.panel ? it.panel[k] : "");
+    return q(it[k]);
+  }).join(",");
+  const lines = [cols.join(",")].concat(RESULT.items.map(line));
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "tcm-worklist.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+$("fileBtn").onclick = () => $("fileInput").click();
+$("drop").onclick = () => $("fileInput").click();
+$("fileInput").addEventListener("change", (e) => loadFile(e.target.files[0]));
+$("csvBtn").onclick = toCSV;
+$("rosterBtn").onclick = () => $("rosterInput").click();
+$("rosterInput").addEventListener("change", (e) => loadRoster(e.target.files[0]));
+$("rosterForget").onclick = forgetRoster;
+$("clearBtn").onclick = () => {
+  RESULT = { items: [], stats: {}, meta: {} }; RAW_ROWS = []; LAST_FILE = null;
+  $("statsWrap").innerHTML = ""; $("tableWrap").innerHTML = ""; $("filters").style.display = "none";
+  $("countPill").textContent = "no file loaded"; $("parseNote").textContent = "";
+  $("csvBtn").disabled = true; $("clearBtn").disabled = true; $("fileInput").value = "";
+}; // the panel roster is kept (use “Forget” to remove it)
+
+const drop = $("drop"), card = $("dropCard");
+["dragenter", "dragover"].forEach((ev) => card.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave", "drop"].forEach((ev) => card.addEventListener(ev, (e) => { e.preventDefault(); if (ev === "dragleave" && card.contains(e.relatedTarget)) return; drop.classList.remove("hot"); }));
+card.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+$("filters").addEventListener("click", (e) => {
+  const chip = e.target.closest(".chip"); if (!chip) return;
+  if (chip.id === "panelToggle") {
+    PANEL_ONLY = !PANEL_ONLY;
+    chip.classList.toggle("on", PANEL_ONLY);
+    renderTable();
+    return;
+  }
+  FILTER = chip.dataset.f;
+  $("filters").querySelectorAll(".chip[data-f]").forEach((c) => c.classList.toggle("on", c === chip));
+  renderTable();
+});
+
+initRoster();
+</script>
+</body>
+</html>

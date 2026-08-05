@@ -60,6 +60,26 @@ test("units over a real MUE cap are flagged", () => {
   assert.ok(has(f, "mue"));
 });
 
+/* ---- Frequency edits fire from patient history -------------------------- */
+test("once-per-lifetime service is blocked when already performed", () => {
+  // pick a real days:0 (lifetime) frequency code from the shipped table
+  const entry = Object.entries(DATA.freq || {}).find(([, fr]) => fr.days === 0);
+  assert.ok(entry, "fixture: need a once-per-lifetime freq code");
+  const [code] = entry;
+  assert.ok(has(scrubClaim({ payer: "Medicare", em: code, priorDone: true }), "freq"));
+  assert.ok(!has(scrubClaim({ payer: "Medicare", em: code }), "freq")); // no history → no edit
+});
+
+test("interval frequency edit fires when last billed inside the window and cap reached", () => {
+  const entry = Object.entries(DATA.freq || {}).find(([, fr]) => fr.days > 0);
+  assert.ok(entry, "fixture: need an interval freq code");
+  const [code, fr] = entry;
+  const inside = scrubClaim({ payer: "Medicare", em: code, priorDays: Math.max(1, fr.days - 1), priorCount: fr.max });
+  assert.ok(has(inside, "freq"));
+  const outside = scrubClaim({ payer: "Medicare", em: code, priorDays: fr.days + 1, priorCount: fr.max });
+  assert.ok(!has(outside, "freq")); // past the interval → allowed
+});
+
 /* ---- thStatus summarizes severity -------------------------------------- */
 test("thStatus reports Clean on no findings and Block on a block finding", () => {
   assert.equal(thStatus([]).label, "Clean");
