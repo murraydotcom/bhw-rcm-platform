@@ -233,7 +233,7 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <div class="nav-item" onclick="go('reconciliation',this)"><span class="ic">⇄</span> Reconciliation</div>
       <div class="nav-item" onclick="go('chargemaster',this)"><span class="ic">≣</span> Charge Master</div>
       <a class="nav-item" href="coding-worksheet.html" style="text-decoration:none"><span class="ic">✎</span> Coding Worksheet</a>
-      <div class="nav-item" onclick="go('scrub',this)"><span class="ic">⚖</span> Themis <span class="nav-count" id="thNavCount"></span></div>
+      <div class="nav-item" onclick="go('scrub',this)"><span class="ic">⚖</span> Claim Laundering <span class="nav-count" id="thNavCount"></span></div>
       <div class="nav-item" onclick="go('verify',this)"><span class="ic">◈</span> Insurance Verify</div>
       <div class="nav-item" onclick="go('contracts',this)"><span class="ic">§</span> Contracts</div>
       <div class="nav-item" onclick="go('insights',this)"><span class="ic">✦</span> AI Insights</div>
@@ -1293,16 +1293,16 @@ select,input[type=text],input[type=number],input[type=date]{font-family:inherit;
       <!-- ==================== THEMIS: E/M CLEAN-CLAIM SCRUB (pre-bill edits) ==================== -->
       <section class="view" id="scrub">
         <div class="page-head split">
-          <div><h2>Themis &nbsp;<span class="tag">E/M clean-claim scrub</span></h2><p>Pre-bill edits that catch what a payer would deny or downcode — <b>before</b> the claim goes out. Curated to your E/M coding and payers, tuned for actual reimbursement, not just first-pass acceptance.</p></div>
+          <div><h2>Claim Laundering &nbsp;<span class="tag">E/M clean-claim scrub</span></h2><p>Pre-bill edits that catch what a payer would deny or downcode — <b>before</b> the claim goes out. Curated to your E/M coding and payers, tuned for actual reimbursement, not just first-pass acceptance.</p></div>
           <div class="btn-row" style="align-items:center">
             <span class="pill live">● Rules · v1</span>
-            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Review the Themis pre-bill scrub queue: which claims will deny or downcode as-is, the total dollars at risk, and the exact fix (modifier, documentation, or code change) for each flagged claim — most costly first.','Themis')">Scrub the queue</button>
+            <button class="btn btn-primary btn-sm btn-ai" onclick="openAI('Review the Claim Laundering pre-bill scrub queue: which claims will deny or downcode as-is, the total dollars at risk, and the exact fix (modifier, documentation, or code change) for each flagged claim — most costly first.','Claim Laundering')">Scrub the queue</button>
           </div>
         </div>
 
         <div class="card" style="border-left:4px solid var(--blue);margin-bottom:16px">
           <div class="card-head split"><div><h3>⚖ Optimize for reimbursement, not acceptance</h3><div class="card-sub">A &ldquo;clean claim&rdquo; that clears the clearinghouse can still be denied or downcoded by the payer.</div></div></div>
-          <div class="note" style="margin-bottom:0">Themis runs each claim against curated <b>national</b> edits (NCCI/MUE, modifier &amp; E/M rules) plus <b>payer-specific</b> rules learned from your own denials. Anything marked <span class="badge b-denied">Block</span> would deny as-is; <span class="badge b-pending">Warn</span> is downcode / underpayment risk. Fix it here and it never becomes an Aegis follow-up or a Denials write-off later.</div>
+          <div class="note" style="margin-bottom:0">Claim Laundering runs each claim against curated <b>national</b> edits (NCCI/MUE, modifier &amp; E/M rules) plus <b>payer-specific</b> rules learned from your own denials. Anything marked <span class="badge b-denied">Block</span> would deny as-is; <span class="badge b-pending">Warn</span> is downcode / underpayment risk. Fix it here and it never becomes an Aegis follow-up or a Denials write-off later.</div>
         </div>
 
         <div class="grid g5" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
@@ -2657,7 +2657,7 @@ const STEDI_SAMPLE = {
 const TITLES = {
   dashboard:"Dashboard", charges:"Charges & Claims", payments:"Payments", denials:"Denials",
   reconciliation:"Reconciliation", chargemaster:"Charge Master", verify:"Insurance Verify",
-  contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary", scrub:"Themis",
+  contracts:"Contracts", insights:"AI Insights", weekly:"Weekly Summary", scrub:"Claim Laundering",
   monthclose:"Monthly Close", finhealth:"Financial Health", forecast:"Forecast", banking:"The Books", programpage:"Program",
   provperf:"Provider Profitability", ratebench:"Rate Benchmarking", benchmarks:"Industry Benchmarks", revopps:"Revenue Opportunities", taxplan:"Tax Planning", aicfo:"AI CFO",
   goals:"Weekly Goals", cpt:"CPT by Program", claimslog:"Claims Log", pnl:"P&L by Program",

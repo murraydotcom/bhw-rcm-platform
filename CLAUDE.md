@@ -46,6 +46,10 @@ feed for TCM). EHR upstream is **ChARM**.
   is the heart of the recent work. It is *proactive* (encode every payer rule to
   prevent denials) **and** reactive (a denial feedback loop that mines 835s and
   proposes new rules).
+  - **User-facing name = "Claim Laundering."** The UI (nav, page header, Coding
+    Worksheet) says *Claim Laundering*; the code keeps the internal names
+    (`scrubClaim`, `buildThemis`, `renderThemisCharts`, `engine/themis.js`, nav id
+    `scrub`). They are the same thing — don't rename the internals.
 
 ## Themis scrub engine — how it works
 
