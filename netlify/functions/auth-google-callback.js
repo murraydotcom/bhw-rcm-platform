@@ -37,7 +37,7 @@ exports.handler = async (event) => {
   try {
     identity = await exchangeCode(event, q.code);
   } catch (e) {
-    return bounce(e.code === "domain" ? "domain" : (e.code || "exchange_failed"));
+    return bounce(["domain", "email_not_allowed"].includes(e.code) ? e.code : (e.code || "exchange_failed"));
   }
 
   // Carry over an admin role if this person is also listed in AUTH_USERS;
