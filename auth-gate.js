@@ -5,10 +5,9 @@
 //
 // It hides the page until /auth-me confirms a session, then either reveals the
 // page or bounces to /login.html. This is a UX gate only — the real security
-// boundary is requireAuth() inside the Netlify functions, which refuses to
-// return PHI/billing data without a valid session cookie. So on any infra
-// error (functions unreachable) we fail OPEN here and let the page render; the
-// data calls behind it stay protected server-side.
+// boundary is requireAuth() inside the server functions. The page gate also
+// fails closed because the encounter workflow may hold a temporary clinical
+// packet in the current browser tab.
 
 (function () {
   var root = document.documentElement;
@@ -25,8 +24,8 @@
   var settled = false;
   function settle(fn) { if (!settled) { settled = true; fn(); } }
 
-  // Safety net: never trap the user behind a hung request.
-  var timer = setTimeout(function () { settle(reveal); }, 4000);
+  // A hung authentication check returns to login instead of revealing cached UI.
+  var timer = setTimeout(function () { settle(redirectToLogin); }, 4000);
 
   fetch("/.netlify/functions/auth-me", { credentials: "same-origin" })
     .then(function (r) {
@@ -36,13 +35,13 @@
     })
     .then(function (res) {
       clearTimeout(timer);
-      if (res.status === 401) { settle(redirectToLogin); return; }
+      if (res.status !== 200 || !res.data || !res.data.ok) { settle(redirectToLogin); return; }
       settle(reveal);
       if (res.data && res.data.ok && res.data.user) addSignOut(res.data.user);
     })
     .catch(function () {
       clearTimeout(timer);
-      settle(reveal); // infra error → render; server-side gate still protects data
+      settle(redirectToLogin);
     });
 
   // ---- sign-out affordance --------------------------------------------------

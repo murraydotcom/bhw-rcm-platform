@@ -96,6 +96,7 @@ function showErr(m) { err.textContent = m; err.classList.add("show"); }
 // Surface an error handed back by the Google callback (?error=...).
 const ERR_MSG = {
   domain: "Please use your BHW Medical Group Google account.",
+  email_not_allowed: "This BHW Google account has not been approved for this workspace.",
   google_denied: "Google sign-in was cancelled.",
   bad_state: "Your sign-in session expired. Please try again.",
   exchange_failed: "Couldn’t complete Google sign-in. Please try again.",
