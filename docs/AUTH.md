@@ -10,13 +10,11 @@ dependency. Passwords are scrypt-hashed, the session is an HMAC-signed
 `HttpOnly` cookie, and a shared `requireAuth()` gate protects the sensitive
 Netlify functions (Notion, Stripe, payments, eligibility, ADT reads, …).
 
-## Fail-safe-off
+## Fail closed
 
-**Authentication is OFF until you set `AUTH_SECRET`.** With no secret configured
-the app behaves exactly as it did before (this matches how every function in the
-repo no-ops until its env vars are present), so deploying this change does not
-lock anyone out. You turn auth **on** by adding the two env vars below and
-redeploying.
+Protected pages and functions stay unavailable until `AUTH_SECRET` and an
+approved login method are configured. An authentication outage returns the user
+to the login page instead of revealing a cached clinical workspace.
 
 ## Turn it on
 
@@ -30,6 +28,7 @@ Set these in **Netlify → Site settings → Environment variables**:
 | `GOOGLE_CLIENT_ID` | for Google | OAuth client ID (see "Google Workspace sign-in" below). |
 | `GOOGLE_CLIENT_SECRET` | for Google | OAuth client secret. |
 | `GOOGLE_ALLOWED_DOMAIN` | no | Workspace domain(s) allowed to sign in, comma-separated. Default `bhwmedical.org`. |
+| `GOOGLE_ALLOWED_EMAILS` | for Google | Exact comma-separated Workspace accounts allowed to sign in. Start with one account and expand deliberately. |
 | `GOOGLE_REDIRECT_URI` | no | Exact callback URL. Leave unset to derive it from the request host (works for the normal site URL). |
 
 You need **at least one** login method: set `AUTH_USERS` (password), or the
@@ -42,13 +41,12 @@ Then **redeploy** (env changes need a new deploy to take effect).
 `name` and `role` are optional (role defaults to `staff`), and `hash` is
 optional — include it only for **password** login.
 
-**Google-only (no passwords):** you don't need `AUTH_USERS` at all — any account
-in the allowed Workspace domain can sign in. Add entries only to mark admins:
+**Google-only (no passwords):** set `GOOGLE_ALLOWED_EMAILS` to the exact approved
+accounts. `AUTH_USERS` is optional and can be used to assign names and roles:
 
 ```json
 [
-  {"email":"amurray@bhwmedical.org","name":"Amaris Murray","role":"admin"},
-  {"email":"sstevens@bhwmedical.org","name":"Shade Stevens","role":"admin"}
+  {"email":"approved-admin@bhwmedical.org","name":"Approved Admin","role":"admin"}
 ]
 ```
 
@@ -68,8 +66,7 @@ Google-only):
 
 ```bash
 node tools/make-auth-users.mjs \
-  amurray@bhwmedical.org:"Amaris Murray":admin \
-  sstevens@bhwmedical.org:"Shade Stevens":admin
+  approved-admin@bhwmedical.org:"Approved Admin":admin
 ```
 
 Or generate a single hashed record at a time. Passwords never go in the repo or
@@ -77,16 +74,16 @@ in argv:
 
 ```bash
 # interactive (password prompt, echo muted)
-node tools/hash-password.mjs amaris@bhwmedical.org "Amaris Murray" admin
+node tools/hash-password.mjs approved-admin@bhwmedical.org "Approved Admin" admin
 
 # or piped (keeps it out of shell history)
-printf '%s' 'their-password' | node tools/hash-password.mjs amaris@bhwmedical.org "Amaris Murray" admin
+printf '%s' 'their-password' | node tools/hash-password.mjs approved-admin@bhwmedical.org "Approved Admin" admin
 ```
 
 Each run prints one object:
 
 ```json
-{ "email": "amaris@bhwmedical.org", "name": "Amaris Murray", "role": "admin", "hash": "scrypt$16384$8$1$…" }
+{ "email": "approved-admin@bhwmedical.org", "name": "Approved Admin", "role": "admin", "hash": "scrypt$16384$8$1$…" }
 ```
 
 Collect one object per staff member into a JSON **array** and paste that as the
@@ -94,8 +91,8 @@ Collect one object per staff member into a JSON **array** and paste that as the
 
 ```json
 [
-  {"email":"amaris@bhwmedical.org","name":"Amaris Murray","role":"admin","hash":"scrypt$…"},
-  {"email":"yahaira@bhwmedical.org","name":"Yahaira Matias","role":"staff","hash":"scrypt$…"}
+  {"email":"approved-admin@bhwmedical.org","name":"Approved Admin","role":"admin","hash":"scrypt$…"},
+  {"email":"approved-staff@bhwmedical.org","name":"Approved Staff","role":"staff","hash":"scrypt$…"}
 ]
 ```
 
@@ -108,7 +105,7 @@ Collect one object per staff member into a JSON **array** and paste that as the
 
 - **Pages** (client gate `auth-gate.js` → bounces to `/login.html`): `index.html`,
   `bhw_billing_tracker.html`, `provider/index.html`, `provider/risk.html`,
-  `provider/prior-auth.html`, `provider/claims.html`.
+  `provider/prior-auth.html`, and `provider/workflow.html`.
 - **Functions** (`requireAuth()` → `401` without a valid session): `notion`,
   `stedi`, `stedi-discovery`, `stedi-eligibility`, `crisp` (dashboard reads only),
   `payment-post`, `note-post`, `stripe-bank`, `albert`.
@@ -164,20 +161,19 @@ client redirect all work identically.
 
 ### Netlify env
 
-Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (plus `AUTH_SECRET` if not
+Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ALLOWED_EMAILS` (plus `AUTH_SECRET` if not
 already set). `GOOGLE_ALLOWED_DOMAIN` defaults to `bhwmedical.org`. If your
 site's public URL differs from the host Netlify sees, set `GOOGLE_REDIRECT_URI`
 to the exact URL you registered in step 3. Redeploy.
 
 That's it — the login page shows a **Sign in with Google** button, and only
-verified `@bhwmedical.org` accounts are allowed through (checked server-side via
-the ID token's `hd`/email claim, not just the UI hint).
+verified, explicitly allowlisted `@bhwmedical.org` accounts are allowed through.
 
 ### How the domain restriction is enforced
 
-The callback validates the Google ID token's claims (`iss`, `aud`, `exp`,
-`email_verified`) and requires the `hd` (hosted-domain) claim — or the email
-domain — to be in `GOOGLE_ALLOWED_DOMAIN`. A non-Workspace account (personal
-Gmail, another org) is bounced back to the login page with a clear message.
+The callback verifies the Google ID token's RS256 signature against Google's
+published keys, validates its claims (`iss`, `aud`, `exp`, `email_verified`),
+requires Google's Workspace hosted-domain claim, and then checks the exact email allowlist. A
+foreign or unapproved account is bounced back with a clear message.
 CSRF is covered by a signed, short-lived `state` value cross-checked against a
 `SameSite=Lax` cookie.
