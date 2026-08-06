@@ -5,10 +5,8 @@
 // built-in crypto: scrypt-hashed passwords, an HMAC-signed session cookie, and
 // a requireAuth() gate the sensitive functions call before doing any work.
 //
-// Fail-safe-off: if AUTH_SECRET is not set in the environment, requireAuth()
-// passes through (returns ok) so the app behaves exactly as it did before auth
-// existed. Auth turns ON the moment you configure the env vars below — matching
-// how every other function in this repo no-ops until its env is present.
+// Fail closed: if AUTH_SECRET is missing, protected functions return 503 rather
+// than exposing the internal workspace without authentication.
 //
 // Env:
 //   AUTH_SECRET            long random string used to sign sessions (openssl rand -hex 32)
@@ -155,10 +153,19 @@ const GATE_CORS = {
 //   if (!gate.ok) return gate.response;
 //   // gate.session.sub / .role available here
 //
-// When AUTH_SECRET is unset the gate is disabled (ok:true, session:null) so the
-// app keeps working until auth is configured.
 function requireAuth(event) {
-  if (!process.env.AUTH_SECRET) return { ok: true, session: null, disabled: true };
+  if (!process.env.AUTH_SECRET) {
+    return {
+      ok: false,
+      session: null,
+      disabled: true,
+      response: {
+        statusCode: 503,
+        headers: GATE_CORS,
+        body: JSON.stringify({ ok: false, error: "authentication is not configured" }),
+      },
+    };
+  }
   const session = getSession(event);
   if (session) return { ok: true, session };
   return {
