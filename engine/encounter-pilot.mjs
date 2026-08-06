@@ -67,6 +67,9 @@ export function parseQueue(raw, clinicalById = {}) {
         note: cleanText(sessionClinical?.note || legacyNote),
         codes: cleanList(sessionClinical?.codes),
         diagnoses: cleanList(sessionClinical?.diagnoses),
+        tasks: Array.isArray(sessionClinical?.tasks) ? sessionClinical.tasks : [],
+        documents: Array.isArray(sessionClinical?.documents) ? sessionClinical.documents : [],
+        codingRecommendations: Array.isArray(sessionClinical?.codingRecommendations) ? sessionClinical.codingRecommendations : [],
       });
     }).filter((encounter) => encounter.id);
   } catch {

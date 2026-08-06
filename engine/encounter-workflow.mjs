@@ -1,3 +1,6 @@
+import { codingOpportunities } from "./coding-opportunities.mjs";
+import { materializeEncounterWork } from "./output-work.mjs";
+
 export const WORKFLOW_STATUS = Object.freeze({
   VISIT_COMPLETE: "visit_complete",
   DRAFT_RECEIVED: "draft_received",
@@ -64,7 +67,7 @@ export function detectOutputs(noteText = "") {
 export function buildEncounterPacket(input = {}) {
   const note = String(input.note || "").trim();
   const codes = Array.from(new Set([].concat(input.codes || []).map((c) => String(c).trim().toUpperCase()).filter(Boolean)));
-  return {
+  const packet = {
     id: String(input.id || "").trim(),
     encounterId: String(input.encounterId || input.id || "").trim(),
     completedAt: input.completedAt || new Date().toISOString(),
@@ -81,6 +84,22 @@ export function buildEncounterPacket(input = {}) {
     charmDraftSaved: Boolean(input.charmDraftSaved),
     auditTrail: Array.isArray(input.auditTrail) ? input.auditTrail.slice() : [],
   };
+  const work = materializeEncounterWork(packet, input.tasks, input.documents);
+  packet.outputs = work.outputs;
+  packet.tasks = work.tasks;
+  packet.documents = work.documents;
+  packet.codingRecommendations = codingOpportunities(packet, input.codingRecommendations);
+  return packet;
+}
+
+export function refreshEncounterIntelligence(encounter, now = new Date()) {
+  encounter.outputs = detectOutputs(encounter.note);
+  const work = materializeEncounterWork(encounter, encounter.tasks, encounter.documents, now);
+  encounter.outputs = work.outputs;
+  encounter.tasks = work.tasks;
+  encounter.documents = work.documents;
+  encounter.codingRecommendations = codingOpportunities(encounter, encounter.codingRecommendations);
+  return encounter;
 }
 
 export function canQueueCharmEntry(encounter) {
