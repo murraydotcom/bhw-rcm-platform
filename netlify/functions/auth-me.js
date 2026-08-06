@@ -1,6 +1,6 @@
 // netlify/functions/auth-me.js
 // GET → the current session, used by the client-side page gate.
-//   auth disabled (no AUTH_SECRET) → 200 { ok:true, disabled:true }  (gate lets page load)
+//   auth disabled (no AUTH_SECRET) → 503 (gate stays closed)
 //   valid session                  → 200 { ok:true, user }
 //   enabled but no/expired session → 401 { ok:false }
 
@@ -16,7 +16,7 @@ const json = (code, body) => ({ statusCode: code, headers: CORS, body: JSON.stri
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
-  if (!authEnabled()) return json(200, { ok: true, disabled: true });
+  if (!authEnabled()) return json(503, { ok: false, disabled: true, error: "authentication is not configured" });
 
   const session = getSession(event);
   if (!session) return json(401, { ok: false });
