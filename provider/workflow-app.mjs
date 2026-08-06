@@ -6,14 +6,16 @@ import {
   buildEncounterPacket,
   canQueueCharmEntry,
   summarizeQueue,
-  detectOutputs,
+  refreshEncounterIntelligence,
 } from "../engine/encounter-workflow.mjs";
+import { applyCodingOpportunity } from "../engine/coding-opportunities.mjs";
 import {
   alertTransition,
   buildCharmPacket,
   parseQueue,
   serializeQueue,
 } from "../engine/encounter-pilot.mjs";
+import { createEncounterCloudClient } from "./cloud-queue.mjs";
 
 const QUEUE_KEY = "bhw_encounter_queue_v1";
 const NOTES_KEY = "bhw_encounter_session_notes_v1";
@@ -60,13 +62,54 @@ let selected = rows[0]?.id || null;
 let filter = "open";
 const reports = new Map();
 let toastTimer;
+let cloudClient = null;
+let cloudState = "connecting";
+let cloudSaveTimer;
+let activeTab = "audit";
 
 function persist() {
   storageSet(localStorage, QUEUE_KEY, serializeQueue(rows));
   const clinical = Object.fromEntries(rows
-    .filter((row) => row.note || row.codes.length || row.diagnoses.length)
-    .map((row) => [row.id, { note: row.note, codes: row.codes, diagnoses: row.diagnoses }]));
+    .filter((row) => row.note || row.codes.length || row.diagnoses.length || row.tasks.length || row.documents.length || row.codingRecommendations.length)
+    .map((row) => [row.id, {
+      note: row.note,
+      codes: row.codes,
+      diagnoses: row.diagnoses,
+      tasks: row.tasks,
+      documents: row.documents,
+      codingRecommendations: row.codingRecommendations,
+    }]));
   storageSet(sessionStorage, NOTES_KEY, JSON.stringify(clinical));
+  if (cloudClient) {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(async () => {
+      try {
+        await cloudClient.saveAll(rows);
+        setCloudState("connected");
+      } catch (error) {
+        setCloudState("error");
+        showToast(error.message || "Google Cloud sync could not complete. Your browser copy remains available.");
+      }
+    }, 450);
+  }
+}
+
+function setCloudState(state) {
+  cloudState = state;
+  const badge = $("cloudStatus");
+  const privacy = $("queuePrivacy");
+  if (!badge || !privacy) return;
+  badge.className = `badge ${state === "connected" ? "complete" : "warning"}`;
+  const labels = {
+    connecting: "Connecting…",
+    connected: "Google Cloud synced",
+    browser: "Browser-only",
+    error: "Cloud sync interrupted",
+  };
+  badge.textContent = labels[state] || labels.browser;
+  privacy.textContent = state === "connected"
+    ? "Protected Google Cloud queue enabled. Freed and CharmHealth remain the designated medical records."
+    : "Temporary browser queue active. Note text and clinical codes remain session-only until Google Cloud reconnects.";
 }
 
 function showToast(message, duration = 6500) {
@@ -105,7 +148,7 @@ function sync(row, { invalidateApproval = true } = {}) {
   row.owner = nextOwner;
   row.codes = Array.from(new Set(nextCodes));
   row.diagnoses = Array.from(new Set(nextDiagnoses));
-  row.outputs = detectOutputs(row.note);
+  refreshEncounterIntelligence(row);
   if (clinicalChanged && invalidateApproval && row.providerApproved) {
     row.providerApproved = false;
     row.charmDraftSaved = false;
@@ -157,10 +200,6 @@ function statusOptions(current) {
   return Object.values(WORKFLOW_STATUS).map((status) => `<option value="${status}" ${status === current ? "selected" : ""}>${esc(STATUS_LABELS[status])}</option>`).join("");
 }
 
-function clinicalActions(note) {
-  return detectOutputs(note).filter((output) => ["order", "referral", "medication", "follow_up"].includes(output.type));
-}
-
 function renderDetail() {
   const row = rows.find((candidate) => candidate.id === selected);
   if (!row) {
@@ -169,18 +208,21 @@ function renderDetail() {
   }
   const urgency = urgencyFor(row);
   const report = reports.get(row.id);
+  const pendingCoding = row.codingRecommendations.filter((item) => item.status === "pending").length;
+  const openTasks = row.tasks.filter((task) => task.status !== "complete").length;
   $("detail").innerHTML = `
     <div class="card-head"><div><h3>${esc(row.id)} · Encounter packet</h3><div class="enc-meta">${esc(row.provider)} · ${esc(row.payer)} · completed ${ago(urgency.hours)} ago</div></div><span class="badge ${urgency.level}">${esc(urgency.label)}</span></div>
-    <div class="detail-body"><div class="notice"><b>Operational pilot:</b> encounter status and timestamps stay on this browser. Note text and clinical codes remain session-only; Freed and CharmHealth remain the medical records.</div>
+    <div class="detail-body"><div class="notice"><b>Operational pilot:</b> ${cloudState === "connected" ? "this packet is encrypted and synchronized through the protected BHW Google Cloud project." : "this packet is temporarily using browser storage until Google Cloud connects."} Freed and CharmHealth remain the designated medical records.</div>
     <div class="formgrid"><div class="field"><label>Status</label><select id="dStatus">${statusOptions(row.status)}</select></div><div class="field"><label>Owner</label><input id="dOwner" value="${esc(row.owner)}"></div><div class="field"><label>Approved CPT/HCPCS</label><input id="dCodes" value="${esc(row.codes.join(", "))}"></div></div>
     <div class="field"><label>ICD-10-CM diagnoses</label><input id="dDiagnoses" value="${esc(row.diagnoses.join(", "))}" placeholder="I10, E11.65"></div>
-    <div class="field" style="margin-top:12px"><label>Freed / approved clinical note</label><textarea id="dNote" rows="11">${esc(row.note)}</textarea><div class="privacy">Note text and clinical codes stay in this browser tab session only. Closing the tab clears them from the queue.</div></div>
-    <div class="actions"><button class="btn" id="pasteFreed">Paste from Freed</button><button class="btn primary" id="analyze">Run documentation intelligence</button><button class="btn" id="savePacket">Update packet</button><button class="btn danger" id="deleteEncounter">Remove encounter</button></div>
-    <div class="tabs"><button class="tab on" data-tab="audit">Documentation</button><button class="tab" data-tab="actions">Actions & forms</button><button class="tab" data-tab="charm">Charm entry</button><button class="tab" data-tab="history">Audit trail</button></div>
-    <div class="panel on" id="p-audit">${renderReport(report)}</div>
-    <div class="panel" id="p-actions">${renderOutputs(row)}</div>
-    <div class="panel" id="p-charm">${renderCharm(row)}</div>
-    <div class="panel" id="p-history">${renderHistory(row)}</div></div>`;
+    <div class="field" style="margin-top:12px"><label>Freed / approved clinical note</label><textarea id="dNote" rows="11">${esc(row.note)}</textarea><div class="privacy">${cloudState === "connected" ? "Protected cloud synchronization is active. Do not treat this queue as the legal medical record." : "Note text and clinical codes stay in this browser tab session only."}</div></div>
+    <div class="actions"><button class="btn" id="pasteFreed">Paste from Freed</button><button class="btn primary" id="analyze">Run documentation + coding intelligence</button><button class="btn" id="savePacket">Update packet</button><button class="btn danger" id="deleteEncounter">Remove encounter</button></div>
+    <div class="tabs"><button class="tab ${activeTab === "audit" ? "on" : ""}" data-tab="audit">Documentation</button><button class="tab ${activeTab === "coding" ? "on" : ""}" data-tab="coding">Coding opportunities${pendingCoding ? ` (${pendingCoding})` : ""}</button><button class="tab ${activeTab === "actions" ? "on" : ""}" data-tab="actions">Tasks & drafts${openTasks ? ` (${openTasks})` : ""}</button><button class="tab ${activeTab === "charm" ? "on" : ""}" data-tab="charm">Charm entry</button><button class="tab ${activeTab === "history" ? "on" : ""}" data-tab="history">Audit trail</button></div>
+    <div class="panel ${activeTab === "audit" ? "on" : ""}" id="p-audit">${renderReport(report)}</div>
+    <div class="panel ${activeTab === "coding" ? "on" : ""}" id="p-coding">${renderCoding(row)}</div>
+    <div class="panel ${activeTab === "actions" ? "on" : ""}" id="p-actions">${renderOutputs(row)}</div>
+    <div class="panel ${activeTab === "charm" ? "on" : ""}" id="p-charm">${renderCharm(row)}</div>
+    <div class="panel ${activeTab === "history" ? "on" : ""}" id="p-history">${renderHistory(row)}</div></div>`;
   wireDetail(row);
 }
 
@@ -189,15 +231,22 @@ function renderReport(report) {
   return `<div class="notice"><b>${report.summary.readiness}% documentation readiness.</b> ${report.summary.missing} missing · ${report.summary.review} verify · ${report.summary.present} present.</div>${report.checks.map((check) => `<div class="check ${check.status}"><div class="mark">${check.status === "present" ? "✓" : check.status === "missing" ? "✕" : "!"}</div><div><b>${esc(check.label)}</b><small>${esc(check.detail)} · ${esc(check.source)}</small></div></div>`).join("")}`;
 }
 
-function renderOutputs(row) {
-  const outputs = detectOutputs(row.note);
-  const actions = clinicalActions(row.note);
-  const documents = outputs.filter((output) => !actions.includes(output));
-  return `<h4>Clinical actions</h4>${actions.length ? actions.map(outputCard).join("") : '<p class="privacy">No order, referral, medication, or follow-up language detected.</p>'}<h4>Documents and forms</h4>${documents.length ? documents.map(outputCard).join("") : '<p class="privacy">Paste or update the note to detect downstream documents.</p>'}`;
+function renderCoding(row) {
+  const items = row.codingRecommendations || [];
+  if (!items.length) return '<div class="empty"><b>No supported code change was detected.</b><br>This engine only recommends from explicit evidence. It will not infer diagnoses from medications, symptoms, or test results.</div>';
+  return `<div class="notice"><b>Revenue-opportunity review—not an automatic code selector.</b> Apply only after confirming the service, documentation, payer policy, code edits, modifiers, units, and medical necessity. No recommendation is sent to Charm until provider approval.</div>${items.map((item) => {
+    const applied = item.status === "applied";
+    const dismissed = item.status === "dismissed";
+    const current = item.replaceCode ? `${item.replaceCode} → ` : "";
+    return `<div class="recommendation ${esc(item.status)}"><div class="output-head"><div><span class="code-chip">${esc(item.category.toUpperCase())}</span> <b>${esc(current)}${esc(item.code)}</b><p>${esc(item.title)}</p></div><span class="badge ${applied ? "complete" : dismissed ? "warning" : "ontrack"}">${esc(item.status)}</span></div><div class="evidence"><b>Evidence found</b><div>“${esc(item.evidence || "No qualifying evidence captured.")}”</div></div>${item.missingDocumentation ? `<div class="review-note"><b>Before applying:</b> ${esc(item.missingDocumentation)}</div>` : ""}<div class="review-note"><b>Coverage check:</b> ${esc(item.coverageNote)}</div><div class="source"><a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener">${esc(item.sourceLabel)}</a></div><div class="actions"><button class="btn primary apply-code" data-recommendation-id="${esc(item.id)}" ${applied || dismissed || !["add", "replace"].includes(item.action) ? "disabled" : ""}>${item.action === "replace" ? "Apply code change" : item.action === "add" ? "Add to approved fields" : "Documentation required"}</button><button class="btn dismiss-code" data-recommendation-id="${esc(item.id)}" ${applied || dismissed ? "disabled" : ""}>Dismiss</button></div></div>`;
+  }).join("")}`;
 }
 
-function outputCard(output) {
-  return `<div class="output"><div class="output-head"><div><b>${esc(output.label)}</b><p>${esc(output.reason)}</p></div><button class="btn draft" data-kind="${esc(output.type)}">Draft</button></div></div>`;
+function renderOutputs(row) {
+  const tasks = row.tasks || [];
+  const documents = row.documents || [];
+  const completed = tasks.filter((task) => task.status === "complete").length;
+  return `<div class="notice"><b>${tasks.length - completed} open task${tasks.length - completed === 1 ? "" : "s"}; ${documents.length} generated draft${documents.length === 1 ? "" : "s"}.</b> Drafts live in this encounter packet and synchronize to the protected queue. Edit them here, download when needed, and mark the work complete.</div><h4>Completion tasks</h4>${tasks.length ? tasks.map((task) => `<label class="task ${task.status === "complete" ? "done" : ""}"><input type="checkbox" class="task-toggle" data-task-id="${esc(task.id)}" ${task.status === "complete" ? "checked" : ""}><span><b>${esc(task.title)}</b><small>${esc(task.reason)} · Owner: ${esc(task.owner)} · Suggested role: ${esc(task.recommendedRole)} · Due ${new Date(task.dueAt).toLocaleString()}</small></span></label>`).join("") : '<p class="privacy">Paste or update the note to generate work tasks.</p>'}<h4>Generated documents and forms</h4>${documents.length ? documents.map((document) => `<div class="document-card"><div class="output-head"><div><b>${esc(document.title)}</b><p>${esc(document.reason)}</p></div><span class="badge ${document.status === "complete" ? "complete" : "warning"}">${esc(document.status)}</span></div><textarea class="document-content" data-document-id="${esc(document.id)}" rows="12">${esc(document.content)}</textarea><div class="actions"><button class="btn document-save" data-document-id="${esc(document.id)}">Save draft</button><button class="btn document-ready" data-document-id="${esc(document.id)}" ${document.status === "complete" ? "disabled" : ""}>Mark ready</button><button class="btn primary document-complete" data-document-id="${esc(document.id)}" ${document.status === "complete" ? "disabled" : ""}>Complete</button><button class="btn document-download" data-document-id="${esc(document.id)}">Download .txt</button></div></div>`).join("") : '<p class="privacy">No generated document is required from the language detected in this note.</p>'}`;
 }
 
 function renderCharm(row) {
@@ -213,25 +262,13 @@ function renderHistory(row) {
   return `<div class="audit">${row.auditTrail.length ? row.auditTrail.slice().reverse().map((entry) => `<div class="audit-row"><b>${esc(entry.text)}</b><div>${new Date(entry.at).toLocaleString()}</div></div>`).join("") : '<div class="privacy">No workflow activity recorded.</div>'}</div>`;
 }
 
-function draftText(kind, row) {
-  const header = `Encounter ${row.id}\nProvider: ${row.provider}\nDate: ${new Date(row.completedAt).toLocaleDateString()}\n`;
-  const templates = {
-    instructions: `${header}\nPatient instructions\nFollow the treatment plan reviewed today. Complete the ordered tests and referrals. Contact BHW for new or worsening symptoms.`,
-    referral: `${header}\nReferral support\nReason for referral: [Provider review required]\nRelevant assessment: ${row.diagnoses.join(", ") || "[add diagnosis]"}\nClinical question: [add question]`,
-    order: `${header}\nOrders summary\nOrders discussed in the encounter require provider verification before release.`,
-    follow_up: `${header}\nFollow-up task\nSchedule according to the approved assessment and plan.`,
-    medication: `${header}\nMedication verification\nConfirm medication name, dose, route, frequency, start/stop status, and patient counseling before chart entry.`,
-    program: `${header}\nProgram documentation\nConfirm eligibility, consent date, responsible care-team role, qualifying time, and no duplicate counting before enrollment.`,
-  };
-  return templates[kind] || `${header}\nDraft ${kind}\nProvider review required.`;
-}
-
 function wireDetail(row) {
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.onclick = () => {
       document.querySelectorAll(".tab,.panel").forEach((element) => element.classList.remove("on"));
       tab.classList.add("on");
       $("p-" + tab.dataset.tab).classList.add("on");
+      activeTab = tab.dataset.tab;
     };
   });
 
@@ -255,8 +292,12 @@ function wireDetail(row) {
   $("analyze").onclick = () => {
     sync(row);
     reports.set(row.id, analyzeNote(row.note, { codes: row.codes, dxCodes: row.diagnoses }));
-    row.status = reports.get(row.id).summary.missing > 0 ? WORKFLOW_STATUS.NEEDS_CLARIFICATION : WORKFLOW_STATUS.READY_FOR_PROVIDER;
-    log(row, "Documentation and coding intelligence completed");
+    const pendingRecommendations = row.codingRecommendations.filter((item) => item.status === "pending").length;
+    row.status = reports.get(row.id).summary.missing > 0
+      ? WORKFLOW_STATUS.NEEDS_CLARIFICATION
+      : pendingRecommendations ? WORKFLOW_STATUS.CODING_REVIEW : WORKFLOW_STATUS.READY_FOR_PROVIDER;
+    activeTab = pendingRecommendations ? "coding" : "audit";
+    log(row, `Documentation and coding intelligence completed; ${pendingRecommendations} coding opportunities require review`);
     persist();
     render();
   };
@@ -276,10 +317,90 @@ function wireDetail(row) {
     render();
   };
 
-  document.querySelectorAll(".draft").forEach((button) => {
-    button.onclick = async () => {
-      await copyText(draftText(button.dataset.kind, row), `${button.dataset.kind} draft copied for provider review.`);
-      log(row, `${button.dataset.kind} draft generated for provider review`);
+  document.querySelectorAll(".apply-code").forEach((button) => {
+    button.onclick = () => {
+      const recommendation = row.codingRecommendations.find((item) => item.id === button.dataset.recommendationId);
+      if (!recommendation || !applyCodingOpportunity(row, recommendation)) return;
+      row.providerApproved = false;
+      row.charmDraftSaved = false;
+      row.status = WORKFLOW_STATUS.CODING_REVIEW;
+      refreshEncounterIntelligence(row);
+      log(row, `${recommendation.code} coding recommendation applied to the editable encounter fields; provider approval required`);
+      persist();
+      render();
+      showToast(`${recommendation.code} added to the editable fields. Review the evidence and approve before Charm entry.`);
+    };
+  });
+
+  document.querySelectorAll(".dismiss-code").forEach((button) => {
+    button.onclick = () => {
+      const recommendation = row.codingRecommendations.find((item) => item.id === button.dataset.recommendationId);
+      if (!recommendation) return;
+      recommendation.status = "dismissed";
+      recommendation.decidedAt = new Date().toISOString();
+      log(row, `${recommendation.code} coding recommendation dismissed`);
+      const stillPending = row.codingRecommendations.some((item) => item.status === "pending");
+      if (!stillPending && row.status === WORKFLOW_STATUS.CODING_REVIEW) row.status = WORKFLOW_STATUS.READY_FOR_PROVIDER;
+      persist();
+      render();
+    };
+  });
+
+  document.querySelectorAll(".task-toggle").forEach((checkbox) => {
+    checkbox.onchange = () => {
+      const task = row.tasks.find((item) => item.id === checkbox.dataset.taskId);
+      if (!task) return;
+      task.status = checkbox.checked ? "complete" : "open";
+      task.completedAt = checkbox.checked ? new Date().toISOString() : "";
+      log(row, `${task.title} task marked ${task.status}`);
+      persist();
+      render();
+    };
+  });
+
+  const saveDocument = (button, status) => {
+    const documentItem = row.documents.find((item) => item.id === button.dataset.documentId);
+    const content = button.closest(".document-card")?.querySelector(".document-content")?.value;
+    if (!documentItem || typeof content !== "string") return;
+    const changed = documentItem.content !== content || documentItem.status !== status;
+    documentItem.content = content;
+    documentItem.status = status;
+    documentItem.updatedAt = new Date().toISOString();
+    if (changed && row.providerApproved) {
+      row.providerApproved = false;
+      row.charmDraftSaved = false;
+      row.status = WORKFLOW_STATUS.READY_FOR_PROVIDER;
+    }
+    if (status === "complete") {
+      const task = row.tasks.find((item) => item.documentId === documentItem.id);
+      if (task) {
+        task.status = "complete";
+        task.completedAt = new Date().toISOString();
+      }
+    }
+    log(row, `${documentItem.title} saved as ${status}`);
+    persist();
+    render();
+    showToast(`${documentItem.title} saved in the encounter packet.`);
+  };
+
+  document.querySelectorAll(".document-save").forEach((button) => { button.onclick = () => saveDocument(button, "draft"); });
+  document.querySelectorAll(".document-ready").forEach((button) => { button.onclick = () => saveDocument(button, "ready"); });
+  document.querySelectorAll(".document-complete").forEach((button) => { button.onclick = () => saveDocument(button, "complete"); });
+  document.querySelectorAll(".document-download").forEach((button) => {
+    button.onclick = () => {
+      const documentItem = row.documents.find((item) => item.id === button.dataset.documentId);
+      const content = button.closest(".document-card")?.querySelector(".document-content")?.value;
+      if (!documentItem || typeof content !== "string") return;
+      documentItem.content = content;
+      documentItem.updatedAt = new Date().toISOString();
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${row.id}-${documentItem.type}-draft.txt`.replace(/[^a-z0-9._-]+/gi, "-");
+      link.click();
+      URL.revokeObjectURL(link.href);
+      log(row, `${documentItem.title} downloaded for supervised use`);
       persist();
     };
   });
@@ -350,9 +471,13 @@ function wireDetail(row) {
     render();
   };
 
-  $("deleteEncounter").onclick = () => {
+  $("deleteEncounter").onclick = async () => {
     if (!confirm(`Remove ${row.id} from this browser's operational queue? This does not alter Freed or CharmHealth.`)) return;
     rows = rows.filter((candidate) => candidate.id !== row.id);
+    if (cloudClient) {
+      try { await cloudClient.remove(row.id); }
+      catch (error) { setCloudState("error"); showToast(error.message || "The cloud copy could not be removed."); }
+    }
     reports.delete(row.id);
     selected = rows[0]?.id || null;
     persist();
@@ -478,3 +603,30 @@ window.addEventListener("beforeunload", persist);
 render();
 checkAlerts();
 setInterval(tick, 60000);
+
+async function initializeCloudQueue() {
+  setCloudState("connecting");
+  try {
+    const client = await createEncounterCloudClient();
+    if (!client) {
+      setCloudState("browser");
+      return;
+    }
+    const remoteRows = await client.list();
+    cloudClient = client;
+    if (remoteRows.length) {
+      rows = remoteRows.map((row) => buildEncounterPacket(row));
+      selected = rows.some((row) => row.id === selected) ? selected : (rows[0]?.id || null);
+    } else if (rows.length) {
+      await client.saveAll(rows);
+    }
+    setCloudState("connected");
+    persist();
+    render();
+  } catch (error) {
+    setCloudState("error");
+    showToast(error.message || "Google Cloud sync is not available. The temporary browser queue is still working.");
+  }
+}
+
+initializeCloudQueue();
