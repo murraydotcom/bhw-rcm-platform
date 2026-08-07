@@ -16,7 +16,8 @@ function sectionFor(line) {
   if (/NOTE FOR FUTURE/.test(normalized)) return "future";
   if (/GUIDELINE NOTES?/.test(normalized)) return "guidelines";
   if (/COMPLETE/.test(normalized)) return "complete";
-  if (/(SUGGESTED|FINAL|AFTER (THE )?(FIX|CHANGE)|CPT|ICD).*(COD|CPT|ICD)|^(CPT|HCPCS|ICD)[ -]?10/.test(normalized)) return "codes";
+  if (/CODING AS DOCUMENTED|CODES? AS DOCUMENTED|SUPPORTED (?:CODES?|CODING)/.test(normalized)) return "codes_documented";
+  if (/CODING AFTER CONFIRMED CHANGES|AFTER (?:THE )?(?:FIX|FIXES|CHANGE|CHANGES)|SUGGESTED (?:CODES?|CODING)|THEN ADD CPT/.test(normalized)) return "codes_after";
   if (/NEXT ACTION/.test(normalized)) return "next";
   return "";
 }
@@ -74,6 +75,10 @@ export function emptyClinicalAudit() {
     suggestedCodesAfterChanges: { cpt: [], icd10: [] },
     baselineCodes: [],
     baselineDiagnoses: [],
+    sourceNoteHash: "",
+    automatedAt: "",
+    model: "",
+    automationRunId: "",
   };
 }
 
@@ -103,7 +108,6 @@ export function parseClinicalAuditReport(reportText, encounter = {}) {
     if (nextSection) {
       section = nextSection;
       currentFinding = null;
-      if (section === "codes") codeLines.push(line);
       return;
     }
     const item = stripListPrefix(line);
@@ -122,12 +126,12 @@ export function parseClinicalAuditReport(reportText, encounter = {}) {
     }
     if (section === "guidelines") audit.guidelineNotes.push(item);
     if (section === "complete") audit.completeNotes.push(item);
-    if (section === "codes") codeLines.push(line);
+    if (section === "codes_after") codeLines.push(line);
   });
 
   audit.guidelineNotes = unique(audit.guidelineNotes);
   audit.completeNotes = unique(audit.completeNotes);
-  audit.suggestedCodesAfterChanges = parseSuggestedCodes(codeLines.length ? codeLines : lines.filter((line) => /CPT|HCPCS|ICD-?10/i.test(line)));
+  audit.suggestedCodesAfterChanges = parseSuggestedCodes(codeLines);
   audit.status = audit.findings.some((finding) => finding.decision === "pending") ? "needs_resolution" : "resolved";
   return audit;
 }

@@ -94,6 +94,10 @@ function cleanClinicalAudit(value) {
     },
     baselineCodes: cleanList(value.baselineCodes || [], 30, 32),
     baselineDiagnoses: cleanList(value.baselineDiagnoses || [], 50, 32),
+    sourceNoteHash: cleanText(value.sourceNoteHash, 128),
+    automatedAt: cleanText(value.automatedAt, 40),
+    model: cleanText(value.model, 100),
+    automationRunId: cleanText(value.automationRunId, 160),
   };
 }
 

@@ -49,6 +49,26 @@ test("chart audit report becomes structured provider-review findings without aut
   assert.deepEqual(audit.baselineDiagnoses, ["I10"]);
 });
 
+test("coding supported now is never mixed into post-change code suggestions", () => {
+  const audit = parseClinicalAuditReport(`🎯 CLOSURE VERDICT: Close after fixes below
+Recommended risk level: Moderate — for you to confirm
+
+💰 CODING AS DOCUMENTED
+CPT/HCPCS: 99213
+ICD-10-CM: I10
+
+💡 CODING AFTER CONFIRMED CHANGES (review only)
+CPT/HCPCS: 99214, G2211
+ICD-10-CM: I10, E11.65
+
+➡️ NEXT ACTION: Route to provider`, { codes: ["99213"], diagnoses: ["I10"] });
+
+  assert.deepEqual(audit.baselineCodes, ["99213"]);
+  assert.deepEqual(audit.baselineDiagnoses, ["I10"]);
+  assert.deepEqual(audit.suggestedCodesAfterChanges.cpt, ["99214", "G2211"]);
+  assert.deepEqual(audit.suggestedCodesAfterChanges.icd10, ["I10", "E11.65"]);
+});
+
 test("not-done audit decision creates a task and never creates an addendum", () => {
   let audit = parseClinicalAuditReport(REPORT);
   audit = resolveClinicalAuditFinding(audit, "audit:1", "not_done", { providerResponse: "Needs follow-up tomorrow." });
@@ -106,10 +126,18 @@ test("protected cloud encounter keeps clinical audit review state and provider d
     id: "SYNTH-CLOUD-1",
     completedAt: "2026-08-07T13:00:00Z",
     status: "audit_review",
-    clinicalAudit: audit,
+    clinicalAudit: {
+      ...audit,
+      sourceNoteHash: "abc123",
+      automatedAt: "2026-08-07T16:30:00.000Z",
+      model: "gemini-3.5-flash",
+      automationRunId: "run-123",
+    },
   });
   assert.equal(saved.status, "audit_review");
   assert.equal(saved.clinicalAudit.findings[0].decision, "occurred");
   assert.equal(saved.clinicalAudit.findings[0].approvedAddendum, "Provider-confirmed synthetic clarification.");
   assert.deepEqual(saved.clinicalAudit.suggestedCodesAfterChanges.cpt, ["99214", "G2211"]);
+  assert.equal(saved.clinicalAudit.sourceNoteHash, "abc123");
+  assert.equal(saved.clinicalAudit.model, "gemini-3.5-flash");
 });
