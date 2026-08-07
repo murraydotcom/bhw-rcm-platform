@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 const AUDIENCE = "bhw-rcm-cloud";
 const MAX_BODY_BYTES = 512 * 1024;
 const ALLOWED_STATUSES = new Set([
-  "visit_complete", "draft_received", "needs_clarification", "coding_review",
+  "visit_complete", "draft_received", "audit_review", "needs_clarification", "coding_review",
   "ready_for_provider", "approved_for_entry", "charm_draft_saved",
   "downstream_pending", "closed",
 ]);
@@ -60,6 +60,47 @@ function cleanRecommendations(values = []) {
   })).filter((item) => item.id && item.code);
 }
 
+function cleanClinicalAudit(value) {
+  if (!value || typeof value !== "object") return null;
+  const decisions = new Set(["pending", "occurred", "already_documented", "not_done", "dismissed"]);
+  const severities = new Set(["critical", "high", "moderate", "low"]);
+  const findings = (Array.isArray(value.findings) ? value.findings : []).slice(0, 50).map((finding, index) => ({
+    id: cleanText(finding?.id || `audit:${index + 1}`, 100),
+    severity: severities.has(finding?.severity) ? finding.severity : "moderate",
+    issue: cleanText(finding?.issue, 4000),
+    location: cleanText(finding?.location, 1000),
+    suggestedFix: cleanText(finding?.suggestedFix, 4000),
+    decision: decisions.has(finding?.decision) ? finding.decision : "pending",
+    providerResponse: cleanText(finding?.providerResponse, 4000),
+    approvedAddendum: cleanText(finding?.approvedAddendum, 8000),
+    decidedAt: cleanText(finding?.decidedAt, 40),
+    addendumAppliedAt: cleanText(finding?.addendumAppliedAt, 40),
+  })).filter((finding) => finding.id && finding.issue);
+  return {
+    status: ["not_run", "imported", "needs_resolution", "resolved"].includes(value.status) ? value.status : "needs_resolution",
+    importedAt: cleanText(value.importedAt, 40),
+    source: cleanText(value.source || "BHW chart audit", 100),
+    verdict: cleanText(value.verdict, 160),
+    estimatedFixMinutes: value.estimatedFixMinutes !== null && value.estimatedFixMinutes !== "" && Number.isFinite(Number(value.estimatedFixMinutes))
+      ? Math.max(0, Math.min(480, Number(value.estimatedFixMinutes))) : null,
+    recommendedRisk: severities.has(value.recommendedRisk) ? value.recommendedRisk : "",
+    rawReport: cleanText(value.rawReport, 120000),
+    findings,
+    guidelineNotes: (Array.isArray(value.guidelineNotes) ? value.guidelineNotes : []).slice(0, 30).map((item) => cleanText(item, 4000)).filter(Boolean),
+    completeNotes: (Array.isArray(value.completeNotes) ? value.completeNotes : []).slice(0, 30).map((item) => cleanText(item, 2000)).filter(Boolean),
+    suggestedCodesAfterChanges: {
+      cpt: cleanList(value.suggestedCodesAfterChanges?.cpt || [], 30, 32),
+      icd10: cleanList(value.suggestedCodesAfterChanges?.icd10 || [], 50, 32),
+    },
+    baselineCodes: cleanList(value.baselineCodes || [], 30, 32),
+    baselineDiagnoses: cleanList(value.baselineDiagnoses || [], 50, 32),
+    sourceNoteHash: cleanText(value.sourceNoteHash, 128),
+    automatedAt: cleanText(value.automatedAt, 40),
+    model: cleanText(value.model, 100),
+    automationRunId: cleanText(value.automationRunId, 160),
+  };
+}
+
 export function sanitizeEncounter(input = {}) {
   const id = cleanText(input.id || input.encounterId, 100);
   if (!id) throw Object.assign(new Error("encounter id is required"), { status: 400 });
@@ -87,6 +128,7 @@ export function sanitizeEncounter(input = {}) {
     tasks: cleanTasks(input.tasks),
     documents: cleanDocuments(input.documents),
     codingRecommendations: cleanRecommendations(input.codingRecommendations),
+    clinicalAudit: cleanClinicalAudit(input.clinicalAudit),
   };
 }
 

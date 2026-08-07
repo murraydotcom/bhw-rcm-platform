@@ -70,6 +70,7 @@ export function parseQueue(raw, clinicalById = {}) {
         tasks: Array.isArray(sessionClinical?.tasks) ? sessionClinical.tasks : [],
         documents: Array.isArray(sessionClinical?.documents) ? sessionClinical.documents : [],
         codingRecommendations: Array.isArray(sessionClinical?.codingRecommendations) ? sessionClinical.codingRecommendations : [],
+        clinicalAudit: sessionClinical?.clinicalAudit,
       });
     }).filter((encounter) => encounter.id);
   } catch {
