@@ -1,8 +1,8 @@
-import { createRequire } from "node:module";
+import auth from "./lib/auth.js";
+import cloudToken from "./lib/cloudToken.js";
 
-const require = createRequire(import.meta.url);
-const { authEnabled, getSession } = require("./lib/auth.js");
-const { cloudTokenEnabled, signCloudToken } = require("./lib/cloudToken.js");
+const { authEnabled, getSession } = auth;
+const { cloudTokenEnabled, signCloudToken } = cloudToken;
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
