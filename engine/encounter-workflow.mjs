@@ -1,9 +1,11 @@
 import { codingOpportunities } from "./coding-opportunities.mjs";
 import { materializeEncounterWork } from "./output-work.mjs";
+import { auditTasks, clinicalAuditSummary, normalizeClinicalAudit } from "./clinical-audit.mjs";
 
 export const WORKFLOW_STATUS = Object.freeze({
   VISIT_COMPLETE: "visit_complete",
   DRAFT_RECEIVED: "draft_received",
+  AUDIT_REVIEW: "audit_review",
   NEEDS_CLARIFICATION: "needs_clarification",
   CODING_REVIEW: "coding_review",
   READY_FOR_PROVIDER: "ready_for_provider",
@@ -16,6 +18,7 @@ export const WORKFLOW_STATUS = Object.freeze({
 export const STATUS_LABELS = Object.freeze({
   [WORKFLOW_STATUS.VISIT_COMPLETE]: "Visit complete",
   [WORKFLOW_STATUS.DRAFT_RECEIVED]: "Draft received",
+  [WORKFLOW_STATUS.AUDIT_REVIEW]: "Clinical audit review",
   [WORKFLOW_STATUS.NEEDS_CLARIFICATION]: "Needs clarification",
   [WORKFLOW_STATUS.CODING_REVIEW]: "Coding review",
   [WORKFLOW_STATUS.READY_FOR_PROVIDER]: "Ready for provider",
@@ -82,11 +85,17 @@ export function buildEncounterPacket(input = {}) {
     owner: input.owner || "Provider",
     providerApproved: Boolean(input.providerApproved),
     charmDraftSaved: Boolean(input.charmDraftSaved),
+    clinicalAudit: normalizeClinicalAudit(input.clinicalAudit),
     auditTrail: Array.isArray(input.auditTrail) ? input.auditTrail.slice() : [],
   };
-  const work = materializeEncounterWork(packet, input.tasks, input.documents);
+  const previousTasks = [].concat(input.tasks || []);
+  const work = materializeEncounterWork(packet, previousTasks, input.documents);
   packet.outputs = work.outputs;
   packet.tasks = work.tasks;
+  packet.tasks.push(...auditTasks(packet.clinicalAudit, packet).map((task) => {
+    const previous = previousTasks.find((item) => item.id === task.id);
+    return previous ? { ...task, status: previous.status, completedAt: previous.completedAt } : task;
+  }).filter((task) => !packet.tasks.some((existing) => existing.id === task.id)));
   packet.documents = work.documents;
   packet.codingRecommendations = codingOpportunities(packet, input.codingRecommendations);
   return packet;
@@ -94,9 +103,14 @@ export function buildEncounterPacket(input = {}) {
 
 export function refreshEncounterIntelligence(encounter, now = new Date()) {
   encounter.outputs = detectOutputs(encounter.note);
-  const work = materializeEncounterWork(encounter, encounter.tasks, encounter.documents, now);
+  const previousTasks = [].concat(encounter.tasks || []);
+  const work = materializeEncounterWork(encounter, previousTasks, encounter.documents, now);
   encounter.outputs = work.outputs;
   encounter.tasks = work.tasks;
+  encounter.tasks.push(...auditTasks(encounter.clinicalAudit, encounter, now).map((task) => {
+    const previous = previousTasks.find((item) => item.id === task.id);
+    return previous ? { ...task, status: previous.status, completedAt: previous.completedAt } : task;
+  }).filter((task, index, all) => all.findIndex((item) => item.id === task.id) === index));
   encounter.documents = work.documents;
   encounter.codingRecommendations = codingOpportunities(encounter, encounter.codingRecommendations);
   return encounter;
@@ -107,6 +121,8 @@ export function canQueueCharmEntry(encounter) {
   if (!encounter.providerApproved) reasons.push("Provider approval is required.");
   if (!String(encounter.note || "").trim()) reasons.push("An approved note is required.");
   if (!Array.isArray(encounter.codes) || !encounter.codes.length) reasons.push("At least one approved code is required.");
+  const audit = clinicalAuditSummary(encounter.clinicalAudit);
+  if (audit.blocking) reasons.push(`${audit.blocking} Critical/High clinical audit finding${audit.blocking === 1 ? "" : "s"} still require provider resolution.`);
   if (encounter.status === WORKFLOW_STATUS.CLOSED) reasons.push("The encounter is already closed.");
   return { allowed: reasons.length === 0, reasons };
 }

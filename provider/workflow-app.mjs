@@ -10,6 +10,12 @@ import {
 } from "../engine/encounter-workflow.mjs";
 import { applyCodingOpportunity } from "../engine/coding-opportunities.mjs";
 import {
+  approvedAuditAddenda,
+  clinicalAuditSummary,
+  parseClinicalAuditReport,
+  resolveClinicalAuditFinding,
+} from "../engine/clinical-audit.mjs";
+import {
   alertTransition,
   buildCharmPacket,
   parseQueue,
@@ -65,12 +71,12 @@ let toastTimer;
 let cloudClient = null;
 let cloudState = "connecting";
 let cloudSaveTimer;
-let activeTab = "audit";
+let activeTab = "clinical";
 
 function persist() {
   storageSet(localStorage, QUEUE_KEY, serializeQueue(rows));
   const clinical = Object.fromEntries(rows
-    .filter((row) => row.note || row.codes.length || row.diagnoses.length || row.tasks.length || row.documents.length || row.codingRecommendations.length)
+    .filter((row) => row.note || row.codes.length || row.diagnoses.length || row.tasks.length || row.documents.length || row.codingRecommendations.length || row.clinicalAudit?.status !== "not_run")
     .map((row) => [row.id, {
       note: row.note,
       codes: row.codes,
@@ -78,6 +84,7 @@ function persist() {
       tasks: row.tasks,
       documents: row.documents,
       codingRecommendations: row.codingRecommendations,
+      clinicalAudit: row.clinicalAudit,
     }]));
   storageSet(sessionStorage, NOTES_KEY, JSON.stringify(clinical));
   if (cloudClient) {
@@ -208,6 +215,7 @@ function renderDetail() {
   }
   const urgency = urgencyFor(row);
   const report = reports.get(row.id);
+  const auditSummary = clinicalAuditSummary(row.clinicalAudit);
   const pendingCoding = row.codingRecommendations.filter((item) => item.status === "pending").length;
   const openTasks = row.tasks.filter((task) => task.status !== "complete").length;
   $("detail").innerHTML = `
@@ -217,13 +225,34 @@ function renderDetail() {
     <div class="field"><label>ICD-10-CM diagnoses</label><input id="dDiagnoses" value="${esc(row.diagnoses.join(", "))}" placeholder="I10, E11.65"></div>
     <div class="field" style="margin-top:12px"><label>Freed / approved clinical note</label><textarea id="dNote" rows="11">${esc(row.note)}</textarea><div class="privacy">${cloudState === "connected" ? "Protected cloud synchronization is active. Do not treat this queue as the legal medical record." : "Note text and clinical codes stay in this browser tab session only."}</div></div>
     <div class="actions"><button class="btn" id="pasteFreed">Paste from Freed</button><button class="btn primary" id="analyze">Run documentation + coding intelligence</button><button class="btn" id="savePacket">Update packet</button><button class="btn danger" id="deleteEncounter">Remove encounter</button></div>
-    <div class="tabs"><button class="tab ${activeTab === "audit" ? "on" : ""}" data-tab="audit">Documentation</button><button class="tab ${activeTab === "coding" ? "on" : ""}" data-tab="coding">Coding opportunities${pendingCoding ? ` (${pendingCoding})` : ""}</button><button class="tab ${activeTab === "actions" ? "on" : ""}" data-tab="actions">Tasks & drafts${openTasks ? ` (${openTasks})` : ""}</button><button class="tab ${activeTab === "charm" ? "on" : ""}" data-tab="charm">Charm entry</button><button class="tab ${activeTab === "history" ? "on" : ""}" data-tab="history">Audit trail</button></div>
+    <div class="tabs"><button class="tab ${activeTab === "clinical" ? "on" : ""}" data-tab="clinical">Clinical audit${auditSummary.pending ? ` (${auditSummary.pending})` : ""}</button><button class="tab ${activeTab === "audit" ? "on" : ""}" data-tab="audit">Documentation</button><button class="tab ${activeTab === "coding" ? "on" : ""}" data-tab="coding">Coding opportunities${pendingCoding ? ` (${pendingCoding})` : ""}</button><button class="tab ${activeTab === "actions" ? "on" : ""}" data-tab="actions">Tasks & drafts${openTasks ? ` (${openTasks})` : ""}</button><button class="tab ${activeTab === "charm" ? "on" : ""}" data-tab="charm">Charm entry</button><button class="tab ${activeTab === "history" ? "on" : ""}" data-tab="history">Audit trail</button></div>
+    <div class="panel ${activeTab === "clinical" ? "on" : ""}" id="p-clinical">${renderClinicalAudit(row)}</div>
     <div class="panel ${activeTab === "audit" ? "on" : ""}" id="p-audit">${renderReport(report)}</div>
     <div class="panel ${activeTab === "coding" ? "on" : ""}" id="p-coding">${renderCoding(row)}</div>
     <div class="panel ${activeTab === "actions" ? "on" : ""}" id="p-actions">${renderOutputs(row)}</div>
     <div class="panel ${activeTab === "charm" ? "on" : ""}" id="p-charm">${renderCharm(row)}</div>
     <div class="panel ${activeTab === "history" ? "on" : ""}" id="p-history">${renderHistory(row)}</div></div>`;
   wireDetail(row);
+}
+
+function renderClinicalAudit(row) {
+  const audit = row.clinicalAudit || {};
+  const summary = clinicalAuditSummary(audit);
+  if (audit.status === "not_run" || !audit.rawReport) {
+    return `<div class="notice"><b>Use both outputs.</b> Keep your dated <code>Chart_Notes</code> Google Doc as the readable audit copy, then paste that audit here to turn the findings into provider decisions, tasks, corrections, and the second coding pass.</div>
+      <div class="field"><label>Chart audit report</label><textarea id="auditPaste" rows="12" placeholder="Paste the BHW audit screener output here. Patient-specific content stays in the protected encounter packet and is not used for trend memory."></textarea></div>
+      <div class="actions"><button class="btn" id="pasteAuditClipboard">Paste audit</button><button class="btn primary" id="importAudit">Import audit findings</button></div>`;
+  }
+  const risk = audit.recommendedRisk ? audit.recommendedRisk.toUpperCase() : "NOT STATED";
+  const suggestedCpt = audit.suggestedCodesAfterChanges?.cpt || [];
+  const suggestedDx = audit.suggestedCodesAfterChanges?.icd10 || [];
+  const corrections = approvedAuditAddenda(audit);
+  return `<div class="notice"><b>${esc(audit.verdict || "Clinical audit imported")}</b> · Recommended risk ${esc(risk)} — provider confirmation required${audit.estimatedFixMinutes !== null ? ` · Estimated fix ${esc(audit.estimatedFixMinutes)} min` : ""}.<br>${summary.blocking ? `<b>${summary.blocking} Critical/High finding${summary.blocking === 1 ? "" : "s"} block Charm approval until resolved.</b>` : summary.pending ? `${summary.pending} finding${summary.pending === 1 ? "" : "s"} still need a decision.` : "All imported findings have a provider decision."}</div>
+    <div class="review-note"><b>Audit-suggested codes after changes — review only:</b> CPT/HCPCS ${esc(suggestedCpt.join(", ") || "none stated")} · ICD-10-CM ${esc(suggestedDx.join(", ") || "none stated")}. These are never applied automatically.</div>
+    ${audit.findings?.length ? audit.findings.map((finding) => `<div class="audit-finding severity-${esc(finding.severity)}" data-audit-id="${esc(finding.id)}"><div class="output-head"><div><span class="code-chip">${esc(finding.severity.toUpperCase())}</span> <b>${esc(finding.issue)}</b></div><span class="badge ${finding.decision === "pending" ? "warning" : "complete"}">${esc(finding.decision.replaceAll("_", " "))}</span></div><div class="review-note"><b>Audit location/fix:</b> ${esc(finding.location || "See audit finding")} · ${esc(finding.suggestedFix || finding.issue)}</div><div class="field"><label>Your context / reason</label><input class="audit-response" value="${esc(finding.providerResponse || "")}" placeholder="Optional provider context"></div><div class="field"><label>Exact correction to add only if it actually occurred</label><textarea class="audit-addendum" rows="3" placeholder="Enter only facts you can personally confirm occurred during this visit.">${esc(finding.approvedAddendum || "")}</textarea></div><div class="actions"><button class="btn audit-decision" data-decision="occurred">Occurred — draft correction</button><button class="btn audit-decision" data-decision="already_documented">Already documented</button><button class="btn audit-decision" data-decision="not_done">Not done — make task</button><button class="btn audit-decision" data-decision="dismissed">Dismiss</button></div></div>`).join("") : '<p class="privacy">No actionable findings were parsed from this audit.</p>'}
+    ${corrections.length ? `<div class="notice"><b>${corrections.length} provider-confirmed correction${corrections.length === 1 ? " is" : "s are"} ready.</b> Append them to the editable note, then the documentation and coding engines will rerun against the corrected note.</div><button class="btn primary" id="applyAuditCorrections">Append confirmed corrections + rerun</button>` : ""}
+    <details class="audit-raw"><summary>Original imported audit</summary><pre>${esc(audit.rawReport)}</pre></details>
+    <div class="actions"><button class="btn" id="replaceAudit">Replace imported audit</button></div>`;
 }
 
 function renderReport(report) {
@@ -272,6 +301,94 @@ function wireDetail(row) {
       activeTab = tab.dataset.tab;
     };
   });
+
+  const importAuditText = (text) => {
+    if (!String(text || "").trim()) {
+      showToast("Paste the chart audit report first.");
+      return false;
+    }
+    sync(row);
+    row.clinicalAudit = parseClinicalAuditReport(text, row);
+    const summary = clinicalAuditSummary(row.clinicalAudit);
+    row.providerApproved = false;
+    row.charmDraftSaved = false;
+    row.status = summary.pending ? WORKFLOW_STATUS.AUDIT_REVIEW : WORKFLOW_STATUS.CODING_REVIEW;
+    activeTab = "clinical";
+    log(row, `BHW clinical chart audit imported; ${summary.pending} finding${summary.pending === 1 ? "" : "s"} require provider decisions`);
+    persist();
+    render();
+    showToast(summary.pending ? "Audit imported. Confirm each finding before it can change the note or downstream coding." : "Audit imported with no actionable findings parsed.");
+    return true;
+  };
+
+  if ($("pasteAuditClipboard")) $("pasteAuditClipboard").onclick = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) throw new Error("The clipboard is empty.");
+      $("auditPaste").value = text;
+    } catch (error) {
+      showToast(error.message || "Clipboard access was blocked. Click in the audit box and press Ctrl+V.");
+    }
+  };
+
+  if ($("importAudit")) $("importAudit").onclick = () => importAuditText($("auditPaste").value);
+
+  document.querySelectorAll(".audit-decision").forEach((button) => {
+    button.onclick = () => {
+      const card = button.closest(".audit-finding");
+      const decision = button.dataset.decision;
+      const providerResponse = card?.querySelector(".audit-response")?.value || "";
+      const approvedAddendum = card?.querySelector(".audit-addendum")?.value || "";
+      if (decision === "occurred" && !approvedAddendum.trim()) {
+        showToast("Enter the exact fact you can confirm occurred. The audit suggestion itself cannot become chart documentation.");
+        card?.querySelector(".audit-addendum")?.focus();
+        return;
+      }
+      row.clinicalAudit = resolveClinicalAuditFinding(row.clinicalAudit, card.dataset.auditId, decision, { providerResponse, approvedAddendum });
+      refreshEncounterIntelligence(row);
+      const summary = clinicalAuditSummary(row.clinicalAudit);
+      const pendingCoding = row.codingRecommendations.some((item) => item.status === "pending");
+      row.providerApproved = false;
+      row.charmDraftSaved = false;
+      row.status = summary.pending ? WORKFLOW_STATUS.AUDIT_REVIEW : pendingCoding ? WORKFLOW_STATUS.CODING_REVIEW : WORKFLOW_STATUS.READY_FOR_PROVIDER;
+      log(row, `Clinical audit finding ${card.dataset.auditId} marked ${decision.replaceAll("_", " ")}`);
+      persist();
+      render();
+    };
+  });
+
+  if ($("applyAuditCorrections")) $("applyAuditCorrections").onclick = () => {
+    const corrections = approvedAuditAddenda(row.clinicalAudit);
+    if (!corrections.length) return;
+    const block = corrections.map((item) => `- ${item.text}`).join("\n");
+    $("dNote").value = `${$("dNote").value.trim()}\n\nProvider-confirmed audit clarification:\n${block}`.trim();
+    const appliedAt = new Date().toISOString();
+    row.clinicalAudit.findings.forEach((finding) => {
+      if (corrections.some((item) => item.id === finding.id)) finding.addendumAppliedAt = appliedAt;
+    });
+    sync(row);
+    reports.set(row.id, analyzeNote(row.note, { codes: row.codes, dxCodes: row.diagnoses }));
+    row.providerApproved = false;
+    row.charmDraftSaved = false;
+    row.status = WORKFLOW_STATUS.CODING_REVIEW;
+    activeTab = "coding";
+    log(row, `${corrections.length} provider-confirmed audit correction${corrections.length === 1 ? "" : "s"} appended; documentation and coding intelligence rerun`);
+    persist();
+    render();
+    showToast("Confirmed corrections added. This is the second coding pass—review the updated coding opportunities now.");
+  };
+
+  if ($("replaceAudit")) $("replaceAudit").onclick = () => {
+    if (!confirm("Replace this imported audit? Provider decisions attached to it will be removed from this encounter packet.")) return;
+    row.clinicalAudit = parseClinicalAuditReport("", row);
+    row.providerApproved = false;
+    row.charmDraftSaved = false;
+    row.status = WORKFLOW_STATUS.AUDIT_REVIEW;
+    activeTab = "clinical";
+    log(row, "Imported clinical audit cleared for replacement");
+    persist();
+    render();
+  };
 
   $("pasteFreed").onclick = async () => {
     try {
@@ -408,7 +525,11 @@ function wireDetail(row) {
 
   $("providerApproved").onchange = () => {
     sync(row, { invalidateApproval: false });
-    if ($("providerApproved").checked && (!row.note.trim() || !row.codes.length)) {
+    const auditSummary = clinicalAuditSummary(row.clinicalAudit);
+    if ($("providerApproved").checked && auditSummary.blocking) {
+      row.providerApproved = false;
+      showToast(`Resolve the ${auditSummary.blocking} pending Critical/High clinical audit finding${auditSummary.blocking === 1 ? "" : "s"} before approving Charm entry.`);
+    } else if ($("providerApproved").checked && (!row.note.trim() || !row.codes.length)) {
       row.providerApproved = false;
       showToast("An approved note and at least one approved CPT/HCPCS code are required.");
     } else {
