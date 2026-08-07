@@ -141,3 +141,30 @@ test("protected cloud encounter keeps clinical audit review state and provider d
   assert.equal(saved.clinicalAudit.sourceNoteHash, "abc123");
   assert.equal(saved.clinicalAudit.model, "gemini-3.5-flash");
 });
+
+test("labeled issue, location, and suggested fix import as one finding instead of duplicate cards", () => {
+  const audit = parseClinicalAuditReport(`🎯 CLOSURE VERDICT: Close after fixes below
+Recommended risk level: High — for you to confirm
+
+⚠️ FIX BEFORE CLOSING (Critical + High)
+1. **Issue**: Medication/diagnosis linkage needs provider clarification.
+2. **Location**: Assessment and plan.
+3. **Suggested Fix**: Confirm the intended indication and document the provider-confirmed plan.
+
+➡️ NEXT ACTION: Route to provider`);
+
+  assert.equal(audit.findings.length, 1);
+  assert.equal(audit.findings[0].issue, "Medication/diagnosis linkage needs provider clarification.");
+  assert.equal(audit.findings[0].location, "Assessment and plan.");
+  assert.equal(audit.findings[0].suggestedFix, "Confirm the intended indication and document the provider-confirmed plan.");
+});
+
+test("single-line import contract separates issue, location, and fix", () => {
+  const audit = parseClinicalAuditReport(`⚠️ FIX BEFORE CLOSING (Critical + High)
+1. [HIGH] Issue: Medication plan is internally unclear. | Location: Plan. | Suggested fix: Verify the intended medication and indication with the provider.`);
+
+  assert.equal(audit.findings.length, 1);
+  assert.equal(audit.findings[0].issue, "Medication plan is internally unclear.");
+  assert.equal(audit.findings[0].location, "Plan.");
+  assert.equal(audit.findings[0].suggestedFix, "Verify the intended medication and indication with the provider.");
+});

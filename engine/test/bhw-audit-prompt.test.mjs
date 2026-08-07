@@ -8,6 +8,9 @@ test("BHW audit prompt preserves provider decision boundary and two-stage coding
   assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /AS DOCUMENTED/);
   assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /AFTER provider-confirmed corrections/i);
   assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /Do not flag 99214 or 99215 merely because total time is absent/);
+  assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /Never infer the identity of an unnamed medication/i);
+  assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /Do not propose a replacement drug or treatment as a chart correction/i);
+  assert.match(BHW_CHART_AUDIT_SYSTEM_PROMPT, /One documentation problem equals one numbered finding/i);
 });
 
 test("encounter prompt includes supplied note and coding context", () => {
