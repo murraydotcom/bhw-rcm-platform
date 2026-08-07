@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # BHW RCM & Billing Command Center
 
 Revenue-cycle-management dashboard for **BHW Medical Group** (Maryland, MAC =
@@ -20,7 +24,12 @@ feed for TCM). EHR upstream is **ChARM**.
   the front-end). Key ones: `notion.js` (the Claims/ChargeMaster/etc. reader),
   `stedi.js` + `stedi-*.js` (clearinghouse feeds), `crisp.js` (ADT), `albert.js`
   (the "Albert Murray" AI CFO — Claude). `netlify.toml` at root sets
-  `functions = "netlify/functions"`, `publish = "."`.
+  `functions = "netlify/functions"`, `publish = "."`. `crisp-sftp-poll.js` is a
+  scheduled function (every 15 min, no-op until `CRISP_SFTP_*` env vars exist).
+  - **Trap: the deployed functions are the ones under `netlify/functions/`.** Root
+    has same-named copies (`notion.js`, `stedi.js`, `stedi-webhook.js`,
+    `note-post.js`, `payment-post.js`, `providers.js`) that **differ** and are
+    **not deployed** — they're legacy. Always edit `netlify/functions/…`.
 - **`coding-worksheet.html`** — provider-facing pre-bill **Coding Worksheet** (linked
   from the sidebar). Enter payer + diagnosis + CPT(s) → live scrub findings + charge-
   master/MUE reference. It loads the shared engine (below), so it runs the *same*
