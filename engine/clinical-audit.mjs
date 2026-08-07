@@ -75,11 +75,22 @@ function makeFinding(text, severity, index) {
   const issuePart = parts.find((part) => /^(?:\[[^\]]+\]\s*)?(?:\*{0,2})?(?:ISSUE|FINDING)(?:\*{0,2})?\s*:/i.test(part));
   const locationPart = parts.find((part) => /^(?:\*{0,2})?(?:LOCATION|WHERE\s+IN\s+(?:THE\s+)?NOTE)(?:\*{0,2})?\s*:/i.test(part));
   const fixPart = parts.find((part) => /^(?:\*{0,2})?(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)(?:\*{0,2})?\s*:/i.test(part));
-  const issue = clean(issuePart || item)
+  const inlineLocation = item.match(/\bLocation\s*:\s*/i);
+  const inlineFix = item.match(/\bSuggested\s+fix\s*:\s*/i);
+  const firstInlineField = [inlineLocation?.index, inlineFix?.index].filter(Number.isInteger).sort((a, b) => a - b)[0];
+  const legacyIssue = Number.isInteger(firstInlineField) ? item.slice(0, firstInlineField) : item;
+  let legacyLocation = "";
+  if (inlineLocation) {
+    const start = inlineLocation.index + inlineLocation[0].length;
+    const end = inlineFix && inlineFix.index > inlineLocation.index ? inlineFix.index : item.length;
+    legacyLocation = item.slice(start, end).trim();
+  }
+  const legacyFix = inlineFix ? item.slice(inlineFix.index + inlineFix[0].length).trim() : "";
+  const issue = clean(issuePart || legacyIssue)
     .replace(/^\[[^\]]+\]\s*/, "")
     .replace(/^\*{0,2}(?:ISSUE|FINDING)\*{0,2}\s*:\s*/i, "");
-  const location = locationPart ? locationPart.replace(/^\*{0,2}(?:LOCATION|WHERE\s+IN\s+(?:THE\s+)?NOTE)\*{0,2}\s*:\s*/i, "").trim() : "See audit finding";
-  const suggestedFix = fixPart ? fixPart.replace(/^\*{0,2}(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)\*{0,2}\s*:\s*/i, "").trim() : "Provider review/correction requested.";
+  const location = locationPart ? locationPart.replace(/^\*{0,2}(?:LOCATION|WHERE\s+IN\s+(?:THE\s+)?NOTE)\*{0,2}\s*:\s*/i, "").trim() : legacyLocation || "See audit finding";
+  const suggestedFix = fixPart ? fixPart.replace(/^\*{0,2}(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)\*{0,2}\s*:\s*/i, "").trim() : legacyFix || "Provider review/correction requested.";
   return {
     id: `audit:${index + 1}`,
     severity: severityFromText(item, severity),
@@ -157,7 +168,9 @@ export function parseClinicalAuditReport(reportText, encounter = {}) {
         currentFinding.location = detail;
         return;
       }
-      if (!currentFinding || isNew || role === "issue") {
+      const currentHasStructuredFix = currentFinding && currentFinding.suggestedFix !== "Provider review/correction requested.";
+      const looksLikeCompleteLegacyFinding = /\bSuggested\s+fix\s*:/i.test(detail);
+      if (!currentFinding || isNew || role === "issue" || (currentHasStructuredFix && looksLikeCompleteLegacyFinding)) {
         const fallback = section === "fix" ? "high" : section === "strengthen" ? "moderate" : "low";
         currentFinding = makeFinding(detail, fallback, audit.findings.length);
         audit.findings.push(currentFinding);

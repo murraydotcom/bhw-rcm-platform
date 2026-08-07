@@ -168,3 +168,16 @@ test("single-line import contract separates issue, location, and fix", () => {
   assert.equal(audit.findings[0].location, "Plan.");
   assert.equal(audit.findings[0].suggestedFix, "Verify the intended medication and indication with the provider.");
 });
+
+test("legacy Google Doc prose with unnumbered findings becomes separate cards", () => {
+  const audit = parseClinicalAuditReport(`⚠️ FIX BEFORE CLOSING (Critical + High)
+No exam documented — Objective reads N/A. Suggested fix: document the focused exam that actually occurred or why it was deferred.
+Medication/diagnosis linkage is unclear. Location: Plan, dermatology problem. Suggested fix: confirm the intended indication and document only the provider-confirmed plan.
+No CPT code is documented. Suggested fix: review MDM and select the supported service before closing.`);
+
+  assert.equal(audit.findings.length, 3);
+  assert.equal(audit.findings[0].issue, "No exam documented — Objective reads N/A.");
+  assert.match(audit.findings[0].suggestedFix, /focused exam/i);
+  assert.equal(audit.findings[1].location, "Plan, dermatology problem.");
+  assert.match(audit.findings[2].issue, /No CPT code/i);
+});
