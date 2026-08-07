@@ -1,5 +1,5 @@
 const CMS_PFS_URL = "https://www.cms.gov/medicare/payment/fee-schedules/physician/evaluation-management-visits";
-const CMS_G2211_URL = "https://www.cms.gov/Medicare/Prevention/PrevntionGenInfo/medicare-preventive-services/MPS-QuickReferenceChart-1.html";
+const CMS_G2211_URL = "https://www.cms.gov/files/document/mm13473-how-use-office-and-outpatient-evaluation-and-management-visit-complexity-add-code-g2211.pdf";
 const CMS_ACP_URL = "https://www.cms.gov/medicare/coverage/preventive-services/medicare-wellness-visits/annual-wellness-visit";
 
 const EM_TIME = Object.freeze({
@@ -100,6 +100,15 @@ function findCurrentEm(codes, family) {
   return [...codes].find((code) => expression.test(code)) || "";
 }
 
+function g2211Evidence(note = "") {
+  const direct = matchEvidence(note, /\b(?:longitudinal|ongoing\s+(?:primary\s+)?care|continuing\s+care|principal\s+care|primary\s+care\s+relationship|continuing\s+focal\s+point|focal\s+point\s+for\s+(?:all\s+)?needed\s+health\s+care|ongoing\s+(?:medical\s+)?care\s+(?:related\s+to|for)\s+(?:a|the)\s+(?:single[,\s]+)?(?:serious|complex)\s+(?:condition|problem))\b/i);
+  if (direct) return { evidence: direct, action: "add", confidence: "review", kind: "supported" };
+
+  const continuityReview = matchEvidence(note, /\b(?:chronic\s+care\s+(?:management|follow[- ]?up)|follow[- ]?up\s+in\s+\d{1,2}\s+(?:days?|weeks?|months?)[^.\n]{0,100}\bchronic\s+care|return\s+in\s+\d{1,2}\s+(?:days?|weeks?|months?)[^.\n]{0,100}\bchronic\s+care)\b/i);
+  if (continuityReview) return { evidence: continuityReview, action: "review", confidence: "review", kind: "documentation_needed" };
+  return null;
+}
+
 export function codingOpportunities(encounter = {}, existing = []) {
   const note = String(encounter.note || "");
   const codes = cleanCodes(encounter.codes);
@@ -128,17 +137,22 @@ export function codingOpportunities(encounter = {}, existing = []) {
   }
 
   const effectiveOfficeCode = findCurrentEm(codes, family) || opportunities.find((item) => item.category === "cpt" && /^992/.test(item.code))?.code;
-  const longitudinalEvidence = matchEvidence(note, /\b(?:longitudinal|ongoing\s+(?:primary\s+)?care|continuing\s+care|principal\s+care|complex\s+chronic\s+care|primary\s+care\s+relationship)\b/i);
-  if (/medicare/i.test(String(encounter.payer || "")) && effectiveOfficeCode && longitudinalEvidence && !codes.has("G2211")) {
+  const g2211 = g2211Evidence(note);
+  if (/medicare/i.test(String(encounter.payer || "")) && effectiveOfficeCode && g2211 && !codes.has("G2211")) {
     opportunities.push(makeOpportunity({
       category: "cpt",
-      action: "add",
+      action: g2211.action,
       code: "G2211",
-      title: "Review G2211 longitudinal-care add-on",
-      confidence: "review",
-      evidence: longitudinalEvidence,
-      missingDocumentation: "Confirm the encounter reflects the clinician’s continuing focal point or ongoing care of a serious/complex condition and passes same-day modifier/payment edits.",
-      coverageNote: "Medicare-specific candidate. Verify the current-year same-day service rules and the individual payer before billing.",
+      reviewKind: g2211.kind,
+      title: g2211.action === "add"
+        ? "Revenue opportunity: review adding G2211"
+        : "Revenue opportunity: evaluate G2211 eligibility",
+      confidence: g2211.confidence,
+      evidence: g2211.evidence,
+      missingDocumentation: g2211.action === "add"
+        ? "Confirm this visit reflects the clinician’s continuing focal point for needed care or ongoing care for a single serious/complex condition, and confirm same-day payment edits before adding the code."
+        : "The note suggests planned chronic-care continuity, but that phrase alone does not establish G2211. Confirm the clinician-patient relationship and document the continuing focal-point or serious/complex-condition basis before billing.",
+      coverageNote: "Medicare-specific review candidate. G2211 is an office/outpatient E/M visit-complexity add-on; verify current-year CMS rules, same-day service edits, and payer eligibility before billing.",
       sourceLabel: "CMS G2211 guidance",
       sourceUrl: CMS_G2211_URL,
     }));
