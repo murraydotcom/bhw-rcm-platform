@@ -90,13 +90,14 @@ test("loadUsers keeps hash-less entries (Google-only) with their role", () => {
   }
 });
 
-test("requireAuth passes through when AUTH_SECRET is unset (fail-safe-off)", () => {
+test("requireAuth fails closed with 503 when AUTH_SECRET is unset", () => {
   const prev = process.env.AUTH_SECRET;
   delete process.env.AUTH_SECRET;
   try {
     const gate = auth.requireAuth({ headers: {} });
-    assert.equal(gate.ok, true);
+    assert.equal(gate.ok, false);
     assert.equal(gate.disabled, true);
+    assert.equal(gate.response.statusCode, 503);
   } finally {
     if (prev !== undefined) process.env.AUTH_SECRET = prev;
   }
