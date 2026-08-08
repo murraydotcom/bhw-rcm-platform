@@ -141,3 +141,43 @@ test("protected cloud encounter keeps clinical audit review state and provider d
   assert.equal(saved.clinicalAudit.sourceNoteHash, "abc123");
   assert.equal(saved.clinicalAudit.model, "gemini-3.5-flash");
 });
+
+test("labeled issue, location, and suggested fix import as one finding instead of duplicate cards", () => {
+  const audit = parseClinicalAuditReport(`🎯 CLOSURE VERDICT: Close after fixes below
+Recommended risk level: High — for you to confirm
+
+⚠️ FIX BEFORE CLOSING (Critical + High)
+1. **Issue**: Medication/diagnosis linkage needs provider clarification.
+2. **Location**: Assessment and plan.
+3. **Suggested Fix**: Confirm the intended indication and document the provider-confirmed plan.
+
+➡️ NEXT ACTION: Route to provider`);
+
+  assert.equal(audit.findings.length, 1);
+  assert.equal(audit.findings[0].issue, "Medication/diagnosis linkage needs provider clarification.");
+  assert.equal(audit.findings[0].location, "Assessment and plan.");
+  assert.equal(audit.findings[0].suggestedFix, "Confirm the intended indication and document the provider-confirmed plan.");
+});
+
+test("single-line import contract separates issue, location, and fix", () => {
+  const audit = parseClinicalAuditReport(`⚠️ FIX BEFORE CLOSING (Critical + High)
+1. [HIGH] Issue: Medication plan is internally unclear. | Location: Plan. | Suggested fix: Verify the intended medication and indication with the provider.`);
+
+  assert.equal(audit.findings.length, 1);
+  assert.equal(audit.findings[0].issue, "Medication plan is internally unclear.");
+  assert.equal(audit.findings[0].location, "Plan.");
+  assert.equal(audit.findings[0].suggestedFix, "Verify the intended medication and indication with the provider.");
+});
+
+test("legacy Google Doc prose with unnumbered findings becomes separate cards", () => {
+  const audit = parseClinicalAuditReport(`⚠️ FIX BEFORE CLOSING (Critical + High)
+No exam documented — Objective reads N/A. Suggested fix: document the focused exam that actually occurred or why it was deferred.
+Medication/diagnosis linkage is unclear. Location: Plan, dermatology problem. Suggested fix: confirm the intended indication and document only the provider-confirmed plan.
+No CPT code is documented. Suggested fix: review MDM and select the supported service before closing.`);
+
+  assert.equal(audit.findings.length, 3);
+  assert.equal(audit.findings[0].issue, "No exam documented — Objective reads N/A.");
+  assert.match(audit.findings[0].suggestedFix, /focused exam/i);
+  assert.equal(audit.findings[1].location, "Plan, dermatology problem.");
+  assert.match(audit.findings[2].issue, /No CPT code/i);
+});

@@ -26,6 +26,29 @@ function stripListPrefix(line) {
   return clean(line).replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim();
 }
 
+function stripMarkdownLabel(value, label) {
+  return clean(value)
+    .replace(new RegExp(`^\\*{0,2}${label}\\*{0,2}\\s*[:\\-]\\s*`, "i"), "")
+    .replace(/^\*{1,2}|\*{1,2}$/g, "")
+    .trim();
+}
+
+function findingLineRole(value) {
+  const item = stripListPrefix(value);
+  if (/^\*{0,2}(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)\*{0,2}\s*[:\-]/i.test(item)) return "suggested_fix";
+  if (/^\*{0,2}(?:LOCATION(?:\s*\/\s*FIX)?|WHERE\s+IN\s+(?:THE\s+)?NOTE)\*{0,2}\s*[:\-]/i.test(item)) return "location";
+  if (/^\*{0,2}(?:ISSUE|FINDING)\*{0,2}\s*[:\-]/i.test(item)) return "issue";
+  return "";
+}
+
+function findingLineText(value, role) {
+  const item = stripListPrefix(value);
+  if (role === "suggested_fix") return stripMarkdownLabel(item, "(?:SUGGESTED\\s+FIX|RECOMMENDED\\s+FIX|FIX)");
+  if (role === "location") return stripMarkdownLabel(item, "(?:LOCATION(?:\\s*\\/\\s*FIX)?|WHERE\\s+IN\\s+(?:THE\\s+)?NOTE)");
+  if (role === "issue") return stripMarkdownLabel(item, "(?:ISSUE|FINDING)");
+  return item.replace(/^\*{1,2}|\*{1,2}$/g, "").trim();
+}
+
 function codeCandidates(text, type) {
   const source = clean(text).toUpperCase();
   if (type === "cpt") {
@@ -46,13 +69,34 @@ function parseSuggestedCodes(lines) {
 }
 
 function makeFinding(text, severity, index) {
-  const item = stripListPrefix(text);
+  const role = findingLineRole(text);
+  const item = findingLineText(text, role);
+  const parts = item.split(/\s+\|\s+/).map(clean).filter(Boolean);
+  const issuePart = parts.find((part) => /^(?:\[[^\]]+\]\s*)?(?:\*{0,2})?(?:ISSUE|FINDING)(?:\*{0,2})?\s*:/i.test(part));
+  const locationPart = parts.find((part) => /^(?:\*{0,2})?(?:LOCATION|WHERE\s+IN\s+(?:THE\s+)?NOTE)(?:\*{0,2})?\s*:/i.test(part));
+  const fixPart = parts.find((part) => /^(?:\*{0,2})?(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)(?:\*{0,2})?\s*:/i.test(part));
+  const inlineLocation = item.match(/\bLocation\s*:\s*/i);
+  const inlineFix = item.match(/\bSuggested\s+fix\s*:\s*/i);
+  const firstInlineField = [inlineLocation?.index, inlineFix?.index].filter(Number.isInteger).sort((a, b) => a - b)[0];
+  const legacyIssue = Number.isInteger(firstInlineField) ? item.slice(0, firstInlineField) : item;
+  let legacyLocation = "";
+  if (inlineLocation) {
+    const start = inlineLocation.index + inlineLocation[0].length;
+    const end = inlineFix && inlineFix.index > inlineLocation.index ? inlineFix.index : item.length;
+    legacyLocation = item.slice(start, end).trim();
+  }
+  const legacyFix = inlineFix ? item.slice(inlineFix.index + inlineFix[0].length).trim() : "";
+  const issue = clean(issuePart || legacyIssue)
+    .replace(/^\[[^\]]+\]\s*/, "")
+    .replace(/^\*{0,2}(?:ISSUE|FINDING)\*{0,2}\s*:\s*/i, "");
+  const location = locationPart ? locationPart.replace(/^\*{0,2}(?:LOCATION|WHERE\s+IN\s+(?:THE\s+)?NOTE)\*{0,2}\s*:\s*/i, "").trim() : legacyLocation || "See audit finding";
+  const suggestedFix = fixPart ? fixPart.replace(/^\*{0,2}(?:SUGGESTED\s+FIX|RECOMMENDED\s+FIX|FIX)\*{0,2}\s*:\s*/i, "").trim() : legacyFix || "Provider review/correction requested.";
   return {
     id: `audit:${index + 1}`,
     severity: severityFromText(item, severity),
-    issue: item,
-    location: "See audit finding",
-    suggestedFix: item,
+    issue,
+    location,
+    suggestedFix,
     decision: "pending",
     providerResponse: "",
     approvedAddendum: "",
@@ -114,13 +158,24 @@ export function parseClinicalAuditReport(reportText, encounter = {}) {
     if (!item) return;
     if (section === "fix" || section === "strengthen" || section === "future") {
       const isNew = /^\s*(?:[-*•]|\d+[.)])\s+/.test(line);
-      if (!currentFinding || isNew) {
+      const role = findingLineRole(line);
+      const detail = findingLineText(line, role);
+      if (role === "suggested_fix" && currentFinding) {
+        currentFinding.suggestedFix = detail;
+        return;
+      }
+      if (role === "location" && currentFinding) {
+        currentFinding.location = detail;
+        return;
+      }
+      const currentHasStructuredFix = currentFinding && currentFinding.suggestedFix !== "Provider review/correction requested.";
+      const looksLikeCompleteLegacyFinding = /\bSuggested\s+fix\s*:/i.test(detail);
+      if (!currentFinding || isNew || role === "issue" || (currentHasStructuredFix && looksLikeCompleteLegacyFinding)) {
         const fallback = section === "fix" ? "high" : section === "strengthen" ? "moderate" : "low";
-        currentFinding = makeFinding(item, fallback, audit.findings.length);
+        currentFinding = makeFinding(detail, fallback, audit.findings.length);
         audit.findings.push(currentFinding);
       } else {
-        currentFinding.issue = `${currentFinding.issue} ${item}`.trim();
-        currentFinding.suggestedFix = currentFinding.issue;
+        currentFinding.issue = `${currentFinding.issue} ${detail}`.trim();
       }
       return;
     }
