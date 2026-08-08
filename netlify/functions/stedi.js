@@ -1,5 +1,6 @@
 // Netlify Function: stedi.js  — consolidated Stedi endpoint for the dashboard.
-// Supersedes stedi-eligibility.js (which you can delete once this is live).
+// (Consolidates eligibility + feeds; the older standalone stedi-eligibility.js
+//  is retained but no longer called by the front-end.)
 //
 //   POST                    → 270/271 eligibility check (+ AWV parsing)
 //   GET  ?feed=eligibility  → recent verifications from Notion

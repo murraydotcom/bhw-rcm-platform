@@ -1,0 +1,824 @@
+{
+ "source": "CMS Medicare Practitioner Services MUE",
+ "effective": "2026-07-01",
+ "codeSet": "BHW charge master",
+ "count": 102,
+ "rows": [
+  {
+   "code": "99202",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99203",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99204",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99205",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99211",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99212",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99213",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99214",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99215",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99385",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99386",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99387",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99395",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99396",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99397",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "G0402",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0438",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0439",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0444",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99497",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "90471",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "90472",
+   "mue": 8,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Society Comment",
+   "source": "medicare"
+  },
+  {
+   "code": "90460",
+   "mue": 9,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Society Comment",
+   "source": "medicare"
+  },
+  {
+   "code": "93000",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "94010",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "94060",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "94070",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "94640",
+   "mue": 4,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "94664",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "G0442",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "G0443",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99406",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99407",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99408",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "99409",
+   "mue": 0,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "96110",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "96112",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "96113",
+   "mue": 6,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "90791",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "90792",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "90832",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90834",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90837",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90833",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90836",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90838",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "90846",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "90847",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "90853",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "90785",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "96127",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "96130",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "96131",
+   "mue": 7,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "99484",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99492",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99493",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99494",
+   "mue": 4,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "G2214",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99490",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99439",
+   "mue": 2,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99491",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99437",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "G0557",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99487",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99489",
+   "mue": 10,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99424",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99425",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: CMS Workgroup",
+   "source": "medicare"
+  },
+  {
+   "code": "99426",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99427",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99453",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99454",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99457",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99458",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99091",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99495",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "99496",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0556",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0558",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "0403T",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "G0108",
+   "mue": 6,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "G0109",
+   "mue": 12,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "97802",
+   "mue": 12,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "97803",
+   "mue": 11,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "97804",
+   "mue": 6,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "CMS Policy",
+   "source": "medicare"
+  },
+  {
+   "code": "G0270",
+   "mue": 8,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "G0271",
+   "mue": 4,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99483",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "96116",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "96121",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "96125",
+   "mue": 2,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "99498",
+   "mue": 3,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Clinical: Data",
+   "source": "medicare"
+  },
+  {
+   "code": "93922",
+   "mue": 2,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "93923",
+   "mue": 2,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "93784",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "93786",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "93788",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "93790",
+   "mue": 1,
+   "mai": 2,
+   "mai_desc": "2 Date of Service Edit: Policy",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  },
+  {
+   "code": "95921",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "95922",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "95923",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "95924",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Nature of Service/Procedure",
+   "source": "medicare"
+  },
+  {
+   "code": "93660",
+   "mue": 1,
+   "mai": 3,
+   "mai_desc": "3 Date of Service Edit: Clinical",
+   "rationale": "Code Descriptor / CPT Instruction",
+   "source": "medicare"
+  }
+ ]
+}

@@ -70,12 +70,45 @@ async function handleEra(transactionId, stediKey) {
 
   if (!(process.env.NOTION_TOKEN && PAYMENTS_DB)) return 0;   // no store configured — nothing to persist
 
-  // NOTE ON IDEMPOTENCY: Stedi retries on timeout, so the same 835 can arrive
-  // twice. For exactly-once posting, dedupe on `summary.eraNumber` (or txId)
-  // before writing — e.g. query the Payments DB for an existing Check/Ref first.
+  // IDEMPOTENCY: Stedi retries a delivery up to 4× when it doesn't get a 2xx in
+  // 5s, so the same 835 can arrive more than once. Key each remittance on its
+  // EFT/check trace (falling back to the ERA control number, then the txId) and
+  // skip the whole batch if we've already posted it. We stamp that same key onto
+  // every row's Check/Ref so a retry finds it.
+  const dedupeKey = summary.check || summary.eraNumber || String(transactionId);
+  summary.check = dedupeKey;
+  if (await alreadyPosted(dedupeKey)) return 0;
+
   let posted = 0;
   for (const p of payments) { await writePayment(p, summary); posted++; }
   return posted;
+}
+
+// Has this remittance already been posted? Looks for an existing ERA (835) row
+// carrying the same Check/Ref. Fails OPEN (returns false) on any query error so a
+// transient Notion hiccup never costs us a payment — at worst a retry re-posts,
+// which is the pre-existing behavior this guard otherwise removes.
+async function alreadyPosted(key) {
+  if (!key) return false;
+  try {
+    const r = await fetch(`https://api.notion.com/v1/databases/${PAYMENTS_DB}/query`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.NOTION_TOKEN}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        page_size: 1,
+        filter: { and: [
+          { property: "Check/Ref", rich_text: { equals: String(key) } },
+          { property: "Type", select: { equals: "ERA (835)" } },
+        ] },
+      }),
+    });
+    if (!r.ok) { console.warn("[stedi-webhook] dedupe query", r.status); return false; }
+    const j = await r.json();
+    return (j.results || []).length > 0;
+  } catch (e) {
+    console.warn("[stedi-webhook] dedupe error", e && e.message);
+    return false;
+  }
 }
 
 async function writePayment(p, summary) {

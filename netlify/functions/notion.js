@@ -125,6 +125,14 @@ function normDate(v) {
   const d = new Date(v);
   return isNaN(d) ? v : d.toISOString().slice(0, 10);
 }
+// Pull the primary ICD-10-CM code from a diagnosis cell. Handles a single code
+// ("E11.43") or a pointer-ordered list ("E11.43, I10, Z79.4") — the first token
+// is the primary (Box 24E pointer A). Returns null when no ICD-10 is present.
+function firstDx(v) {
+  if (!v) return null;
+  const m = String(v).toUpperCase().match(/[A-Z]\d{2}(?:\.[A-Z0-9]{1,4})?/);
+  return m ? m[0] : null;
+}
 // Map a CPT/HCPCS code to one of BHW's programs when no explicit Program column exists.
 // An explicit "Program" column in Notion always wins over this. Codes not covered here
 // (education / vascular lines you bill under other entities) fall through to Primary Care;
@@ -170,6 +178,12 @@ function mapRow(db, p) {
       patientId:    first(p, ["Patient ID", "Patient Record ID", "Internal ID"]),
       program:      first(p, ["Program"]) || deriveProgram(cpt, first(p, ["Procedure Description"])),
       cpt,
+      // Primary diagnosis (Box 24E pointer A) — drives Themis medical-necessity
+      // dx-gating (autonomic 95921-95924, ABPM, Cigna RPM, etc.). Reads a dedicated
+      // primary-dx column first, then the first code in a full diagnosis list.
+      dx:           firstDx(first(p, ["Primary Diagnosis", "Primary Dx", "Dx 1", "ICD-1", "Diagnosis 1",
+                          "Diagnosis", "Diagnosis Code", "Diagnosis Codes", "ICD-10", "ICD-10-CM",
+                          "ICD Code", "ICD Codes", "Dx", "Dx Code", "Dx Codes"])),
       charge:       num(first(p, ["Billed", "Charged", "Charge", "Invoice Amount", "Total Invoice Due"])),
       paid:         0,                                   // paid lives in the Payments DB now
       payer:        stripId(first(p, ["Payer", "Payer Name", "Payer Name & ID"])),
