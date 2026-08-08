@@ -14,20 +14,20 @@
  * with "Mapped by-Mapped on-Comments-". Capture the labeled fields. */
 const RECORD_RE = new RegExp(
   [
-    /(?<name>.+?)\s*\[(?<bhwId>[A-Za-z0-9]+)\]/,
-    /Status(?<status>.+?)/,
-    /Invoice #(?<invoice>\S+?)/,
-    /Member ID(?<memberId>.+?)/,
-    /Provider Name(?<provider>.+?)/,
-    /Encounter Date(?<encounterDate>.+?)/,
-    /Payer(?<payer>.+?)\s*\[(?<payerId>[A-Za-z0-9]+)\]/,
-    /Provider Tax ID(?<taxId>\S+?)/,
-    /Claim Amount(?<amount>[\d.]+)/,
-    /ECT #(?<ect>\S+?)/,
-    /Report Date(?<reportDate>.+?)/,
-    /As on Date(?<asOnDate>.+?)/,
-    /Status Remarks(?<remarks>.*?)/,
-    /Mapped by-.*?Comments-/,
+    /(?<name>.+?)\s*\[(?<bhwId>[A-Za-z0-9]+)\]\s*/,
+    /Status\s*(?<status>.+?)\s*/,
+    /Invoice #\s*(?<invoice>\S+?)\s*/,
+    /Member ID\s*(?<memberId>.+?)\s*/,
+    /Provider Name\s*(?<provider>.+?)\s*/,
+    /Encounter Date\s*(?<encounterDate>.+?)\s*/,
+    /Payer\s*(?<payer>.+?)\s*\[(?<payerId>[A-Za-z0-9]+)\]\s*/,
+    /Provider Tax ID\s*(?<taxId>\S+?)\s*/,
+    /Claim Amount\s*(?<amount>[\d.]+)\s*/,
+    /ECT #\s*(?<ect>\S+?)\s*/,
+    /Report Date\s*(?<reportDate>.+?)\s*/,
+    /As on Date\s*(?<asOnDate>.+?)\s*/,
+    /Status Remarks\s*(?<remarks>.*?)\s*/,
+    /Mapped by\s*-\s*Mapped on\s*-\s*Comments\s*-/,
   ].map((r) => r.source).join(""),
   "gs"
 );
@@ -67,7 +67,21 @@ function dateKey(s) {
 /* parseClaimEvents(text) → one object per status EVENT (claims repeat). */
 export function parseClaimEvents(text = "") {
   const events = [];
-  for (const m of String(text).matchAll(RECORD_RE)) {
+  /* Charm/Optum copy/paste from the browser may include Markdown emphasis
+   * markers (for example **INV1234**) and non-breaking spaces. Strip only
+   * presentation markup; the claim values themselves remain untouched. */
+  const normalized = String(text)
+    .replace(/\u00a0/g, " ")
+    .replace(/\*\*/g, "")
+    .replace(/\\:/g, ":")
+    /* Browser copy/paste puts labels and values on separate lines, often with
+     * blank lines between them. The export is label-delimited, so collapsing
+     * presentation whitespace is safe and lets the same parser accept both
+     * the compact Charm export and a copied report page. */
+    .replace(/\s+/g, " ")
+    .trim();
+  let order = 0;
+  for (const m of normalized.matchAll(RECORD_RE)) {
     const g = m.groups;
     events.push({
       name: clean(g.name), bhwId: clean(g.bhwId),
@@ -79,9 +93,20 @@ export function parseClaimEvents(text = "") {
       ect: clean(g.ect), reportDate: clean(g.reportDate), asOnDate: clean(g.asOnDate),
       remarks: clean(g.remarks),
       stage: stageOf(g.status, g.remarks),
+      _order: order++,
     });
   }
   return events;
+}
+
+function eventDateKey(e) {
+  return dateKey(e.asOnDate) || dateKey(e.reportDate);
+}
+
+function laterEvent(a, b) {
+  const ad = eventDateKey(a), bd = eventDateKey(b);
+  if (bd !== ad) return bd > ad ? b : a;
+  return (b._order ?? 0) >= (a._order ?? 0) ? b : a;
 }
 
 /* rollupClaims(events) → one row per claim (by invoice), with current stage,
@@ -98,17 +123,23 @@ export function rollupClaims(events) {
   const rows = [];
   for (const [invoice, evs] of byInvoice) {
     const best = evs.reduce((a, b) => (STAGE_RANK[b.stage] > STAGE_RANK[a.stage] ? b : a));
-    const latest = evs.reduce((a, b) => (dateKey(b.asOnDate) >= dateKey(a.asOnDate) ? b : a));
+    const latest = evs.reduce(laterEvent);
     const rejected = evs.filter((e) => e.stage === CLAIM_STAGE.REJECTED);
-    const accepted = evs.some((e) => e.stage === CLAIM_STAGE.ACCEPTED);
-    const needsAction = rejected.length > 0 && !accepted;
+    const accepted = evs.filter((e) => e.stage === CLAIM_STAGE.ACCEPTED);
+    const latestRejected = rejected.length ? rejected.reduce(laterEvent) : null;
+    const latestAccepted = accepted.length ? accepted.reduce(laterEvent) : null;
+    /* A payer acceptance resolves a rejection only when it is actually later.
+     * This prevents a newer rejection from being hidden merely because the
+     * same invoice had an acceptance event somewhere else in the export. */
+    const needsAction = Boolean(latestRejected) && (!latestAccepted || laterEvent(latestAccepted, latestRejected) === latestRejected);
+    const current = needsAction ? latestRejected : best;
     rows.push({
-      invoice, name: best.name, bhwId: best.bhwId, payer: best.payer, payerId: best.payerId,
-      memberId: best.memberId, provider: best.provider, encounterDate: best.encounterDate,
-      amount: best.amount, ect: best.ect,
-      stage: best.stage, latestStage: latest.stage,
+      invoice, name: current.name, bhwId: current.bhwId, payer: current.payer, payerId: current.payerId,
+      memberId: current.memberId, provider: current.provider, encounterDate: current.encounterDate,
+      amount: current.amount, ect: current.ect,
+      stage: current.stage, latestStage: latest.stage,
       wasRejected: rejected.length > 0, needsAction,
-      reason: rejected.length ? rejectionReason(rejected[rejected.length - 1].remarks) : null,
+      reason: latestRejected ? rejectionReason(latestRejected.remarks) : null,
       events: evs.length,
     });
   }

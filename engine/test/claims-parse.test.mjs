@@ -21,6 +21,77 @@ test("parses each labeled status event", () => {
   assert.equal(ev[0].stage, CLAIM_STAGE.CLEARINGHOUSE);
 });
 
+test("parses multiline Charm/Optum copy-paste with Markdown formatting", () => {
+  const text = `**Sample Person  [BHW0001]**
+
+Status
+
+**Acknowledged by Payer**
+
+Invoice #
+
+**INV9001**
+
+Member ID
+
+**MEM0001**
+
+Provider Name
+
+**BHW SAMPLE PROVIDER**
+
+Encounter Date
+
+**Aug 04, 2026**
+
+Payer
+
+**Sample Health Plan  [61101]**
+
+Provider Tax ID
+
+**999999999**
+
+Claim Amount
+
+**150.0**
+
+ECT #
+
+**ECT0001**
+
+Report Date
+
+**Aug 05, 2026**
+
+As on Date
+
+**Aug 04, 2026**
+
+Status Remarks
+
+CLAIM ACCEPTED; STATUS CODE: A1:20; Accepted for processing.
+
+Mapped by
+
+**-**
+
+Mapped on
+
+**-**
+
+Comments
+
+**-**`;
+  const ev = parseClaimEvents(text);
+  assert.equal(ev.length, 1);
+  assert.equal(ev[0].name, "Sample Person");
+  assert.equal(ev[0].invoice, "INV9001");
+  assert.equal(ev[0].memberId, "MEM0001");
+  assert.equal(ev[0].payer, "Sample Health Plan");
+  assert.equal(ev[0].stage, CLAIM_STAGE.ACKNOWLEDGED);
+});
+
 test("rolls multiple events for one invoice into a single claim at its furthest stage", () => {
   const text =
     rec({ ...base, name: "B Patient", bhwId: "BHW2", status: "Accepted by Clearing House", invoice: "INV2", payer: "UHC", amt: "150.0", remarks: "ACCEPTED - ECT" }) +
@@ -51,6 +122,16 @@ test("a rejection later accepted is surfaced but not flagged for action", () => 
   assert.equal(c.wasRejected, true);
   assert.equal(c.needsAction, false);        // accepted after the rejection
   assert.equal(c.stage, CLAIM_STAGE.ACCEPTED);
+});
+
+test("a later rejection is not hidden by an earlier payer acceptance", () => {
+  const text =
+    rec({ ...base, name: "G Patient", bhwId: "BHW7", status: "Accepted by Payer", invoice: "INV7", payer: "Sample Plan", amt: "225.0", ason: "Jul 22, 2026", remarks: "CLAIM ACCEPTED; A2:20" }) +
+    rec({ ...base, name: "G Patient", bhwId: "BHW7", status: "Rejected by Payer", invoice: "INV7", payer: "Sample Plan", amt: "225.0", ason: "Jul 23, 2026", remarks: "CLAIM REJECTED; Missing or invalid information." });
+  const c = rollupClaims(parseClaimEvents(text))[0];
+  assert.equal(c.stage, CLAIM_STAGE.REJECTED);
+  assert.equal(c.wasRejected, true);
+  assert.equal(c.needsAction, true);
 });
 
 test("summary totals count/amount by stage and payer", () => {
