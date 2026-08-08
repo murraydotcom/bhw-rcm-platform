@@ -32,8 +32,16 @@ const NOTION_TOKEN  = process.env.NOTION_TOKEN;
 const NOTION_DB_ADT = process.env.NOTION_DB_ADT;
 
 exports.handler = async (event) => {
+
   const q = event.queryStringParameters || {};
   const method = event.httpMethod || 'GET';
+  // Dashboard reads (GET feed / panel CSV) require a staff session. The POST
+  // ingest path is an external CRISP callee — it carries no browser cookie, so
+  // it is intentionally left ungated here (guard it with its own shared secret).
+  if (method !== 'POST') {
+    const _auth = require("./lib/auth").requireAuth(event);
+    if (!_auth.ok) return _auth.response;
+  }
   try {
     if (method === 'POST')   return await ingest(event);   // CRISP → normalized event
     if (q.action === 'panel') return panelCsv();            // roster → CEND CSV
@@ -59,9 +67,12 @@ async function adtFeed() {
 
 /* ---- INGEST: one CRISP notification → a normalized event ----------------- */
 async function ingest(event) {
-  // Verify the shared secret CRISP is configured to send.
+  // Fail closed: require the shared secret CRISP sends — no anonymous ADT writes.
+  if (!process.env.CRISP_INGEST_TOKEN) {
+    return { statusCode: 503, body: JSON.stringify({ ok: false, error: 'CRISP_INGEST_TOKEN not set' }) };
+  }
   const token = (event.headers['x-crisp-token'] || event.headers['X-CRISP-Token'] || '');
-  if (process.env.CRISP_INGEST_TOKEN && token !== process.env.CRISP_INGEST_TOKEN) {
+  if (token !== process.env.CRISP_INGEST_TOKEN) {
     return { statusCode: 401, body: JSON.stringify({ ok: false, error: 'bad ingest token' }) };
   }
   const body = event.body || '';

@@ -8,3 +8,11 @@
 # Only runs work when the CRISP_SFTP_* env vars are set (otherwise it no-ops).
 [functions."crisp-sftp-poll"]
   schedule = "*/15 * * * *"
+
+# Keep the billing/claims console out of search indexes and out of frames.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "no-referrer"

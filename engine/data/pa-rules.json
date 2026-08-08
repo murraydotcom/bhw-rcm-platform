@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "illustrative": true,
+    "status": "SEED — grounded in BHW P-2 (Carelon/PBHS authorization) + common behavioral-health PA patterns. Replace/extend with the Carelon Master Service Authorization Grid and each payer's published prior-authorization list before operational use.",
+    "howToPopulate": "Add rules (evaluated in order, first match wins). Each rule: codes[] (exact or 'prefix*'), payers[] ('*' = any, or a payer name substring), status (required|not_required|conditional), reason, source, notes[]. This is the local CRD table; a live Da Vinci CRD endpoint would supersede it.",
+    "standard": "CMS-0057-F Prior Authorization API — Da Vinci CRD/DTR/PAS"
+  },
+  "default": "unknown",
+  "payers": {
+    "Carelon (PBHS)": "Maryland Public Behavioral Health System, administered by Carelon",
+    "Medicare": "Traditional Medicare FFS — limited PA",
+    "Medicaid": "Maryland Medicaid",
+    "Commercial": "Commercial / MA plans"
+  },
+  "rules": [
+    {
+      "codes": ["90867", "90868", "90869"],
+      "payers": ["*"],
+      "status": "required",
+      "reason": "Transcranial magnetic stimulation (TMS) requires prior authorization across payers.",
+      "source": "Payer TMS medical policy",
+      "notes": ["Expect failed-medication-trial documentation and diagnosis criteria in the DTR questionnaire."]
+    },
+    {
+      "codes": ["9613*", "9614*"],
+      "payers": ["*"],
+      "status": "required",
+      "reason": "Psychological / neuropsychological testing typically requires prior authorization.",
+      "source": "Payer BH testing policy / Carelon Master Service Authorization Grid",
+      "notes": ["Document referral question, tests planned, and estimated units/hours."]
+    },
+    {
+      "codes": ["H0015", "H2036", "S9480", "0905"],
+      "payers": ["*"],
+      "status": "required",
+      "reason": "IOP / PHP / structured outpatient programs require prior authorization.",
+      "source": "Carelon Master Service Authorization Grid (P-2)",
+      "notes": ["Level-of-care criteria (e.g., ASAM) documentation required."]
+    },
+    {
+      "codes": ["90832", "90834", "90837", "90846", "90847", "90853", "90791", "90792"],
+      "payers": ["Carelon"],
+      "status": "conditional",
+      "reason": "Outpatient behavioral-health services are authorized per the Carelon Master Service Authorization Grid — an initial span may be authorized, with continued care requiring an updated authorization.",
+      "source": "BHW P&P Manual P-2 (Service Authorization / Carelon-PBHS)",
+      "notes": ["Match the authorization span, code, and modifier on the claim (P-2).", "Track expirations at 30/14/7 days (P-2 authorization tracker)."]
+    },
+    {
+      "codes": ["9949*", "9942*", "9945*", "9948*"],
+      "payers": ["*"],
+      "status": "not_required",
+      "reason": "Chronic care / remote monitoring / behavioral-health integration management (CCM/PCM/RPM/CoCM) does not require prior authorization.",
+      "source": "CMS care-management policy",
+      "notes": ["Consent + time documentation still required (see documentation checklist)."]
+    },
+    {
+      "codes": ["9920*", "9921*"],
+      "payers": ["*"],
+      "status": "not_required",
+      "reason": "Standard office/outpatient E/M visits do not require prior authorization.",
+      "source": "General payer policy",
+      "notes": []
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BHW Charm Draft Bridge</title>
+<style>
+:root{font-family:Arial,sans-serif;color:#26383f;background:#f7f5f2}body{width:390px;margin:0;padding:16px;box-sizing:border-box}h1{font-size:17px;margin:0 0 5px}p{font-size:12px;line-height:1.45;color:#5c6a70}.notice{background:#fff5e8;border-left:4px solid #b07a55;padding:9px 10px;margin:12px 0;font-size:11px;line-height:1.45}.field{margin:10px 0}.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}textarea{width:100%;height:118px;box-sizing:border-box;border:1px solid #d8d2ca;border-radius:8px;padding:8px;font:11px monospace;resize:vertical}.row{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #d8d2ca;background:white;color:#26383f;border-radius:8px;padding:8px 10px;font-weight:700;font-size:11px;cursor:pointer}.btn.primary{background:#5f8b9d;border-color:#5f8b9d;color:#fff}.btn.bronze{background:#b07a55;border-color:#b07a55;color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.match{display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:11px;font-weight:700}.status{margin-top:10px;padding:9px;border-radius:8px;background:#fff;border:1px solid #ded8d0;font-size:11px;line-height:1.45;white-space:pre-wrap}.safe{font-size:10px;color:#69767b;margin:12px 0 0}
+</style>
+</head>
+<body>
+<h1>BHW Charm Draft Bridge</h1>
+<p>Transfers one provider-approved encounter packet into the open CharmHealth draft.</p>
+<div class="notice"><b>Draft entry only.</b> This extension never clicks Save, Sign, Submit, Prescribe, Release, or any claim action.</div>
+<div class="field"><label for="packet">Approved packet</label><textarea id="packet" placeholder="Copy the Charm packet from BHW Encounter Operations, then paste it here."></textarea></div>
+<div class="row"><button class="btn" id="paste">Paste packet</button><button class="btn primary" id="scan">Check open Charm chart</button></div>
+<label class="match"><input type="checkbox" id="matched"> <span>I personally matched the patient and encounter currently open in CharmHealth.</span></label>
+<button class="btn bronze" id="fill" disabled>Fill approved draft fields</button>
+<div class="status" id="status">Waiting for an approved packet.</div>
+<p class="safe">No packet or note content is stored or sent over the network by this extension. Close the popup to clear it.</p>
+<script src="popup.js"></script>
+</body>
+</html>

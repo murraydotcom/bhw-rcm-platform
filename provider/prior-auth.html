@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="/auth-gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHW Provider — Prior Authorization (CRD · DTR · PAS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#80abbd; --blue-d:#5f8b9d; --blue-l:#a9c8d5;
+  --base:#f7f5f2; --bronze:#b07a55; --sage:#a8b59a; --neutral:#dcc8b1;
+  --pending:#fab219; --denied:#c0503f; --billed:#b9b2a7;
+  --ink:#2f3a3f; --ink-soft:#5b686d; --line:#e7e1d9;
+  --sidebar:#243239; --sidebar-2:#2d3d45; --sidebar-ink:#c9d6db;
+  --card:#ffffff; --shadow:0 1px 3px rgba(36,50,57,.08),0 4px 14px rgba(36,50,57,.05);
+  --radius:14px;
+}
+:root[data-theme="dark"]{
+  --base:#141a1d; --card:#1e272b; --ink:#e6edf0; --ink-soft:#9db0b7; --line:#2b373c;
+  --blue-d:#8fb8c8; --blue-l:#6f97a8; --billed:#7f8a86; --neutral:#3a4b53;
+  --shadow:0 1px 3px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
+.brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
+.nav-group{padding:14px 12px 4px}
+.nav-group .label{font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#7d94a0;padding:0 10px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:500;color:var(--sidebar-ink);cursor:pointer;transition:background .15s,color .15s;margin-bottom:1px}
+.nav-item:hover{background:var(--sidebar-2);color:#fff}
+.nav-item.active{background:var(--blue);color:#fff;font-weight:600}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.9}
+.sidebar-foot{margin-top:auto;padding:16px 20px;font-size:10.5px;color:#6f8792;border-top:1px solid rgba(255,255,255,.07)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.topbar .crumb{font-size:12px;color:var(--ink-soft);font-weight:500}
+.topbar .crumb b{color:var(--ink);font-weight:700}
+.topbar .tools{display:flex;align-items:center;gap:10px}
+.pill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--neutral);color:#6b563f}
+.pill.warn{background:#fdf0d4;color:#9a6f16}
+.content{padding:26px 30px 60px;max-width:1400px;width:100%}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
+.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:820px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h3{margin:0}
+.step{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--blue-d);background:#e2edf1;padding:3px 9px;border-radius:20px}
+:root[data-theme="dark"] .step{background:#25333a}
+label.fld{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
+select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
+.row{display:grid;gap:12px;margin-bottom:14px}.r2{grid-template-columns:1fr 1fr}
+textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%;resize:vertical;line-height:1.55}
+.btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.btn-ghost:hover{background:var(--base)}
+.btn-sm{padding:6px 11px;font-size:11.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{background:#fdf7ef;border:1px solid #ecd9c1;border-left:4px solid var(--bronze);border-radius:10px;padding:12px 14px;font-size:12px;color:#6b5233;margin-bottom:18px}
+:root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
+.note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
+.mini{font-size:11px;color:var(--ink-soft)}
+.pa{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px}
+.pa .big{font-size:15px;font-weight:800}
+.pa.required{background:#f7e0dc;border-color:#e6b7ad}.pa.required .big{color:#a53f30}
+.pa.not_required{background:#e8f0e3;border-color:#c2d3b4}.pa.not_required .big{color:#5c7050}
+.pa.conditional{background:#fdf1d6;border-color:#efd399}.pa.conditional .big{color:#9a6f16}
+.pa.unknown{background:var(--base);border-color:var(--line)}.pa.unknown .big{color:var(--ink-soft)}
+.pa.not_covered{background:#ece9e6;border-color:#d3ccc4}.pa.not_covered .big{color:#6b6259}
+.pa.expired{background:#f7e0dc;border-color:#e6b7ad}.pa.expired .big{color:#a53f30}
+.pa.expiring{background:#fdf1d6;border-color:#efd399}.pa.expiring .big{color:#9a6f16}
+.pa.active{background:#e8f0e3;border-color:#c2d3b4}.pa.active .big{color:#5c7050}
+.pa.future{background:var(--base);border-color:var(--line)}.pa.future .big{color:var(--ink-soft)}
+:root[data-theme="dark"] .pa.required,:root[data-theme="dark"] .pa.expired{background:#2e1d1a}:root[data-theme="dark"] .pa.not_required,:root[data-theme="dark"] .pa.active{background:#1c2a1e}:root[data-theme="dark"] .pa.conditional,:root[data-theme="dark"] .pa.expiring{background:#2a2213}:root[data-theme="dark"] .pa.not_covered{background:#26221e}
+.nchk{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px}
+.nchk:last-child{border-bottom:none}
+.nchk .ic{font-weight:800;flex-shrink:0;width:16px;text-align:center}
+.nchk.present .ic{color:#5c7050}.nchk.missing .ic{color:var(--denied)}.nchk.review .ic{color:#9a6f16}.nchk.na .ic{color:var(--ink-soft)}
+.nchk .lbl{font-weight:700}.nchk .dt{color:var(--ink-soft)}
+.pas-flow{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.pas-flow .s{flex:1;min-width:80px;text-align:center;font-size:10.5px;font-weight:700;padding:8px 4px;border-radius:8px;background:var(--base);color:var(--ink-soft);border:1px solid var(--line)}
+.pas-flow .s.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pas-flow .s.done{background:#e8f0e3;color:#5c7050;border-color:#c2d3b4}
+pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:var(--base);border:1px solid var(--line);border-radius:9px;padding:12px;overflow:auto;color:var(--ink);max-height:260px}
+.empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.r2{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
+    <nav class="nav-group">
+      <div class="label">Pre-Bill</div>
+      <a class="nav-item" href="index.html"><span class="ic">◈</span> Encounter Scrub</a>
+      <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
+      <div class="nav-item active"><span class="ic">✋</span> Prior Authorization</div>
+      <a class="nav-item" href="tcm.html"><span class="ic">⏱</span> TCM / Discharges</a>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
+      <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
+    </nav>
+    <div class="sidebar-foot">Prior-auth workflow · CRD → DTR → PAS.<br>Decision support — verify with the payer.</div>
+  </aside>
+  <div class="scrim" id="navScrim"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Pre-Bill · <b>Prior Authorization (CMS-0057-F workflow)</b></div>
+      </div>
+      <div class="tools">
+        <span class="pill warn" id="rulesPill">seed rules</span>
+        <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <h2>Prior Authorization</h2>
+        <p>The CMS Interoperability &amp; Prior Authorization Final Rule (CMS-0057-F) workflow, at the point of care:
+           <b>CRD</b> — is prior auth required? · <b>DTR</b> — what documentation the payer needs · <b>PAS</b> — assemble &amp; submit the request.</p>
+      </div>
+
+      <div class="note">
+        <b>Carelon MSAG + local CRD table.</b> For <b>Carelon (PBHS)</b> the "is prior auth required?" answer comes
+        from the official <b>CBH Master Service Authorization Grid</b> — per benefit package (fund code); pick the
+        member's package for the exact requirement. Other payers use a seed rules table until a live Da Vinci
+        <b>CRD</b> endpoint is connected. The <b>PAS</b> step shapes the request payload but does not transmit —
+        wire it to the payer's Prior Authorization API to submit.
+      </div>
+
+      <div class="grid g2">
+        <!-- ============ CRD ============ -->
+        <div class="card">
+          <div class="card-head"><h3>Is prior authorization required?</h3><span class="step">CRD</span></div>
+          <div class="row r2">
+            <div><label class="fld" for="payer">Payer</label><select id="payer"></select></div>
+            <div><label class="fld" for="code">Code (CPT/HCPCS)</label><input type="text" id="code" placeholder="e.g. 90837, 96130, 90867"></div>
+          </div>
+          <div class="row r2" id="pkgRow" style="display:none">
+            <div><label class="fld" for="benefitPackage">Benefit package <span class="mini">(Carelon fund code)</span></label><select id="benefitPackage"></select></div>
+            <div></div>
+          </div>
+          <div class="row r2">
+            <div><label class="fld" for="dx">Diagnosis (ICD-10)</label><input type="text" id="dx" placeholder="e.g. F33.1"></div>
+            <div><label class="fld" for="units">Units</label><input type="number" id="units" min="1" value="1"></div>
+          </div>
+          <button class="btn btn-primary" id="crdBtn">Check requirement</button>
+          <div id="crdOut" style="margin-top:14px"><div class="empty">Enter a payer + code to check.</div></div>
+        </div>
+
+        <!-- ============ DTR ============ -->
+        <div class="card">
+          <div class="card-head"><h3>Documentation the payer will require</h3><span class="step">DTR</span></div>
+          <div class="mini" style="margin-bottom:8px">Paste the clinical note — the DTR questionnaire is answered from the documentation. Anything <b>missing</b> is what you'd need to supply to substantiate medical necessity.</div>
+          <textarea id="note" rows="7" placeholder="Paste the visit note supporting this service…"></textarea>
+          <div id="dtrOut" style="margin-top:12px"><div class="empty">Check a code, then paste the note.</div></div>
+        </div>
+      </div>
+
+      <!-- ============ AUTH SPAN TRACKING ============ -->
+      <div class="card" style="margin-top:16px" id="spanCard">
+        <div class="card-head"><h3>Authorization tracking</h3><span class="step">Renewal</span></div>
+        <div class="mini" style="margin-bottom:8px">Once an authorization is granted, track its span. Carelon (PBHS) requires the continued-stay/concurrent request <b>before the last authorized day</b>; this flags the 30/14/7-day reminders and the determination turnaround.</div>
+        <div class="row r3">
+          <div><label class="fld" for="authStart">Auth start</label><input type="date" id="authStart"></div>
+          <div><label class="fld" for="authEnd">Last authorized day</label><input type="date" id="authEnd"></div>
+          <div><label class="fld" for="reqType">Review type</label><select id="reqType"></select></div>
+        </div>
+        <div id="spanOut" style="margin-top:12px"><div class="empty">Enter the authorization span to track renewals.</div></div>
+      </div>
+
+      <!-- ============ PAS ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Prior authorization request</h3><span class="step">PAS</span></div>
+        <div class="pas-flow" id="pasFlow">
+          <div class="s" data-s="draft">Draft</div><div class="s" data-s="submitted">Submitted</div>
+          <div class="s" data-s="pending">Pending</div><div class="s" data-s="approved">Approved / Denied</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-ghost btn-sm" id="pasBuild">Assemble request</button>
+          <button class="btn btn-primary btn-sm" id="pasSubmit" disabled>Submit (demo)</button>
+          <span class="mini" id="pasNote" style="align-self:center"></span>
+        </div>
+        <div id="pasOut"><div class="empty">Assemble the request to preview the PAS payload.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../engine/themis.js"></script>
+<script type="module">
+import { checkPriorAuth, PA_STATUS, buildPASRequest } from "../engine/prior-auth.mjs";
+import { analyzeNote } from "../engine/note-analyze.mjs";
+import { trackAuthSpan } from "../engine/auth-span.mjs";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let RULES = {}, MSAG = null, TIMEFRAMES = null, lastCRD = null, lastDoc = null, pasReq = null;
+
+(function theme() {
+  const KEY = "bhw-theme";
+  const set = (t) => { document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem(KEY, t); } catch (e) {} };
+  try { if (localStorage.getItem(KEY)) set(localStorage.getItem(KEY)); } catch (e) {}
+  $("themeBtn").onclick = () => set(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+})();
+
+(function nav() {
+  const nt = document.getElementById("navToggle"), ns = document.getElementById("navScrim"), sb = document.querySelector(".sidebar");
+  if (!nt || !ns || !sb) return;
+  const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+  nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+  ns.onclick = close;
+  sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
+})();
+
+const STATUS_LABEL = { required: "Prior authorization REQUIRED", not_required: "No prior authorization needed", conditional: "Conditional — depends on package / context", not_covered: "Not a covered service", unknown: "Unknown — verify with payer" };
+
+function isCarelon() { return /carelon|pbhs/i.test($("payer").value); }
+function syncPkgRow() { $("pkgRow").style.display = (isCarelon() && MSAG) ? "grid" : "none"; }
+
+function runCRD() {
+  const claim = { payer: $("payer").value, code: $("code").value.trim() };
+  if (isCarelon() && MSAG && $("benefitPackage").value) claim.benefitPackage = $("benefitPackage").value;
+  if (!claim.code) return;
+  const r = checkPriorAuth(claim, RULES, MSAG);
+  lastCRD = r;
+  const icon = { required: "✋", not_required: "✓", conditional: "◑", not_covered: "⃠", unknown: "?" }[r.status] || "?";
+  let msagBlock = "";
+  if (r.msag) {
+    const m = r.msag;
+    const meta = [m.description, m.authClass ? `auth class ${m.authClass}` : "", m.pos ? `POS ${m.pos}` : ""].filter(Boolean).join(" · ");
+    const rows = (m.byPackage || []).filter((p) => p.covered).map((p) =>
+      `<div class="nchk ${p.preAuth === "required" ? "missing" : p.preAuth === "not_required" ? "present" : "review"}">
+        <span class="ic">${p.preAuth === "required" ? "✋" : p.preAuth === "not_required" ? "✓" : "◑"}</span>
+        <div><span class="lbl">${esc(p.code)}</span> <span class="dt">— ${esc(p.label)}: ${esc((p.preAuth || "").replace("_", " "))}</span></div></div>`).join("");
+    msagBlock = `${meta ? `<div class="mini" style="margin-top:8px">${esc(meta)}</div>` : ""}
+      ${rows ? `<div class="mini" style="margin:8px 0 4px">Requirement by benefit package:</div>${rows}` : ""}`;
+  }
+  $("crdOut").innerHTML = `
+    <div class="pa ${r.status}"><span style="font-size:22px">${icon}</span>
+      <div><div class="big">${esc(STATUS_LABEL[r.status] || r.status)}</div>
+      <div class="mini">${esc(r.reason)}</div></div></div>
+    ${r.source ? `<div class="mini">Source: ${esc(r.source)}</div>` : ""}
+    ${r.notes.length ? `<div class="mini" style="margin-top:6px">${r.notes.map((n) => "• " + esc(n)).join("<br>")}</div>` : ""}
+    ${msagBlock}
+    <div class="mini" style="margin-top:8px;opacity:.7">${esc(r.standard)}${r.illustrative ? " · seed rule — verify against the payer / Carelon grid" : ""}</div>`;
+  runDTR();
+  resetPAS();
+}
+
+function runDTR() {
+  const code = $("code").value.trim();
+  const note = $("note").value;
+  if (!code) { $("dtrOut").innerHTML = `<div class="empty">Check a code first.</div>`; return; }
+  const doc = analyzeNote(note, { codes: [code], dx: $("dx").value.trim() });
+  lastDoc = doc;
+  if (doc.empty) { $("dtrOut").innerHTML = `<div class="empty">Paste the note to answer the DTR questionnaire.</div>`; return; }
+  const missing = doc.checks.filter((c) => c.status === "missing");
+  const icon = { present: "✓", missing: "✕", review: "!", na: "–" };
+  $("dtrOut").innerHTML = `
+    <div class="mini" style="margin-bottom:8px"><b>${doc.summary.readiness}%</b> documentation readiness · ${missing.length} item(s) a DTR questionnaire would flag</div>
+    ${doc.checks.map((c) => `<div class="nchk ${c.status}"><span class="ic">${icon[c.status]}</span>
+      <div><span class="lbl">${esc(c.label)}</span> <span class="dt">— ${esc(c.detail)}</span></div></div>`).join("")}`;
+  resetPAS();
+}
+
+const SPAN_LABEL = { future: "Not yet active", active: "Active", expiring: "Expiring soon", expired: "Expired — reauthorize", unknown: "Enter the span" };
+const SPAN_ICON = { future: "◷", active: "✓", expiring: "◑", expired: "✋", unknown: "?" };
+function runSpan() {
+  if (!TIMEFRAMES) return;
+  const start = $("authStart").value, end = $("authEnd").value;
+  if (!end) { $("spanOut").innerHTML = `<div class="empty">Enter the authorization span to track renewals.</div>`; return; }
+  const r = trackAuthSpan({ startDate: start, endDate: end, requestType: $("reqType").value }, TIMEFRAMES);
+  const rem = (r.daysRemaining != null) ? (r.daysRemaining < 0 ? `${-r.daysRemaining} day(s) past` : `${r.daysRemaining} day(s) left`) : "";
+  const tiers = r.reminders.map((t) => `<span class="tag ${t.reached ? "hp" : ""}" title="${esc(t.date)}">${t.tier}-day${t.reached ? " ✓" : ""}</span>`).join(" ");
+  $("spanOut").innerHTML = `
+    <div class="pa ${r.status}"><span style="font-size:22px">${SPAN_ICON[r.status] || "?"}</span>
+      <div><div class="big">${esc(SPAN_LABEL[r.status] || r.status)}</div>
+      <div class="mini">${esc(rem)}${r.renewalDueBy ? ` · continued-stay due by ${esc(r.renewalDueBy)}` : ""}</div></div></div>
+    <div class="mini" style="margin-top:8px">Reminders: ${tiers}</div>
+    ${r.notes.length ? `<div class="mini" style="margin-top:6px">${r.notes.map((n) => "• " + esc(n)).join("<br>")}</div>` : ""}`;
+}
+
+function resetPAS() { pasReq = null; $("pasSubmit").disabled = true; setFlow(null); $("pasOut").innerHTML = `<div class="empty">Assemble the request to preview the PAS payload.</div>`; $("pasNote").textContent = ""; }
+function setFlow(state) {
+  const order = ["draft", "submitted", "pending", "approved"];
+  const idx = order.indexOf(state);
+  $("pasFlow").querySelectorAll(".s").forEach((el) => {
+    const i = order.indexOf(el.dataset.s);
+    el.className = "s" + (state && i < idx ? " done" : state && i === idx ? " on" : "");
+  });
+}
+function buildPAS() {
+  const claim = { payer: $("payer").value, code: $("code").value.trim(), dx: $("dx").value.trim(), units: +$("units").value || 1, mods: [] };
+  if (!claim.code) { $("pasNote").textContent = "Enter a code first."; return; }
+  pasReq = buildPASRequest(claim, lastDoc || {});
+  $("pasSubmit").disabled = false;
+  setFlow("draft");
+  $("pasOut").innerHTML = `<pre>${esc(JSON.stringify(pasReq, null, 2))}</pre>`;
+  const req = lastCRD && lastCRD.status === PA_STATUS.REQUIRED;
+  $("pasNote").textContent = req ? "PA required — submit to the payer's PAS endpoint." : lastCRD && lastCRD.status === PA_STATUS.NOT_REQUIRED ? "No PA needed — submission optional." : "Verify requirement before submitting.";
+}
+function submitPAS() {
+  if (!pasReq) return;
+  // Demo only: advance the workflow state locally. A live build POSTs to the payer PAS API.
+  setFlow("submitted");
+  $("pasNote").textContent = "Submitted (demo) — a live build would POST this to the payer's Prior Authorization API and poll status.";
+  pasReq = { ...pasReq, status: "submitted" };
+  $("pasOut").innerHTML = `<pre>${esc(JSON.stringify(pasReq, null, 2))}</pre>`;
+}
+
+(async function init() {
+  try { const r = await fetch("../engine/data/pa-rules.json"); if (r.ok) RULES = await r.json(); } catch (e) {}
+  try { const r = await fetch("../engine/data/carelon-msag.json"); if (r.ok) MSAG = await r.json(); } catch (e) {}
+  try { const r = await fetch("../engine/data/carelon-auth-timeframes.json"); if (r.ok) TIMEFRAMES = await r.json(); } catch (e) {}
+  const seed = RULES._meta && RULES._meta.illustrative;
+  $("rulesPill").className = "pill " + (MSAG ? "" : seed ? "warn" : "");
+  $("rulesPill").textContent = MSAG ? "Carelon grid + seed rules" : seed ? "seed rules" : "live CRD";
+  // payer list: real DATA payers ∪ pa-rules payer keys, Carelon first
+  const dataPayers = (window.DATA && window.DATA.payers) || [];
+  const ruleKeys = Object.keys(RULES.payers || {});
+  const payers = Array.from(new Set(["Carelon (PBHS)", ...ruleKeys, ...dataPayers]));
+  $("payer").innerHTML = payers.map((p) => `<option>${esc(p)}</option>`).join("");
+  // benefit-package (fund code) options for the Carelon MSAG; Medicaid defaults first
+  if (MSAG && MSAG.packages) {
+    const opts = [`<option value="">Any package (summarize)</option>`,
+      ...MSAG.packages.map((p) => `<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.label)}</option>`)].join("");
+    $("benefitPackage").innerHTML = opts;
+    $("benefitPackage").value = "FMDC"; // Medicaid, Federally Funded — the common case
+    $("benefitPackage").addEventListener("change", runCRD);
+  }
+  syncPkgRow();
+
+  // authorization tracking: review-type options + live recompute
+  if (TIMEFRAMES && TIMEFRAMES.requestTypes) {
+    $("reqType").innerHTML = TIMEFRAMES.requestTypes.map((t) => `<option value="${esc(t.id)}">${esc(t.label)}</option>`).join("");
+    $("reqType").value = "concurrent_nonurgent";
+    ["authStart", "authEnd", "reqType"].forEach((id) => $(id).addEventListener("change", runSpan));
+  } else { $("spanCard").style.display = "none"; }
+
+  $("payer").addEventListener("change", () => { syncPkgRow(); if ($("code").value.trim()) runCRD(); });
+  $("crdBtn").onclick = runCRD;
+  $("code").addEventListener("keydown", (e) => { if (e.key === "Enter") runCRD(); });
+  $("note").addEventListener("input", runDTR);
+  $("pasBuild").onclick = buildPAS;
+  $("pasSubmit").onclick = submitPAS;
+})();
+</script>
+</body>
+</html>

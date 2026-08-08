@@ -1,5 +1,6 @@
 // Netlify Function: stedi.js  — consolidated Stedi endpoint for the dashboard.
-// (Replaced the old standalone stedi-eligibility.js, now removed.)
+// (Consolidates eligibility + feeds; the older standalone stedi-eligibility.js
+//  is retained but no longer called by the front-end.)
 //
 //   POST                    → 270/271 eligibility check (+ AWV parsing)
 //   GET  ?feed=eligibility  → recent verifications from Notion
@@ -34,7 +35,10 @@ const CORS = {
 };
 
 exports.handler = async (event) => {
+
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  const _auth = require("./lib/auth").requireAuth(event);
+  if (!_auth.ok) return _auth.response;
 
   const stediKey = (process.env.STEDI_KEY_PREFIX && process.env.STEDI_KEY_SUFFIX)
     ? `${process.env.STEDI_KEY_PREFIX}.${process.env.STEDI_KEY_SUFFIX}`

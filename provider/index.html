@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="/auth-gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHW Provider — Pre-Bill Scrub &amp; Coding Assist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* BHW design system (shared with the RCM Command Center — index.html) */
+:root{
+  --blue:#80abbd; --blue-d:#5f8b9d; --blue-l:#a9c8d5;
+  --base:#f7f5f2; --bronze:#b07a55; --sage:#a8b59a; --neutral:#dcc8b1;
+  --pending:#fab219; --denied:#c0503f; --billed:#b9b2a7;
+  --ink:#2f3a3f; --ink-soft:#5b686d; --line:#e7e1d9;
+  --sidebar:#243239; --sidebar-2:#2d3d45; --sidebar-ink:#c9d6db;
+  --card:#ffffff; --shadow:0 1px 3px rgba(36,50,57,.08),0 4px 14px rgba(36,50,57,.05);
+  --radius:14px;
+}
+:root[data-theme="dark"]{
+  --base:#141a1d; --card:#1e272b; --ink:#e6edf0; --ink-soft:#9db0b7; --line:#2b373c;
+  --blue-d:#8fb8c8; --blue-l:#6f97a8; --billed:#7f8a86; --neutral:#3a4b53;
+  --shadow:0 1px 3px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Montserrat',system-ui,sans-serif;background:var(--base);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px}
+.brand img{width:40px;height:40px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.brand .bt-txt{min-width:0}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:#fff;line-height:1.2}
+.brand .sub{font-size:10.5px;font-weight:500;color:var(--blue-l);text-transform:uppercase;letter-spacing:1.4px;margin-top:4px}
+.nav-group{padding:14px 12px 4px}
+.nav-group .label{font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#7d94a0;padding:0 10px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:500;color:var(--sidebar-ink);cursor:pointer;transition:background .15s,color .15s;margin-bottom:1px;text-decoration:none}
+.nav-item:hover{background:var(--sidebar-2);color:#fff}
+.nav-item.active{background:var(--blue);color:#fff;font-weight:600}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.9}
+.sidebar-foot{margin-top:auto;padding:16px 20px;font-size:10.5px;color:#6f8792;border-top:1px solid rgba(255,255,255,.07)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.topbar .crumb{font-size:12px;color:var(--ink-soft);font-weight:500}
+.topbar .crumb b{color:var(--ink);font-weight:700}
+.topbar .tools{display:flex;align-items:center;gap:10px}
+.pill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--neutral);color:#6b563f}
+.pill.live{background:#e5efe0;color:#5c7050}
+.pill.warn{background:#fdf0d4;color:#9a6f16}
+.content{padding:26px 30px 60px;max-width:1400px;width:100%}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:22px;font-weight:800;letter-spacing:-.2px}
+.page-head p{color:var(--ink-soft);font-size:13px;margin-top:3px;max-width:820px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1.05fr .95fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:2px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h3{margin:0}
+label.fld{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:0 0 5px}
+select,input[type=text],input[type=number]{font-family:inherit;font-size:12.5px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
+.row{display:grid;gap:12px;margin-bottom:14px}
+.r2{grid-template-columns:1fr 1fr}
+.r3{grid-template-columns:1fr 1fr 1fr}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border:none;background:var(--card);color:var(--ink-soft);cursor:pointer}
+.seg button.on{background:var(--blue);color:#fff}
+.flags{display:flex;flex-wrap:wrap;gap:8px 16px;margin:2px 0 14px}
+.flags label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer}
+.btn{font-family:inherit;font-size:12.5px;font-weight:600;border:none;border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:filter .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.btn-ghost:hover{background:var(--base)}
+.btn-sm{padding:6px 11px;font-size:11.5px}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px}
+.status .d{width:8px;height:8px;border-radius:50%}
+.st-clean{background:#e8f0e3;color:#5c7050}.st-clean .d{background:#5c7050}
+.st-block{background:#f7e0dc;color:#a53f30}.st-block .d{background:var(--denied)}
+.st-flag{background:#fdf1d6;color:#9a6f16}.st-flag .d{background:var(--pending)}
+.st-note{background:#e2edf1;color:#4d7686}.st-note .d{background:var(--blue-d)}
+.finding{display:flex;gap:11px;padding:12px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;background:var(--card)}
+.finding .dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.finding.block{border-left:4px solid var(--denied)}.finding.block .dot{background:var(--denied)}
+.finding.warn{border-left:4px solid var(--pending)}.finding.warn .dot{background:var(--pending)}
+.finding.info{border-left:4px solid var(--blue)}.finding.info .dot{background:var(--blue)}
+.finding .sev{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.finding.block .sev{color:var(--denied)}.finding.warn .sev{color:#9a6f16}.finding.info .sev{color:var(--blue-d)}
+.finding .msg{font-weight:700;font-size:12.5px;margin:1px 0 4px}
+.finding .fix{font-size:11.5px;color:var(--ink-soft)}
+.finding .rid{font-size:10px;color:var(--ink-soft);opacity:.7;margin-top:4px;font-variant:all-small-caps;letter-spacing:.5px}
+.empty{padding:22px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+.chk{display:flex;gap:9px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.chk:last-child{border-bottom:none}
+.chk .mk{color:var(--sage);font-weight:800}
+.chk .cd{font-weight:700}
+.suggest{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.suggest.none{font-size:15px;color:var(--ink-soft);font-weight:600}
+textarea{font-family:inherit;font-size:12.5px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%;resize:vertical;line-height:1.55}
+.readiness{font-size:12px;font-weight:700;padding:4px 11px;border-radius:20px}
+.nchk{display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px}
+.nchk:last-child{border-bottom:none}
+.nchk .ic{font-weight:800;flex-shrink:0;width:16px;text-align:center}
+.nchk.present .ic{color:#5c7050}.nchk.missing .ic{color:var(--denied)}.nchk.review .ic{color:#9a6f16}.nchk.na .ic{color:var(--ink-soft)}
+.nchk .lbl{font-weight:700}.nchk .dt{color:var(--ink-soft)}.nchk .sr{font-size:10px;color:var(--ink-soft);opacity:.7;margin-top:2px}
+.notegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1000px){.notegrid{grid-template-columns:1fr}}
+.note{background:#fdf7ef;border:1px solid #ecd9c1;border-left:4px solid var(--bronze);border-radius:10px;padding:12px 14px;font-size:12px;color:#6b5233;margin-bottom:18px}
+:root[data-theme="dark"] .note{background:#241d15;color:#d8c3a4;border-color:#4a3a26}
+.note b{color:#5a4223}:root[data-theme="dark"] .note b{color:#e9d6ba}
+.mini{font-size:11px;color:var(--ink-soft)}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:17px;line-height:1;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .2s}
+.scrim.show{opacity:1;visibility:visible}
+@media(max-width:1000px){.g2{grid-template-columns:1fr}.r2,.r3{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:50;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center}}
+@media(max-width:600px){.content{padding:18px 15px 48px}.topbar{padding:11px 15px}.page-head h2{font-size:19px}.page-head p{font-size:12px}.card{padding:14px}.crumb{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/bhw-emblem.png" alt="BHW Mind &amp; Mood Recovery"><div class="bt-txt"><h1>BHW Provider</h1><div class="sub">Point-of-Care Coding</div></div></div>
+    <nav class="nav-group">
+      <div class="label">Pre-Bill</div>
+      <a class="nav-item" href="workflow.html"><span class="ic">◷</span> 24-Hour Work Queue</a>
+      <div class="nav-item active"><span class="ic">◈</span> Encounter Scrub</div>
+      <a class="nav-item" href="risk.html"><span class="ic">◑</span> Risk &amp; Quality</a>
+      <a class="nav-item" href="prior-auth.html"><span class="ic">✋</span> Prior Authorization</a>
+      <a class="nav-item" href="tcm.html"><span class="ic">⏱</span> TCM / Discharges</a>
+      <a class="nav-item" href="claims.html"><span class="ic">▦</span> Claims Tracker</a>
+      <a class="nav-item" href="../index.html"><span class="ic">▤</span> RCM Command Center</a>
+    </nav>
+    <div class="sidebar-foot">Themis engine · shared with the RCM app.<br>Decision support — validate before billing.</div>
+  </aside>
+  <div class="scrim" id="navScrim"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb">Pre-Bill · <b>Encounter Scrub &amp; Coding Assist</b></div>
+      </div>
+      <div class="tools">
+        <span class="pill" id="dataPill">loading…</span>
+        <button class="btn btn-ghost btn-sm" id="themeBtn">◐ Theme</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <h2>Pre-Bill Scrub &amp; Coding Assist</h2>
+        <p>Enter the encounter before the superbill leaves the room. The shared Themis engine runs the real
+           payer-aware clean-claim edits (NCCI PTP, MUE, add-on, covered-dx, payer quirks); the assist layer
+           suggests the E/M level and lists what the note must contain for each code.</p>
+      </div>
+
+      <div class="note">
+        <b>Decision support, not a guarantee.</b> Findings are the same edits the RCM Command Center runs.
+        The E/M suggestion + documentation checklist use published 2021 AMA guidance — <b>validate against BHW's
+        Coders' Specialty Guide</b>. Frequency edits need the patient's prior claim history to fire.
+      </div>
+
+      <div class="grid g2">
+        <!-- ============ INPUT ============ -->
+        <div class="card">
+          <div class="card-head"><h3>Encounter</h3>
+            <div class="seg" id="ptype"><button data-v="established" class="on">Established</button><button data-v="new">New</button></div>
+          </div>
+
+          <div class="row"><div>
+            <label class="fld" for="payer">Payer</label>
+            <select id="payer"></select>
+          </div></div>
+
+          <div class="row r2">
+            <div><label class="fld" for="em">Primary code (CPT/HCPCS)</label>
+              <input type="text" id="em" list="cdmList" placeholder="e.g. 99214" autocomplete="off"></div>
+            <div><label class="fld" for="proc">Same-day procedure <span class="mini">(optional)</span></label>
+              <input type="text" id="proc" list="cdmList" placeholder="e.g. 93923" autocomplete="off"></div>
+          </div>
+
+          <div class="row r3">
+            <div><label class="fld" for="dx">Primary dx (ICD-10)</label>
+              <input type="text" id="dx" placeholder="e.g. I10" autocomplete="off"></div>
+            <div><label class="fld" for="mods">Modifiers</label>
+              <input type="text" id="mods" placeholder="e.g. 25, 59" autocomplete="off"></div>
+            <div><label class="fld" for="units">Units</label>
+              <input type="number" id="units" min="1" value="1"></div>
+          </div>
+
+          <label class="fld">Context</label>
+          <div class="flags">
+            <label><input type="checkbox" id="f_tele"> Telehealth</label>
+            <label><input type="checkbox" id="f_audio"> Audio-only</label>
+            <label><input type="checkbox" id="f_seen3y"> Seen in last 3y</label>
+            <label><input type="checkbox" id="f_g2211"> G2211 add-on</label>
+          </div>
+
+          <label class="fld">Patient history <span class="mini" id="freqHint" style="font-weight:400;opacity:.75"></span></label>
+          <div class="flags">
+            <label><input type="checkbox" id="f_priorDone"> Already performed for this patient</label>
+          </div>
+          <div class="row r2">
+            <div><label class="fld" for="priorDays">Days since last billed</label>
+              <input type="number" id="priorDays" min="0" placeholder="e.g. 200"></div>
+            <div><label class="fld" for="priorCount">Times billed in period</label>
+              <input type="number" id="priorCount" min="0" placeholder="e.g. 1"></div>
+          </div>
+
+          <div class="row r3">
+            <div><label class="fld" for="awv">AWV code</label>
+              <select id="awv"><option value="">—</option><option>G0438</option><option>G0439</option><option>G0402</option></select></div>
+            <div><label class="fld" for="minutes">Total time (min)</label>
+              <input type="number" id="minutes" min="0" placeholder="optional"></div>
+            <div><label class="fld" for="mdm">MDM level</label>
+              <select id="mdm"><option value="">—</option><option value="straightforward">Straightforward</option><option value="low">Low</option><option value="moderate">Moderate</option><option value="high">High</option></select></div>
+          </div>
+
+          <button class="btn btn-primary" id="runBtn" style="width:100%">Run scrub ✦</button>
+          <datalist id="cdmList"></datalist>
+        </div>
+
+        <!-- ============ OUTPUT ============ -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head"><h3>E/M suggestion</h3></div>
+            <div class="suggest none" id="emSuggest">Enter time and/or MDM</div>
+            <div class="mini" id="emDetail" style="margin-top:6px"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head"><h3 id="findTitle">Findings</h3><span id="ovStatus"></span></div>
+            <div id="paBar"></div>
+            <div id="findings"><div class="empty">Enter an encounter and run the scrub.</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Documentation checklist</h3></div>
+            <div id="checklist"><div class="empty">To bill code X, the note must contain Y — add codes to see requirements.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ COVERAGE ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Documentation coverage</h3><span id="covPill" class="readiness"></span></div>
+        <div class="mini" style="margin-bottom:10px">The scrub engine covers every code with CMS data; this tracks the note↔code documentation map across the 137-code charge master. Codes without an entry still need a guide.</div>
+        <div id="coverage"></div>
+      </div>
+
+      <!-- ============ CLINICAL NOTE ============ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Clinical note</h3><span id="readiness"></span></div>
+        <div class="notegrid">
+          <div>
+            <label class="fld" for="note">Paste the visit note</label>
+            <textarea id="note" rows="15" placeholder="Paste the encounter note here (incl. the scribe's coded summary) to check documentation and pull the codes…"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="pullBtn" type="button">↑ Pull codes from note</button>
+              <span class="mini" id="pullStatus"></span>
+            </div>
+            <div class="mini" style="margin-top:6px">Pulls the CPT/HCPCS + ICD-10 the scribe (e.g. Freed) put on the note into the encounter fields — always confirm before billing. Keyword-based decision support; each line cites its source standard.</div>
+          </div>
+          <div>
+            <label class="fld">Documentation readiness</label>
+            <div id="noteReport"><div class="empty">Paste a note and it'll be checked against the entered codes.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Real, shared scrub engine (classic script → window.scrubClaim / DATA / thStatus / TH_SEV) -->
+<script src="../engine/themis.js"></script>
+<script type="module">
+import { suggestEM, docChecklist } from "../engine/assist.mjs";
+import { analyzeNote } from "../engine/note-analyze.mjs";
+import { checkPriorAuth } from "../engine/prior-auth.mjs";
+import { extractCodes } from "../engine/code-extract.mjs";
+
+/* Payer options use the exact strings the engine's payer-specific rules key off,
+ * so those edits actually fire (Medicaid/MCO detected via /medicaid|community/). */
+const PAYERS = [
+  "Medicare", "Medicaid Maryland", "UHC Community Plan", "CareFirst Community",
+  "Aetna", "Cigna", "UnitedHealthcare", "CareFirst BCBS", "BCBS MD",
+  "Alterwood", "Humana", "Curative",
+];
+
+const $ = (id) => document.getElementById(id);
+const S = { patientType: "established" };
+let DOC_ASSIST = {}, PA_RULES = {};
+const CDM = (window.DATA && window.DATA.cdm) || [];
+
+function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+
+function initStatic() {
+  $("payer").innerHTML = PAYERS.map((p) => `<option>${p}</option>`).join("");
+  $("cdmList").innerHTML = CDM.map((r) => `<option value="${r[0]}">${r[0]} — ${esc(r[1])}</option>`).join("");
+  const D = window.DATA || {};
+  const pairs = Object.keys(D.ptp || {}).length, mcd = Object.keys(D.ptpMcdDiff || {}).length;
+  $("dataPill").textContent = `${(D.cdm || []).length} codes · ${(D.scrubRules || []).length} rules · ${pairs + mcd} NCCI edits`;
+  $("dataPill").className = "pill live";
+}
+
+function readClaim() {
+  const mods = $("mods").value.split(/[,\s]+/).map((m) => m.trim().toUpperCase()).filter(Boolean);
+  const minutes = $("minutes").value ? +$("minutes").value : null;
+  return {
+    payer: $("payer").value,
+    em: $("em").value.trim().toUpperCase(),
+    sameDayProc: $("proc").value.trim().toUpperCase() || null,
+    dx: $("dx").value.trim().toUpperCase(),
+    mods, units: +$("units").value || 1,
+    awv: $("awv").value || null,
+    telePOS: $("f_tele").checked ? "10" : null,
+    audioOnly: $("f_audio").checked,
+    seenWithin3y: $("f_seen3y").checked,
+    g2211: $("f_g2211").checked,
+    priorDone: $("f_priorDone").checked,
+    priorDays: $("priorDays").value !== "" ? +$("priorDays").value : null,
+    priorCount: $("priorCount").value !== "" ? +$("priorCount").value : null,
+    timeDoc: minutes != null && minutes > 0,   // entering time documents it (clears level-5 flag)
+    _minutes: minutes,
+  };
+}
+
+/* Show the frequency limit for the entered E/M / service code, so staff know
+ * when the patient-history fields matter. Reads the real DATA.freq table. */
+function updateFreqHint() {
+  const freq = (window.DATA && window.DATA.freq) || {};
+  const codes = [$("em").value.trim().toUpperCase(), $("proc").value.trim().toUpperCase(), $("awv").value.trim().toUpperCase()].filter(Boolean);
+  const hit = codes.map((c) => (freq[c] ? `${c}: ${freq[c].label || freq[c].days + "d"}` : null)).filter(Boolean);
+  $("freqHint").textContent = hit.length ? `— ${hit.join(" · ")}` : "— no frequency limit on the entered codes";
+}
+
+function renderFindings(findings) {
+  const st = window.thStatus(findings);
+  const map = { Clean: "st-clean", Block: "st-block", Flagged: "st-flag", Note: "st-note" };
+  $("ovStatus").innerHTML = `<span class="status ${map[st.label] || "st-note"}"><span class="d"></span>${st.label}</span>`;
+  const counts = findings.reduce((a, f) => (a[f.sev] = (a[f.sev] || 0) + 1, a), {});
+  $("findTitle").textContent = `Findings${findings.length ? ` — ${counts.block || 0} block · ${counts.warn || 0} warn · ${counts.info || 0} info` : ""}`;
+  $("findings").innerHTML = findings.length
+    ? findings.map((f) => `
+        <div class="finding ${f.sev}"><div class="dot"></div><div style="flex:1">
+          <div class="sev">${esc(f.sev)}</div>
+          <div class="msg">${esc(f.msg)}</div>
+          ${f.fix ? `<div class="fix">→ ${esc(f.fix)}</div>` : ""}
+          <div class="rid">${esc(f.ruleId)}</div>
+        </div></div>`).join("")
+    : `<div class="empty">Clean — no edits fired for this encounter. (Frequency edits fire once you enter the patient history above.)</div>`;
+}
+
+function renderChecklist(codes) {
+  const list = codes.filter(Boolean);
+  if (!list.length) { $("checklist").innerHTML = `<div class="empty">Add codes to see documentation requirements.</div>`; return; }
+  $("checklist").innerHTML = docChecklist(list, DOC_ASSIST).map((r) => {
+    if (!r.known) return `<div class="chk"><span class="mk">•</span><div><span class="cd">${esc(r.code)}</span> — <span class="mini">no doc-assist entry yet (extend doc-assist.json)</span></div></div>`;
+    const mods = Object.entries(r.modifiers).map(([m, why]) => `<div class="mini">Mod ${esc(m)}: ${esc(why)}</div>`).join("");
+    const allowed = r.modifiersAllowed.length ? `<div class="mini" style="opacity:.85">Allowed modifiers: ${r.modifiersAllowed.map(esc).join(", ")}</div>` : "";
+    return `<div class="chk"><span class="mk">✓</span><div>
+      <span class="cd">${esc(r.code)}</span>
+      <div class="mini">${r.supports.map(esc).join(" · ")}</div>${mods}${allowed}
+      ${r.source ? `<div class="mini" style="opacity:.7">${esc(r.source)}</div>` : ""}</div></div>`;
+  }).join("");
+}
+
+function renderEM(claim) {
+  if (claim._minutes == null && !$("mdm").value) { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "Enter time and/or MDM"; $("emDetail").textContent = ""; return; }
+  const r = suggestEM({ patientType: S.patientType, totalMinutes: claim._minutes, mdmLevel: $("mdm").value || null }, DOC_ASSIST);
+  if (r.inactive) { $("emSuggest").className = "suggest none"; $("emSuggest").textContent = "—"; $("emDetail").textContent = "E/M thresholds not loaded."; return; }
+  $("emSuggest").className = r.suggestion ? "suggest" : "suggest none";
+  $("emSuggest").textContent = r.suggestion || "—";
+  $("emDetail").textContent = r.detail;
+}
+
+function renderNote(claim) {
+  const r = analyzeNote($("note").value, {
+    codes: [claim.em, claim.sameDayProc].filter(Boolean),
+    hasSameDayProc: !!claim.sameDayProc,
+    minutes: claim._minutes,
+    mdmLevel: $("mdm").value || null,
+  });
+  const rd = $("readiness");
+  if (r.empty) { rd.textContent = ""; rd.className = "readiness"; $("noteReport").innerHTML = `<div class="empty">Paste a note and it'll be checked against the entered codes.</div>`; return; }
+  const tone = r.summary.readiness >= 90 ? "st-clean" : r.summary.readiness >= 60 ? "st-flag" : "st-block";
+  rd.className = "readiness " + tone; rd.textContent = `${r.summary.readiness}% documented`;
+  const icon = { present: "✓", missing: "✕", review: "⚠", na: "–" };
+  $("noteReport").innerHTML = r.checks.map((c) => `
+    <div class="nchk ${c.status}"><span class="ic">${icon[c.status] || "–"}</span><div>
+      <span class="lbl">${esc(c.label)}</span>
+      <div class="dt">${esc(c.detail)}</div>
+      <div class="sr">${esc(c.source)}</div></div></div>`).join("");
+}
+
+function renderPA(claim) {
+  const bar = $("paBar");
+  const codes = [claim.em, claim.sameDayProc].filter(Boolean);
+  if (!codes.length || !Object.keys(PA_RULES).length) { bar.innerHTML = ""; return; }
+  const tone = { required: "var(--denied)", conditional: "#9a6f16", not_required: "#5c7050", unknown: "var(--ink-soft)" };
+  const label = { required: "Prior auth REQUIRED", conditional: "Prior auth — conditional", not_required: "No prior auth needed", unknown: "Prior auth — verify" };
+  const rows = codes.map((code) => {
+    const r = checkPriorAuth({ payer: claim.payer, code }, PA_RULES);
+    return `<span style="color:${tone[r.status]};font-weight:700">✋ ${esc(code)}: ${esc(label[r.status])}</span>`;
+  });
+  bar.innerHTML = `<div class="mini" style="padding:8px 11px;border:1px dashed var(--line);border-radius:9px;margin-bottom:10px">
+    ${rows.join(" &nbsp;·&nbsp; ")} <a href="prior-auth.html" style="text-decoration:underline;opacity:.75">CRD workflow →</a></div>`;
+}
+
+/* Pull the CPT/HCPCS + ICD-10 codes the scribe put on the note into the
+ * encounter fields. Validated against the real charge master to drop stray
+ * numbers; the biller still confirms, then the scrub engine checks them. */
+function pullCodes() {
+  const note = $("note").value;
+  if (!note.trim()) { $("pullStatus").textContent = "Paste a note first."; return; }
+  // Extract unvalidated so no real scribe code is dropped; the scrub engine
+  // then flags anything unknown / not on BHW's charge master.
+  const r = extractCodes(note);
+  if (!r.all.length) { $("pullStatus").textContent = "No CPT/HCPCS or ICD-10 codes found in the note."; return; }
+  if (r.primary) $("em").value = r.primary;
+  if (r.sameDayProcs[0]) $("proc").value = r.sameDayProcs[0];
+  if (r.icd10[0]) $("dx").value = r.icd10[0];
+  if (r.modifiers.length) $("mods").value = r.modifiers.join(", ");
+  const extraDx = r.icd10.length > 1 ? ` (+${r.icd10.length - 1} more dx: ${r.icd10.slice(1).join(", ")})` : "";
+  const extraProc = r.sameDayProcs.length > 1 ? ` · other procs: ${r.sameDayProcs.slice(1).join(", ")}` : "";
+  $("pullStatus").innerHTML = `Pulled: <b>${esc([r.primary, r.sameDayProcs[0], r.icd10[0]].filter(Boolean).join(", "))}</b>${esc(extraDx + extraProc)} — confirm before billing.`;
+  run();
+}
+
+function run() {
+  const claim = readClaim();
+  updateFreqHint();
+  renderFindings(window.scrubClaim(claim));
+  renderPA(claim);
+  renderChecklist([claim.em, claim.sameDayProc]);
+  renderEM(claim);
+  renderNote(claim);
+}
+
+function wire() {
+  document.querySelectorAll("#ptype button").forEach((b) => b.onclick = () => {
+    document.querySelectorAll("#ptype button").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on"); S.patientType = b.dataset.v; run();
+  });
+  ["payer", "em", "proc", "dx", "mods", "units", "awv", "minutes", "mdm"].forEach((id) => {
+    $(id).addEventListener("input", run); $(id).addEventListener("change", run);
+  });
+  ["f_tele", "f_audio", "f_seen3y", "f_g2211", "f_priorDone"].forEach((id) => $(id).addEventListener("change", run));
+  ["priorDays", "priorCount"].forEach((id) => $(id).addEventListener("input", run));
+  $("note").addEventListener("input", run);
+  $("runBtn").onclick = run;
+  $("pullBtn").onclick = pullCodes;
+  $("themeBtn").onclick = () => {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  };
+  const nt = $("navToggle"), ns = $("navScrim"), sb = document.querySelector(".sidebar");
+  if (nt && ns && sb) {
+    const close = () => { sb.classList.remove("open"); ns.classList.remove("show"); nt.setAttribute("aria-expanded", "false"); };
+    nt.onclick = () => { const o = sb.classList.toggle("open"); ns.classList.toggle("show", o); nt.setAttribute("aria-expanded", o ? "true" : "false"); };
+    ns.onclick = close;
+    sb.querySelectorAll("a.nav-item").forEach((a) => a.addEventListener("click", close));
+  }
+}
+
+function renderCoverage() {
+  const have = new Set(Object.keys(DOC_ASSIST).filter((k) => !k.startsWith("_")));
+  if (!CDM.length) { $("coverage").innerHTML = `<div class="mini">Charge master not loaded.</div>`; return; }
+  const byProg = {};
+  for (const r of CDM) { const p = r[2] || "—"; (byProg[p] ||= []).push([r[0], have.has(r[0])]); }
+  const covered = CDM.filter((r) => have.has(r[0])).length;
+  const tone = covered / CDM.length >= 0.9 ? "st-clean" : covered / CDM.length >= 0.5 ? "st-flag" : "st-block";
+  $("covPill").className = "readiness " + tone;
+  $("covPill").textContent = `${covered} / ${CDM.length} codes`;
+  $("coverage").innerHTML = Object.keys(byProg).sort().map((p) => {
+    const rows = byProg[p]; const cov = rows.filter((x) => x[1]).length;
+    const missing = rows.filter((x) => !x[1]).map((x) => x[0]);
+    return `<div class="chk"><span class="mk" style="color:${cov === rows.length ? "#5c7050" : "#9a6f16"}">${cov === rows.length ? "✓" : "•"}</span><div>
+      <span class="cd">${esc(p)}</span> <span class="mini">${cov}/${rows.length}</span>
+      ${missing.length ? `<div class="mini">needs a guide: ${missing.map(esc).join(", ")}</div>` : `<div class="mini" style="opacity:.7">fully mapped</div>`}</div></div>`;
+  }).join("");
+}
+
+(async function init() {
+  initStatic(); wire();
+  try {
+    const res = await fetch("../engine/data/doc-assist.json");
+    if (res.ok) DOC_ASSIST = await res.json();
+  } catch (e) { /* checklist/E-M assist degrade to "not loaded" */ }
+  try {
+    const res = await fetch("../engine/data/pa-rules.json");
+    if (res.ok) PA_RULES = await res.json();
+  } catch (e) { /* PA bar degrades to hidden */ }
+  renderCoverage();
+  run();
+})();
+</script>
+</body>
+</html>
