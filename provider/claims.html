@@ -124,7 +124,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
     <div class="topbar">
       <div class="tb-left">
         <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
-        <div class="crumb">Post-Bill · <b>Claims Tracker (non-Stedi)</b></div>
+        <div class="crumb">Post-Bill · <b>Legacy Claims / Optum (non-Stedi)</b></div>
       </div>
       <div class="tools">
         <span class="pill" id="countPill">no claims loaded</span>
@@ -134,10 +134,10 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
 
     <div class="content">
       <div class="page-head">
-        <h2>Claims Tracker</h2>
-        <p>Paste the daily clearinghouse status export for claims that don't go through Stedi. It's rolled up to one row
-           per claim (by invoice), the current stage is resolved from the status events, and the rejections that need
-           rework are pulled to the top with their reason.</p>
+        <h2>Legacy Claims / Optum Tracker</h2>
+        <p>Paste or upload the CharmHealth/Optum clearinghouse status export for claims that did not go through Stedi.
+           Repeated status events are rolled up to one claim per invoice, while rejections that still need rework are
+           pulled to the top with their reason.</p>
       </div>
 
       <div class="note">
@@ -146,7 +146,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
       </div>
 
       <div class="card" id="dropCard">
-        <div class="card-head"><h3>Paste or drop the clearinghouse export</h3>
+        <div class="card-head"><h3>Paste or upload the CharmHealth / Optum claim-status export</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <label class="mini" style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><input type="checkbox" id="appendChk" checked> Append batches</label>
             <button class="btn btn-ghost btn-sm" id="fileBtn">Choose file…</button>
@@ -156,8 +156,8 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5p
             <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
           </div>
         </div>
-        <textarea id="raw" rows="7" placeholder="Paste the daily status rows here (e.g. 1–50 of 132), or drop the exported file anywhere on this card…"></textarea>
-        <div class="mini" id="parseNote" style="margin-top:6px">Tip: with <b>Append batches</b> on, paste or drop each 50-row batch and they accumulate into one worklist (duplicate events are ignored).</div>
+        <textarea id="raw" rows="7" placeholder="Paste the full status export here, or drop the exported file anywhere on this card…"></textarea>
+        <div class="mini" id="parseNote" style="margin-top:6px">Large backlog? Paste/upload the full export at once, or keep <b>Append batches</b> on and add it in smaller batches. Repeated status events are rolled into the same invoice; exact duplicate events are ignored.</div>
       </div>
 
       <div id="statsWrap"></div>
