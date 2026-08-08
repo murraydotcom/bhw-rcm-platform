@@ -11,7 +11,7 @@
 // Env: NOTION_TOKEN + the DB-id per table:
 //   NOTION_CLAIMS_DB, NOTION_CHARGEMASTER_DB, NOTION_EXPENSES_DB,
 //   NOTION_INSURANCE_DB (verification), NOTION_CONTRACTS_DB,
-//   NOTION_WEEKLY_DB, NOTION_RECONCILIATION_DB.
+//   NOTION_WEEKLY_DB, NOTION_RECONCILIATION_DB (alias: NOTION_RECON_DB).
 
 const NOTION_TOKEN = process.env.NOTION_TOKEN;
 const NOTION_VERSION = "2025-09-03";
@@ -23,7 +23,7 @@ const DB = {
   expenses:       process.env.NOTION_EXPENSES_DB,
   verification:   process.env.NOTION_INSURANCE_DB || process.env.NOTION_VERIFICATION_DB,
   weekly:         process.env.NOTION_WEEKLY_DB,
-  reconciliation: process.env.NOTION_RECONCILIATION_DB,
+  reconciliation: process.env.NOTION_RECONCILIATION_DB || process.env.NOTION_RECON_DB,
   contracts:      process.env.NOTION_CONTRACTS_DB,
   payments:       process.env.NOTION_PAYMENTS_DB,
   deposits:       process.env.NOTION_DEPOSITS_DB,
